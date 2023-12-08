@@ -1,0 +1,212 @@
+<template>
+  <ion-card>
+    <ion-item>
+      <ion-avatar slot="start" @click="goDetail">
+        <ion-img
+          :src="item.icon"
+          @ionError="
+            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+          "
+        />
+      </ion-avatar>
+      <ion-label @click="goDetail">
+        <ion-text color="light">
+          <h3>{{ item.headline }}</h3>
+        </ion-text>
+        <!--<ion-text color="secondary">
+          <span>{{ item.advertiser }}</span>
+        </ion-text>-->
+      </ion-label>
+      <ion-label>
+        <ion-chip class="chip-sm chip-secondary"
+                  style="padding: 2px; font-size: 12px;float:right;">AD
+        </ion-chip>
+      </ion-label>
+    </ion-item>
+    <ion-card-content >
+      <!--<ion-text @click="goDetail" slot="start" color="light" style="font-size: 18px; font-weight: 700;">
+        AD
+      </ion-text>-->
+      <div>
+        <ion-img
+          :src="item.cover"
+          class="mb-4"
+          @click="goDetail"
+        />
+        <div
+          class="content"
+          @click="goDetail"
+        >
+          <ion-text color="light" class="text-md" v-html="item.body">
+          </ion-text>
+        </div>
+      </div><!--
+      <div class="row-box add-info" @click="goDetail">
+        <ion-row class="ion-align-items-center ion-justify-content-between">
+          <ion-text>
+            &lt;!&ndash;<ion-icon :icon="chatbubble" />&ndash;&gt;
+
+          </ion-text>
+          <ion-text>
+            <ion-icon :icon="eyeOutline" />
+            AD
+          </ion-text>
+        </ion-row>
+      </div>-->
+    </ion-card-content>
+  </ion-card>
+
+  <!--<MessageModal
+    :is-open="messageOpen"
+    :title="communityNick + '님에게 메시지 보내기'"
+    @ionModalDidDismiss="messageOpen = false"
+    @input="limitMessage($event)"
+    @handleSendMessage="handleSendMessage"
+  />-->
+</template>
+<script>
+import IconChatbubbleOutline from "@/assets/img/icon/icon_chatbubbleOutline.svg";
+import IonEyeOutline from "@/assets/img/icon/ion_eyeOutline.svg";
+import { thumbsUpOutline, ellipsisVertical } from "ionicons/icons";
+import { SS_USER_KEY } from "@/assets/js/common";
+
+export default {
+  name: "CommunityAdItem",
+  props: {
+    item: {
+      type: Object
+    },
+    loaded: {
+      type: Boolean
+    }
+  },
+  data() {
+    return {
+      SS_USER_KEY,
+      thumbsUpOutline,
+      ellipsisVertical,
+      eyeOutline: IonEyeOutline,
+      chatbubble: IconChatbubbleOutline,
+      moreView: false,
+      contentExmaple:
+        "본문내용 &lt;사진상단에 포함&gt; <br />최대 2줄까지 가능 <br> 더보기 눌러야 전테 내용 다보임",
+      messageOpen: false,
+      communityNick: ''
+    };
+  },
+  mounted() {
+    //this.replaceContentURL();
+  },
+  methods: {
+    goDetail() {
+      this.$emit("goDetail");
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+ion-card {
+  --background: #1d1f29;
+  --border-radius: var(--ion-border-radius);
+  margin: 0;
+
+  + ion-card {
+    margin-top: 8px;
+  }
+
+  ion-item {
+    --background: #1d1f29;
+    --border-color: transparent;
+    --padding-top: 4px;
+    --padding-bottom: 4px;
+
+    ion-avatar {
+      margin-right: 10px;
+    }
+
+    ion-label {
+      h3 {
+        font-size: 16px;
+        overflow: visible;
+        contain: inherit;
+        white-space: pre-wrap;
+      }
+
+      span {
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+        min-width: 24px;
+
+        + span {
+          margin-left: 10px;
+
+          ion-icon {
+            vertical-align: -2px;
+          }
+        }
+      }
+    }
+
+    ion-row {
+      width: 100%;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 10px;
+
+      ion-text {
+        padding-top: 4px;
+      }
+
+      ion-thumbnail {
+        ion-img {
+          height: 48px;
+        }
+      }
+    }
+  }
+
+  ion-card-content {
+    border-bottom: 1px solid var(--ion-color-dark);
+    padding-top: 0px;
+
+    .content {
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+
+      &.is-expand {
+        display: block;
+        overflow: visible;
+      }
+    }
+
+    .add-info {
+      ion-text {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+      }
+    }
+  }
+
+  ion-buttons {
+    width: 100%;
+
+    ion-button {
+      width: 50%;
+      height: 50px;
+      font-size: 12px;
+
+      ion-text {
+        margin: 0 8px 0 6px;
+      }
+    }
+  }
+}
+</style>

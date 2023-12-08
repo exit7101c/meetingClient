@@ -1,0 +1,181 @@
+<template>
+  <ion-item lines="none" :class="{ 'my-message': type }">
+    <ion-avatar slot="start" v-if="!type">
+      <img
+        v-if="item.cdnThumbNm != undefined"
+        :src="'https://' + item.cdnThumbNm"
+        @ionError="
+          $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+        "
+        alt=""
+        @click="goRouter('profile', item)"
+      />
+    </ion-avatar>
+    <ion-label>
+      <ion-text color="light" class="text-md">
+        {{ item.nick }}
+      </ion-text>
+      <div v-if="item.messageType.includes('chat')">
+        <div class="speach-balloon">
+          <ion-text
+            color="light"
+            v-if="item.messageType.includes('chat')"
+            v-html="item.replaceMessage"
+          ></ion-text>
+          <!--          <div v-if="item.messageType === 'image'">-->
+          <!--            <img-->
+          <!--              ref="image"-->
+          <!--              v-bind:src="'https://' + item.cdnNmImage"-->
+          <!--              @click="handleZoomImg"-->
+          <!--              alt=""-->
+          <!--            />-->
+          <!--          </div>-->
+        </div>
+        <p>
+          <ion-text class="text-xs sub-text03" style="color: #2fced1">{{
+            item.formatTime
+          }}</ion-text>
+        </p>
+      </div>
+
+      <div v-if="item.messageType === 'image'">
+        <div class="speach-balloon-img">
+          <div>
+            <img
+              ref="image"
+              v-bind:src="'https://' + item.cdnNmImage"
+              @click="handleZoomImg"
+              alt=""
+            />
+          </div>
+        </div>
+        <p>
+          <ion-text class="text-xs sub-text03" style="color: #2fced1">{{
+            item.formatTime
+          }}</ion-text>
+        </p>
+      </div>
+      <div v-if="item.messageType === 'emoticon'">
+        <div class="speach-balloon-emoticon">
+          <div>
+            <img v-bind:src="'https://' + item.cdnNmImage" />
+          </div>
+        </div>
+        <p>
+          <ion-text class="text-xs sub-text03" style="color: #2fced1">{{
+            item.formatTime
+          }}</ion-text>
+        </p>
+      </div>
+    </ion-label>
+  </ion-item>
+</template>
+<script>
+import { dailyCardInfoMapFn } from '@/assets/js/common';
+
+export default {
+  name: 'MessageTalkItem',
+  props: {
+    item: {
+      type: Object
+    },
+    type: {
+      type: Boolean
+    },
+    chatroomType: {
+      type: String,
+      default: 'message'
+    }
+  },
+  methods: {
+    onImgDidLoad() {
+      /*this.$emit('onImgDidLoad');*/
+    },
+    handleZoomImg() {
+      this.$emit('zoomImg');
+    },
+    goRouter(type, item) {
+      if (this.chatroomType != 'anonymous') {
+        if (type === 'profile') {
+          dailyCardInfoMapFn({
+            userKey: item.regUserKey,
+            type: 'messageTalkItem'
+          });
+          this.$router.push('/dailyCardInfo');
+        }
+      } else {
+        alert('익명메세지에서는 프로필을 볼 수 없습니다.');
+      }
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  align-items: flex-start;
+
+  ion-avatar {
+    margin-top: 10px;
+  }
+
+  ion-label {
+    white-space: pre-wrap !important;
+  }
+
+  &.my-message {
+    text-align: right;
+
+    .speach-balloon {
+      border-top-left-radius: var(--ion-border-radius);
+      border-top-right-radius: 0;
+      background-color: var(--ion-color-primary);
+    }
+  }
+
+  .speach-balloon {
+    display: inline-block;
+    background-color: var(--ion-color-medium);
+    padding: 7px;
+    border-radius: var(--ion-border-radius);
+    font-size: 14px;
+    border-top-left-radius: 0;
+    margin-top: 4px;
+    //ion-img,
+    //img {
+    //  border-radius: var(--ion-border-radius);
+    //  max-width: 200px;
+    //  max-height: 300px;
+    //}
+  }
+
+  .speach-balloon-img {
+    display: inline-block;
+    border-radius: var(--ion-border-radius);
+    font-size: 14px;
+    border-top-left-radius: 0;
+    margin-top: 4px;
+
+    ion-img,
+    img {
+      border-radius: var(--ion-border-radius);
+      max-width: 200px;
+      max-height: 300px;
+    }
+  }
+
+  .speach-balloon-emoticon {
+    display: inline-block;
+    border-radius: var(--ion-border-radius);
+    font-size: 14px;
+    border-top-left-radius: 0;
+
+    ion-img,
+    img {
+      max-width: 150px;
+      max-height: 150px;
+    }
+  }
+}
+</style>

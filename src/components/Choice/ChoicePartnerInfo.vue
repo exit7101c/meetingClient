@@ -1,0 +1,291 @@
+<template>
+  <div class="choice-profile-info">
+    <div class="layout-container">
+      <div class="choice-profile-info-detail">
+        <ion-label>
+          <ion-row>
+            <ion-text color="light">
+              <h3>{{ item.nick }}</h3>
+            </ion-text>
+          </ion-row>
+          <p>
+            <ion-text color="light">
+              {{ item.introduce }}
+            </ion-text>
+          </p>
+          <p>
+            <ion-chip
+              color="secondary"
+              class="shape-round btn-profile"
+              @click="goDailyPartnerInfo(item.userKey)"
+            >파트너 정보보기
+            </ion-chip>
+          </p>
+        </ion-label>
+      </div>
+      <img
+        v-if="gifTest === true"
+        style="
+          z-index: 9999;
+          position: absolute;
+          width: 100%;
+          top: -80px;
+          left: 0;
+        "
+        src="@/assets/img/gifImg/gif_img1.gif"
+        alt=""
+      />
+      <div class="choice-profile-info-btn-group">
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnChoiceBack">
+            <ion-icon :icon="choiceBack"></ion-icon>
+          </ion-fab-button>
+        </div>
+        <div class="choice-profile-info-btn-item">
+<!--          <ion-fab-button @click="btnContact(item.userKey)" class="btn-mail">-->
+          <ion-fab-button @click="btnLink(item.cdnNm)" class="btn-mail">
+            <ion-icon :icon="mailIcon"></ion-icon>
+          </ion-fab-button>
+          <ion-chip class="chip-mail">자세히보기</ion-chip>
+        </div>
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnSkip" class="btn-skip">
+            <ion-icon :icon="choiceSkip"></ion-icon>
+          </ion-fab-button>
+          <ion-chip class="chip-skip">SKIP</ion-chip>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import { getData, messageTalkMapFn } from "@/assets/js/common";
+import IconChoiceBack from "@/assets/img/choice/choice_back.svg";
+import IconChoiceSkip from "@/assets/img/choice/choice_skip.svg";
+import IconMailOutline from "@/assets/img/icon/icon_my_mail.svg";
+import { locationOutline } from "ionicons/icons";
+
+export default {
+  name: "ChoicePartnerInfo",
+  inject: ["alertController"],
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  data() {
+    return {
+      choiceBack: IconChoiceBack,
+      choiceSkip: IconChoiceSkip,
+      locationOutline,
+      mailIcon: IconMailOutline,
+      gifTest: false,
+      partnersCode: ""
+    };
+  },
+  methods: {
+    goDailyPartnerInfo(userKey) {
+      this.$store.state.partnerInfoMap["partnersCode"] = userKey;
+      this.$router.push("/partnersProfile");
+    },
+
+    btnContact(userKey) {
+      getData({
+        url: "/setCommunityChatRoom",
+        param: {
+          partnersCode: userKey,
+          userNick: localStorage.getItem("SS_USER_COMMUNITY_NICK"),
+          userIconCd: localStorage.getItem("SS_USER_COMMUNITY_ICON"),
+          messageType: "chat"
+        },
+        then: (data) => {
+          if (data.successYn === "Y") {
+            messageTalkMapFn({ chatroomId: data.chatroomId, type: "Community", chatroomType: "anonymous" });
+            this.$router.push("/messageTalk");
+          } else {
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+
+    btnLink(url) {
+      window.open(url, '_blank');
+    },
+
+    btnSkip() {
+      this.$emit("btnSkip");
+    },
+
+    btnChoiceBack() {
+      this.$emit("btnChoiceBack");
+    },
+
+    resetChoiceLogic() {
+      getData({
+        url: "/resetChoiceLogic",
+        param: {},
+        then: (data) => {
+          if (data.successYn !== "Y") {
+            this.warningAlert(data.message);
+          } else {
+            this.$emit("reSearch");
+          }
+        }
+      });
+    },
+
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+
+  }
+};
+</script>
+<style lang="scss" scoped>
+.choice-profile-info {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: transparent;
+  z-index: 10;
+  text-align: left;
+  padding: 0 0 40px;
+
+  .layout-container {
+    position: relative;
+  }
+
+  .choice-profile-chips {
+    margin-bottom: 10px;
+  }
+
+  .choice-profile-info-detail {
+    ion-text {
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+    }
+
+    ion-label {
+      ion-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+
+        h3 {
+          font-size: 22px;
+          font-weight: bold;
+          margin: 0;
+        }
+
+        ion-avatar {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+      }
+
+      p {
+        font-size: 14px;
+        line-height: 1.5;
+        display: -webkit-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+      }
+    }
+  }
+
+  .btn-profile {
+    background-color: var(--ion-color-secondary);
+    color: white;
+  }
+
+  .choice-profile-info-btn-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    color: #fff;
+    margin-top: 20px;
+
+    .choice-profile-info-btn-item {
+      position: relative;
+
+      &:first-of-type,
+      &:last-of-type {
+        transform: scale(0.85);
+      }
+
+      ion-fab-button {
+        --background: transparent;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+
+        ion-icon,
+        ion-img {
+          width: 100%;
+          height: 100%;
+        }
+
+        &.btn-mail {
+          background: linear-gradient(180deg, #f5cb6b 0%, #e5a049 100%);
+        }
+
+        &.btn-skip {
+          background: linear-gradient(180deg, #6ce4bf 0%, #6be2ae 100%);
+        }
+      }
+
+      .chip-mail {
+        position: absolute;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 0 6px;
+        margin: 0;
+        left: 50%;
+        bottom: -12px;
+        transform: translateX(-50%);
+        line-height: 1;
+        white-space: nowrap;
+        color: #e5a049;
+        height: 20px;
+        border: 1px solid #e5a049;
+        border-radius: 16px;
+      }
+
+      .chip-skip {
+        min-width: 46px;
+        justify-content: center;
+        position: absolute;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 0 6px;
+        margin: 0;
+        left: 50%;
+        bottom: -12px;
+        transform: translateX(-50%);
+        line-height: 1;
+        white-space: nowrap;
+        color: #6be2ae;
+        height: 20px;
+        border: 1px solid #6be2ae;
+        border-radius: 16px;
+      }
+    }
+  }
+}
+</style>

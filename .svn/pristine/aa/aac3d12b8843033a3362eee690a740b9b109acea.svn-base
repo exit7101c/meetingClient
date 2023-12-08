@@ -1,0 +1,30 @@
+<template>
+  <ion-avatar>
+    <img
+      :src="'https://' + thumbnail"
+      @ionError="
+          $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+        "
+    />
+  </ion-avatar>
+</template>
+<script>
+export default {
+  name: "CommentAvatar",
+  props: {
+    thumbnail: {
+      type: String
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-avatar {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-top: 10px;
+}
+</style>

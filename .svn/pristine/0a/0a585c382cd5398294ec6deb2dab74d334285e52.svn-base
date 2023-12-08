@@ -1,0 +1,87 @@
+<template>
+  <ion-item lines="none">
+    <!--    <ion-img slot="start" :src="'https://' + item.icon" />-->
+    <font-awesome-icon class="badgeIcon" :icon="computedIcon" />
+    <ion-label>
+      <h3>
+        <ion-text color="light" class="text-lg text-bold"
+        >{{ item.title }}
+        </ion-text>
+      </h3>
+      <ion-text color="secondary" class="text-md"
+      >{{ item.description }}
+      </ion-text>
+    </ion-label>
+    <template v-if="state == 'none' || state == 'reject'">
+      <ion-icon
+        slot="end"
+        :icon="addCircle"
+        color="secondary"
+        size="large"
+      ></ion-icon>
+    </template>
+    <template v-else-if="state == 'wait'">
+      <ion-text
+        color="secondary"
+        slot="end"
+        class="text-right text-bold text-lg"
+      >심사중
+      </ion-text
+      >
+    </template>
+  </ion-item>
+</template>
+<script>
+import { addCircle } from "ionicons/icons";
+
+export default {
+  name: "CertificationCardItem",
+  props: {
+    item: {
+      type: Object
+    },
+    state: {
+      type: String
+    }
+  },
+  computed: {
+    computedIcon() {
+      if (this.$props.item.icon) {
+        if (this.$props.item.icon == "youtube") {
+          return ["fab", this.$props.item.icon];
+        } else {
+          return ["fas", this.$props.item.icon];
+        }
+      }
+      return "";
+    }
+  },
+  data() {
+    return {
+      addCircle
+    };
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --background: var(--ion-border-color);
+  --border-radius: var(--ion-border-radius);
+
+  + ion-item {
+    margin-top: 16px;
+  }
+
+  ion-img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .badgeIcon {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+    color: #fff;
+  }
+}
+</style>

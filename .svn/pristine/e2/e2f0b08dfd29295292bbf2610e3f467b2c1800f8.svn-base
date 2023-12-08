@@ -1,0 +1,119 @@
+<template>
+  <ion-list lines="full">
+    <ion-item
+      @click="goRouter(data.articleId, data)"
+      v-for="(data, index) in itemList"
+      :key="index"
+    >
+      <ion-avatar slot="start">
+        <ion-skeleton-text
+          :animated="true"
+          v-if="!loaded"
+          class="skeleton-img" />
+        <ion-img
+          v-else
+          :src="'https://' + data.cdnThumbNmIcon"
+          @ionError="
+            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+          "
+        />
+      </ion-avatar>
+      <ion-label>
+        <ion-text color="light">
+          <ion-skeleton-text :animated="true" v-if="!loaded" />
+          <template v-else>
+            <h3 style="font-size: 16px;">{{ data.title }}</h3>
+          </template>
+        </ion-text>
+        <ion-text color="light">
+          <template v-if="!loaded">
+            <span><ion-skeleton-text :animated="true" /></span
+            ><span><ion-skeleton-text :animated="true" /></span>
+            <span><ion-skeleton-text :animated="true" /></span>
+          </template>
+          <template v-else>
+            <span style="font-size: 12px;">{{ data.createdDtMm }}</span
+            ><span style="font-size: 12px;">읽음 {{ data.viewCnt }} · 댓글 {{ data.commentCnt }}</span>
+          </template>
+        </ion-text>
+      </ion-label>
+      <ion-thumbnail slot="end">
+        <ion-skeleton-text
+          :animated="true"
+          v-if="!loaded"
+          class="skeleton-img"
+        />
+        <template v-else>
+          <ion-img
+            v-show="data.cdnThumbNm !== null"
+            :src="'https://' + data.cdnThumbNm"
+            @ionError="
+              $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+            "
+          />
+        </template>
+      </ion-thumbnail>
+    </ion-item>
+  </ion-list>
+</template>
+<script>
+import { communityViewMapFn } from "@/assets/js/common";
+
+export default {
+  name: "MainBestTopic",
+  props: {
+    itemList: {
+      type: Array
+    },
+    loaded: {
+      type: Boolean
+    }
+  },
+  methods: {
+    goRouter(articleKey) {
+      communityViewMapFn({ article: articleKey, type: "Home" });
+      this.$router.push("/communityView");
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+ion-list {
+  background: transparent !important;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --border-color: var(--ion-color-sub-text);
+    --background: transparent;
+  }
+
+  ion-label {
+    h3 {
+      font-size: 12px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    span {
+      font-size: 10px;
+      display: inline-block;
+      min-width: 24px;
+
+      + span {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  ion-thumbnail {
+    ion-skeleton-text {
+      --border-radius: 0;
+    }
+
+    ion-img {
+      height: 48px;
+    }
+  }
+}
+</style>

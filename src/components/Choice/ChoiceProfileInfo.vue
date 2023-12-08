@@ -1,0 +1,407 @@
+<template>
+  <div class="choice-profile-info">
+    <div class="layout-container">
+      <!-- <div class="choice-profile-chips">
+        <ion-chip>
+          <ion-avatar>
+            <img
+              alt="Silhouette of a person's head"
+              src="https://ionicframework.com/docs/img/demos/avatar.svg"
+            />
+          </ion-avatar>
+          <ion-label>심사합격</ion-label>
+        </ion-chip>
+        <ion-chip>
+          <ion-avatar>
+            <img
+              alt="Silhouette of a person's head"
+              src="https://ionicframework.com/docs/img/demos/avatar.svg"
+            />
+          </ion-avatar>
+          <ion-label>자산인증</ion-label></ion-chip
+        >
+        <ion-chip>
+          <ion-avatar>
+            <img
+              alt="Silhouette of a person's head"
+              src="https://ionicframework.com/docs/img/demos/avatar.svg"
+            />
+          </ion-avatar>
+          <ion-label>직업인증</ion-label></ion-chip
+        >
+      </div> -->
+      <div class="choice-profile-chips">
+        <ion-chip
+          v-if="item.connectionYn == 'Y'"
+          style="
+            background-color: #75ed91;
+            color: black;
+            font-size: 12px;
+            font-weight: bold;
+          "
+        >
+          <ion-label>접속중</ion-label>
+        </ion-chip>
+        <ion-chip
+          v-if="item.aroundYn == 'Y'"
+          style="
+            background-color: #37776d;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+          "
+        >
+          <ion-icon :icon="locationSharp" size="small" color="light"></ion-icon>
+          <ion-label>근처</ion-label>
+        </ion-chip>
+        <!-- TODO: 뱃지 샘플 -->
+        <CertificationBadgeItem v-if="userBadgeInfo.length > 0" v-for="(item, index) in userBadgeInfo"
+                                :key="index"
+                                :item="item" />
+      </div>
+      <div class="choice-profile-info-detail">
+        <ion-label>
+          <ion-row>
+            <ion-text color="light">
+              <h3>{{ item.nick }} {{ item.age }}</h3>
+            </ion-text>
+            <ion-avatar v-if="item.cdnThumbNm">
+              <ion-img
+                :src="'https://' + item.cdnThumbNm"
+                @ionError="
+                  $event.srcElement.src = require('@/assets/img/Loading_icon.gif')
+                "
+              />
+            </ion-avatar>
+          </ion-row>
+          <ion-row>
+            <ion-icon
+              :icon="locationSharp"
+              size="small"
+              color="light"
+            ></ion-icon>
+            <ion-text color="light">
+              <h3 style="font-size: 16px">{{ item.distanceKm }}</h3>
+            </ion-text>
+          </ion-row>
+          <p>
+            <ion-text color="light">
+              {{ item.introduce }}
+            </ion-text>
+          </p>
+          <p>
+            <ion-chip
+              color="secondary"
+              class="shape-round btn-profile"
+              @click="goDailyCardInfo(item.userKey)"
+            >프로필 보기
+            </ion-chip>
+            <!--            <ion-chip style="&#45;&#45;background: none; font-size: 14px">-->
+            <!--              <ion-text-->
+            <!--                color="light"-->
+            <!--                class="text-link"-->
+            <!--                @click="resetChoiceLogic"-->
+            <!--                >초기화-->
+            <!--              </ion-text>-->
+            <!--            </ion-chip>-->
+          </p>
+        </ion-label>
+      </div>
+      <img
+        v-if="gifTest === true"
+        style="
+          z-index: 9999;
+          position: absolute;
+          width: 100%;
+          top: -80px;
+          left: 0;
+        "
+        src="@/assets/img/gifImg/gif_img1.gif"
+        alt=""
+      />
+      <div class="choice-profile-info-btn-group">
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnChoiceBack" v-if="profilType == 'choice'">
+            <ion-icon :icon="choiceBack"></ion-icon>
+          </ion-fab-button>
+        </div>
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button
+            @click="btnSuperLike"
+            class="btn-superlike"
+            id="open-choice-modal"
+          >
+            <ion-icon :icon="choiceSuperlike"></ion-icon>
+          </ion-fab-button>
+          <!-- <ion-chip class="chip-superlike">SUPER like</ion-chip> -->
+        </div>
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnLike" class="btn-like">
+            <ion-icon :icon="choiceLike"></ion-icon>
+          </ion-fab-button>
+        </div>
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button
+            @click="btnHoney"
+            class="btn-skip"
+            v-if="profilType == 'choice'"
+          >
+            <ion-icon :icon="choiceHoney"></ion-icon>
+          </ion-fab-button>
+          <!-- <ion-chip class="chip-skip">SKIP</ion-chip> -->
+        </div>
+        <!-- <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnNope">
+            <ion-icon :icon="choiceNope"></ion-icon>
+          </ion-fab-button>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import { getData } from "@/assets/js/common";
+import { dailyCardInfoMapFn } from "@/assets/js/common";
+import IconChoiceBack from "@/assets/img/choice/choice_back.svg";
+import IconChoiceSuperike from "@/assets/img/choice/choice_superlike.svg";
+import IconChoiceLike from "@/assets/img/choice/choice_like.svg";
+import IconChoiceSkip from "@/assets/img/choice/choice_skip.svg";
+import IconChoiceNope from "@/assets/img/choice/choice_nope.svg";
+
+import { locationSharp } from "ionicons/icons";
+
+import CertificationBadgeItem from "@/components/Certification/CertificationBadgeItem.vue";
+
+export default {
+  name: "ChoiceProfileInfo",
+  components: {
+    CertificationBadgeItem
+  },
+  props: {
+    item: {
+      type: Object
+    },
+    type: {
+      type: String
+    },
+    choiceYn: {
+      type: String
+    },
+    profilType: {
+      type: String
+    }
+  },
+  mounted() {
+    this.getUserBadgeInfo();
+  },
+  data() {
+    return {
+      choiceBack: IconChoiceBack,
+      choiceSuperlike: IconChoiceSuperike,
+      choiceLike: IconChoiceLike,
+      choiceHoney: IconChoiceSkip,
+      choiceNope: IconChoiceNope,
+      locationSharp,
+      gifTest: false,
+      userBadgeInfo: []
+    };
+  },
+  methods: {
+    getUserBadgeInfo() {
+      getData({
+        url: "/getUserBadgeInfo",
+        param: { ...this.$props.item },
+        then: (data) => {
+          this.userBadgeInfo = data;
+        }
+      });
+    },
+    goDailyCardInfo(userKey) {
+      dailyCardInfoMapFn({ userKey: userKey, type: this.profilType });
+      this.$router.push("/dailyCardInfo");
+    },
+    btnChoiceBack() {
+      this.$emit("btnChoiceBack");
+    },
+    btnSuperLike() {
+      this.$emit("btnSuperLike");
+    },
+    btnLike() {
+      // this.gifTest = true;
+      //
+      // setTimeout(() => {
+      this.$emit("btnLike");
+      //
+      //   this.gifTest = false;
+      // }, 500);
+      // this.gifTest = false;
+    },
+    btnHoney() {
+      this.$emit("btnHoney");
+    },
+    btnNope() {
+      this.$emit("btnNope");
+    },
+    resetChoiceLogic() {
+      getData({
+        url: "/resetChoiceLogic",
+        param: {},
+        then: (data) => {
+          if (data.successYn !== "Y") {
+            this.warningAlert(data.message);
+          } else {
+            this.$emit("reSearch");
+          }
+        }
+      });
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.choice-profile-info {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: transparent;
+  z-index: 10;
+  text-align: left;
+  padding: 0 0 20px;
+
+  .layout-container {
+    position: relative;
+  }
+
+  .choice-profile-chips {
+    margin-bottom: 10px;
+  }
+
+  .choice-profile-info-detail {
+    ion-text {
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+    }
+
+    ion-label {
+      overflow: visible;
+      contain: inherit;
+
+      ion-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+
+        h3 {
+          font-size: 22px;
+          font-weight: bold;
+          margin: 0;
+        }
+
+        ion-avatar {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+      }
+
+      p {
+        font-size: 14px;
+        line-height: 1.5;
+        display: -webkit-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+      }
+    }
+  }
+
+  .btn-profile {
+    background-color: var(--ion-color-secondary);
+    color: white;
+  }
+
+  .choice-profile-info-btn-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    color: #fff;
+    margin-top: 20px;
+
+    .choice-profile-info-btn-item {
+      position: relative;
+
+      &:first-of-type,
+      &:last-of-type {
+        transform: scale(0.7);
+      }
+
+      ion-fab-button {
+        --background: transparent;
+        width: 72px;
+        height: 72px;
+        background-color: white;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+
+        ion-icon,
+        ion-img {
+          width: 100%;
+          height: 100%;
+        }
+
+        &.btn-superlike {
+          background: white;
+        }
+
+        &.btn-like {
+          background: var(--ion-color-primary);
+        }
+      }
+
+      .chip-superlike {
+        position: absolute;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 0 6px;
+        margin: 0;
+        left: 50%;
+        bottom: -12px;
+        transform: translateX(-50%);
+        line-height: 1;
+        white-space: nowrap;
+        color: #e5a049;
+        height: 20px;
+        border: 1px solid #e5a049;
+        border-radius: 16px;
+      }
+
+      .chip-skip {
+        min-width: 46px;
+        justify-content: center;
+        position: absolute;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 0 6px;
+        margin: 0;
+        left: 50%;
+        bottom: -12px;
+        transform: translateX(-50%);
+        line-height: 1;
+        white-space: nowrap;
+        color: #6be2ae;
+        height: 20px;
+        border: 1px solid #6be2ae;
+        border-radius: 16px;
+      }
+    }
+  }
+}
+</style>

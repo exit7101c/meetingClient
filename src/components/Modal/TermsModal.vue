@@ -1,0 +1,66 @@
+<template>
+  <ion-modal :is-open="isOpen" @ionModalDidDismiss="ionModalDidDismiss">
+    <!--    class="custom-modal"-->
+    <!--  >-->
+    <ion-page>
+      <ion-content class="ion-padding">
+        <div class="row-box">
+          <ion-text color="light" class="text-md">
+            <Terms :title="termsTitle" :type="termsType" />
+          </ion-text>
+        </div>
+      </ion-content>
+      <ion-footer>
+        <ion-button
+          color="primary"
+          size="large"
+          expand="block"
+          shape="round"
+          class="close-button ion-activatable ripple-parent rounded-rectangle"
+          @click="ionModalDidDismiss"
+        >
+          확인
+        </ion-button>
+      </ion-footer>
+    </ion-page>
+  </ion-modal>
+</template>
+<script>
+import Terms from '@/components/Terms.vue';
+
+export default {
+  name: 'TermsModal',
+  components: {
+    Terms
+  },
+  props: {
+    isOpen: {
+      type: Boolean
+    },
+    termsTitle: {
+      type: String
+    },
+    termsType: {
+      type: String
+    }
+  },
+  methods: {
+    ionModalDidDismiss() {
+      this.$emit('ionModalDidDismiss');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-modal {
+  --height: 500px;
+  --width: 95%;
+  --border-radius: 15px;
+  --box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  &::part(content) {
+    border-radius: var(--ion-border-radius-lg);
+  }
+}
+</style>

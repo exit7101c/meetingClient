@@ -1,0 +1,58 @@
+<template>
+  <ion-item lines="none">
+    <ion-label>
+      <p>
+        <!-- TODO : 업소이름, 주소 변수 적용 필요  -->
+        <ion-text color="light" class="text-lg text-bold">{{
+            item.partnerNm
+          }}
+        </ion-text
+        >
+        <br />
+        <ion-text color="light" class="text-md text-bold">
+          {{ item.address }}
+        </ion-text>
+      </p>
+      <p>
+        <!-- TODO : 태그 부분을 배열로 출력할지 문자열로 출력할지에 따라 스타일 수정 필요 -->
+        <ion-text color="light" class="text-sm"> {{ item.tags }}</ion-text>
+      </p>
+    </ion-label>
+    <ion-thumbnail slot="end">
+      <!-- TODO : 썸네일 변수 적용 필요 -->
+      <ion-img :src="'https://' + item.cdnNm" />
+    </ion-thumbnail>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: "UsePointPartnerItem",
+  props: {
+    item: {
+      type: Object
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  border: 1px solid var(--ion-color-secondary);
+  border-radius: var(--ion-border-radius);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.25);
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+
+  + ion-item {
+    margin-top: 10px;
+  }
+
+  ion-label {
+    white-space: pre-wrap !important;
+  }
+
+  ion-thumbnail {
+    width: 70px;
+    height: 70px;
+  }
+}
+</style>

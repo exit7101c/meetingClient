@@ -1,0 +1,229 @@
+<template>
+  <ion-page class="backImage">
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>Contest</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content :fullscreen="true" class="ion-padding">
+      <div class="row-box">
+        <ContestCountDown />
+      </div>
+      <div class="row-box">
+        <HotContest>
+          <HotContestItem
+            v-for="(item, index) in hotContest"
+            :key="index"
+            :index="index"
+            :item="item"
+            @click="goItem(item)"
+          />
+        </HotContest>
+      </div>
+      <ion-list>
+        <ion-row v-if="contestRest.length > 0">
+          <ion-col
+            size="6"
+            v-for="(item, index) in contestRest"
+            :key="item.userKey"
+            @click="goItem(item)"
+          >
+            <ContestListItem :item="item" :index="index + 4" />
+          </ion-col>
+        </ion-row>
+        <!-- 랭킹 12위 이후 -->
+        <ion-row v-if="contestRest2.length > 0">
+          <ion-col
+            size="4"
+            v-for="(item, index) in contestRest2"
+            :key="item.userKey"
+            @click="goItem(item)"
+          >
+            <ContestListItem :item="item" :index="index + 12" />
+          </ion-col>
+        </ion-row>
+      </ion-list>
+    </ion-content>
+    <HotConestVoteModal
+      :is-open="modalContest"
+      :checkDisabled="checkDisabled"
+      :item="modalItem"
+      :coupon="coupon"
+      @ionModalDidDismiss="modalContest = false"
+      @useContestVote="useContestVote((checkDisabled = false))"
+    />
+  </ion-page>
+</template>
+
+<script>
+import { communityViewMapFn, getData } from "@/assets/js/common";
+import ContestCountDown from "@/components/Contest/ContestCountDown.vue";
+import HotContest from "@/components/Contest/HotContest.vue";
+import HotContestItem from "@/components/Contest/HotContestItem.vue";
+import ContestListItem from "@/components/Contest/ContestListItem.vue";
+import HotConestVoteModal from "@/components/Contest/HotConestVoteModal.vue";
+
+export default {
+  name: "Contest",
+  inject: ["alertController"],
+  components: {
+    HotContest,
+    HotContestItem,
+    ContestCountDown,
+    ContestListItem,
+    HotConestVoteModal
+  },
+  computed: {
+    hotContest() {
+      return this.contestList.slice(0, 3);
+    },
+    contestRest() {
+      return this.contestList.slice(3);
+    },
+    contestRest2() {
+      return this.contestList.slice(11);
+    }
+  },
+  data() {
+    return {
+      modalContest: false,
+
+      contestList: [],
+      modalItem: "",
+      checkDisabled: true,
+
+      /** 쿠폰 **/
+      coupon: "",
+      useTypeHeart: "COUPON"
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.contestUserList();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  mounted() {
+  },
+  methods: {
+    goRouter() {
+      this.$router.go(-1);
+    },
+    goItem(data) {
+      communityViewMapFn({ article: data.articleKey, type: "contest", targetUserKey: data.userKey });
+      // communityViewMapFn({ article: data.articleKey, type: "contest" });
+      this.$router.push("/contestDetail");
+      // this.getUserCouponDataOne();
+      // this.modalItem = data;
+      // this.modalContest = true;
+    },
+
+    contestUserList() {
+      getData({
+        url: "/getContestUserList",
+        param: { contestType: 1 },
+        then: (data) => {
+          this.contestList = data;
+        }
+      });
+    },
+
+    /** 투표권 보유현황 **/
+    getUserCouponDataOne() {
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: "CU012" },
+        then: (data) => {
+          this.coupon = data;
+          if (this.coupon.quantity > 0) {
+            this.useTypeHeart = "COUPON";
+          } else {
+            this.useTypeHeart = "HEART";
+          }
+        }
+      });
+    },
+    useContestVote() {
+      getData({
+        url: "/useContestVote",
+        param: {
+          couponCd: "CU012",
+          useType: this.useTypeHeart, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          itemCd: this.useTypeHeart === "HEART" ? "IT012_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT002_01
+          pointCd: this.useTypeHeart === "HEART" ? "BUY" : "", // useType 'HEART' 일 시 BUY
+          contestType: 1, // 진행중인 contest_type
+          targetUserKey: this.modalItem.userKey // 선택한 userId
+        },
+        then: (data) => {
+          if (data.successYn === "N" || data.successYn === "NE") {
+            this.warningAlert(data.message);
+            this.modalContest = false;
+          } else if (data.successYn === "NH") {
+            this.warningAlertNH(data.message);
+          } else {
+            this.warningAlert(data.message);
+            this.modalContest = false;
+            this.contestUserList();
+          }
+          setTimeout(() => {
+            this.checkDisabled = true;
+          }, 500);
+        }
+      });
+    },
+
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlertNH(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/store");
+              this.modalContest = false;
+            }
+          }
+        ]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+
+ion-content {
+  --background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+  url('@/assets/img/gifImg/backimg.gif');
+  --background-size: cover;
+}
+
+ion-list, ion-row, ion-col {
+  background-color: transparent;
+}
+</style>

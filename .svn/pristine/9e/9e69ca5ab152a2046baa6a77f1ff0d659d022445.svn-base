@@ -1,0 +1,108 @@
+<template>
+  <div class="ion-padding">
+    <div class="row-box">
+      <ion-toolbar>
+        <div class="text-center">
+          <ion-text class="text-lg">
+            잔여 금액 <strong class="text-bold">1,320,000 P</strong>
+          </ion-text>
+        </div>
+      </ion-toolbar>
+    </div>
+    <div class="row-box">
+      <ion-list lines="none">
+        <item-group v-for="(group, index) in groupedItems" :key="index">
+          <!-- 이용 날짜 -->
+          <UsePointHistoryHeader :title="group.date" />
+          <!-- 날짜별 사용 내역 -->
+          <UsePointHistoryItem
+            v-for="item in group.items"
+            :key="item.id"
+            :item="item"
+          />
+        </item-group>
+      </ion-list>
+    </div>
+  </div>
+</template>
+
+<script>
+import UsePointHistoryHeader from '@/components/UsePoint/UsePointHistoryHeader.vue';
+import UsePointHistoryItem from '@/components/UsePoint/UsePointHistoryItem.vue';
+
+export default {
+  components: {
+    UsePointHistoryHeader,
+    UsePointHistoryItem
+  },
+  data() {
+    return {
+      dummyitems: [
+        {
+          id: 1,
+          title: '정산',
+          date: '2022-06-06',
+          type: 'minus',
+          amount: 700000
+        },
+        {
+          id: 2,
+          title: '포인트처리 - D3N6MHR',
+          date: '2022-06-06',
+          type: 'plus',
+          amount: 500
+        },
+        {
+          id: 3,
+          title: '포인트처리 - D3N6MHR',
+          date: '2022-06-02',
+          type: 'plus',
+          amount: 25000
+        },
+        {
+          id: 4,
+          title: '포인트처리 - YGN8DSQ',
+          date: '2022-06-02',
+          type: 'plus',
+          amount: 13000
+        },
+        {
+          id: 5,
+          title: '포인트처리 - B9DDYa55',
+          date: '2022-06-02',
+          type: 'plus',
+          amount: 35000
+        }
+      ],
+      groupedItems: [] // 더미 데이터 날짜별로 그룹분류
+    };
+  },
+
+  created() {
+    this.groupItems();
+  },
+
+  methods: {
+    groupItems() {
+      const groups = {};
+      this.dummyitems.forEach((item) => {
+        const date = item.date;
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(item);
+      });
+      const sortedDates = Object.keys(groups).sort(
+        (a, b) => new Date(b) - new Date(a)
+      );
+      const groupedItems = sortedDates.map((date) => ({
+        date,
+        items: groups[date]
+      }));
+      this.groupedItems = groupedItems;
+    }
+  }
+};
+</script>
+
+<style scoped></style>

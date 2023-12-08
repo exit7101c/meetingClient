@@ -1,0 +1,63 @@
+<template lang="">
+  <ion-text
+    v-if="index < 100"
+    class="icon-rank-badge"
+    :class="{
+      rank01: index < 3,
+      rank02: index >= 3 && index < 9,
+      rank03: index >= 9 && index < 19,
+      rank04: index >= 19 && index < 29,
+      rank05: index >= 29 && index < 39,
+      rank06: index >= 39
+    }"
+  >
+    {{ index + 1 }}
+  </ion-text>
+</template>
+<script>
+export default {
+  name: ' RankBadge',
+  props: {
+    index: {
+      type: Number
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.icon-rank-badge {
+  position: absolute;
+  right: -4px;
+  top: -6px;
+  width: 36px;
+  height: 28px;
+  background-position: center top;
+  background-size: 36px 28px;
+  background-repeat: no-repeat;
+  padding-top: 6px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
+  &.rank01 {
+    background-image: url('@/assets/img/icon/icon_rank_badge01.png');
+  }
+  &.rank02 {
+    background-image: url('@/assets/img/icon/icon_rank_badge02.png');
+  }
+  &.rank03 {
+    background-image: url('@/assets/img/icon/icon_rank_badge03.png');
+  }
+  &.rank04 {
+    background-image: url('@/assets/img/icon/icon_rank_badge04.png');
+  }
+  &.rank05 {
+    background-image: url('@/assets/img/icon/icon_rank_badge05.png');
+  }
+  &.rank06 {
+    background-image: url('@/assets/img/icon/icon_rank_badge06.png');
+  }
+}
+</style>

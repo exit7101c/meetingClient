@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="152.923" viewBox="0 0 100 152.923">
+  <defs>
+    <filter id="패스_1" x="12.214" y="0" width="75.578" height="105.454" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#fff" flood-opacity="0.569"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="구독하기" x="26" y="124.923" width="50" height="28" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-2"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="네이비_플러스를_구독하고_사진을_확인해_보세요_" x="0" y="94.923" width="100" height="40" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-3"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="그룹_5706" data-name="그룹 5706" transform="translate(-242 -516.077)">
+    <g id="_008-closed-1" data-name="008-closed-1" transform="translate(263.214 514.436)" opacity="0.496">
+      <g id="그룹_2" data-name="그룹 2" transform="translate(0)">
+        <g id="그룹_1" data-name="그룹 1">
+          <g transform="matrix(1, 0, 0, 1, -21.21, 1.64)" filter="url(#패스_1)">
+            <path id="패스_1-2" data-name="패스 1" d="M155.792,46.828h-4.643V29a21.359,21.359,0,0,0-42.719,0V46.828h-4.643A2.786,2.786,0,0,0,101,49.614V66.307a28.789,28.789,0,0,0,57.578,0V49.614A2.786,2.786,0,0,0,155.792,46.828ZM114,29a15.787,15.787,0,0,1,31.575,0V46.828H114Zm39,37.306a23.217,23.217,0,1,1-46.434,0V52.4h46.434Z" transform="translate(-79.79 -1.64)" fill="#ed4c4c"/>
+          </g>
+        </g>
+      </g>
+      <g id="그룹_4" data-name="그룹 4" transform="translate(21.359 59.818)">
+        <g id="그룹_3" data-name="그룹 3" transform="translate(0)">
+          <path id="패스_2" data-name="패스 2" d="M223.429,322.062a7.428,7.428,0,0,0-2.786,14.315v5.187a2.786,2.786,0,0,0,5.572,0v-5.187a7.428,7.428,0,0,0-2.786-14.315Zm0,9.287a1.857,1.857,0,1,1,1.857-1.857A1.859,1.859,0,0,1,223.429,331.349Z" transform="translate(-216 -322.062)" fill="#ed4c4c"/>
+        </g>
+      </g>
+    </g>
+    <g id="그룹_5705" data-name="그룹 5705" transform="translate(0 -16)">
+      <g id="그룹_5704" data-name="그룹 5704" transform="translate(1 32)">
+        <g id="사각형_6530" data-name="사각형 6530" transform="translate(274 629)" fill="none" stroke="#fff" stroke-width="0.5">
+          <rect width="36" height="14" rx="3" stroke="none"/>
+          <rect x="0.25" y="0.25" width="35.5" height="13.5" rx="2.75" fill="none"/>
+        </g>
+        <g transform="matrix(1, 0, 0, 1, 241, 500.08)" filter="url(#구독하기)">
+          <text id="구독하기-2" data-name="구독하기" transform="translate(35 130.92)" fill="#fff" font-size="8" font-family="SUIT-Medium, SUIT" font-weight="500"><tspan x="2.016" y="8">구독하기</tspan></text>
+        </g>
+      </g>
+      <g transform="matrix(1, 0, 0, 1, 242, 532.08)" filter="url(#네이비_플러스를_구독하고_사진을_확인해_보세요_)">
+        <text id="네이비_플러스를_구독하고_사진을_확인해_보세요_2" data-name="네이비 플러스를 구독하고
+사진을 확인해 보세요!" transform="translate(50 108.92)" fill="#fff" font-size="8" font-family="SUIT-Bold, SUIT" font-weight="700"><tspan x="-40.296" y="0">네이비 플러스를 구독하고</tspan><tspan x="-34.724" y="12">사진을 확인해 보세요!</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

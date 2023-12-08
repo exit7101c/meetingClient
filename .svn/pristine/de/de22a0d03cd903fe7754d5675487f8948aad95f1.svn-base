@@ -1,0 +1,209 @@
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import Vuex from 'vuex';
+import { store } from './assets/js/store';
+
+import {
+  IonicVue,
+  IonTitle,
+  IonToolbar,
+  IonText,
+  IonButtons,
+  IonButton,
+  IonList,
+  IonItem,
+  IonItemDivider,
+  IonItemGroup,
+  IonLabel,
+  IonInput,
+  IonPage,
+  IonHeader,
+  IonContent,
+  IonFooter,
+  IonCheckbox,
+  IonSelect,
+  IonSelectOption,
+  IonRadioGroup,
+  IonRadio,
+  IonRippleEffect,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonIcon,
+  IonImg,
+  IonNote,
+  IonCard,
+  IonCardTitle,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardContent,
+  IonRange,
+  IonModal,
+  IonDatetime,
+  IonDatetimeButton,
+  IonTextarea,
+  IonListHeader,
+  IonAlert,
+  IonFab,
+  IonFabButton,
+  IonThumbnail,
+  IonAvatar,
+  IonSkeletonText,
+  IonChip,
+  IonRouterOutlet,
+  IonTabs,
+  IonTabBar,
+  IonTabButton,
+  IonPopover,
+  IonSegment,
+  IonSegmentButton,
+  IonSpinner,
+  IonBadge,
+  IonSearchbar
+} from '@ionic/vue';
+
+/** custom components */
+import BackButton from '@/components/BackButton.vue';
+import CustomModalLayout from '@/components/Custom/CustomModalLayout.vue';
+import CustomCardItem from '@/components/Custom/CustomCardItem.vue';
+import CustomButton from '@/components/Custom/CustomButton.vue';
+import CustomHeader from '@/components/Custom/CustomHeader.vue';
+import CustomFooter from '@/components/Custom/CustomFooter.vue';
+import CardBox from '@/components/CardBox.vue';
+import CardBoxTitle from '@/components/CardBoxTitle.vue';
+
+/** common provider */
+import {
+  alertController,
+  loadingController,
+  modalController
+} from '@ionic/vue';
+
+/* Core CSS required for Ionic components to work properly */
+import "@ionic/vue/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+import "@ionic/vue/css/normalize.css";
+import "@ionic/vue/css/structure.css";
+import "@ionic/vue/css/typography.css";
+
+/* Optional CSS utils that can be commented out */
+import "@ionic/vue/css/padding.css";
+import "@ionic/vue/css/float-elements.css";
+import "@ionic/vue/css/text-alignment.css";
+import "@ionic/vue/css/text-transformation.css";
+import "@ionic/vue/css/flex-utils.css";
+import "@ionic/vue/css/display.css";
+
+/* Theme variables */
+import "@/theme/variables.css";
+import "@/theme/custom.scss";
+
+/** swiper */
+import 'swiper/css';
+import 'swiper/css/bundle';
+import 'swiper/css/autoplay';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+// import 'swiper/swiper-bundle.css';
+// import '@ionic/vue/css/ionic-swiper.css';
+// import 'swiper/css/grid';
+
+/*const storage = new Storage({
+  name: '__mydb',
+  driverOrder: [Drivers.IndexedDB, Drivers.LocalStorage]
+});
+await this.storage.create();*/
+
+//import {DisableSwipeBackDirective} from 'v-disable-swipe-back';
+// import jQuery from 'jquery';
+
+/** Naver Map Cluster **/
+// import "./assets/js/MarkerClustering.js";
+
+/** InAppBrowser **/
+// import { InAppBrowser } from "@ionic-native/in-app-browser";
+
+const app = createApp(App).use(IonicVue).use(store).use(router);
+/** common component */
+app.component("IonToolbar", IonToolbar);
+app.component("IonTitle", IonTitle);
+app.component("IonText", IonText);
+app.component("IonButtons", IonButtons);
+app.component("IonButton", IonButton);
+app.component("IonList", IonList);
+app.component("IonItem", IonItem);
+app.component("IonItemDivider", IonItemDivider);
+app.component("IonItemGroup", IonItemGroup);
+app.component("IonLabel", IonLabel);
+app.component("IonInput", IonInput);
+app.component("IonPage", IonPage);
+app.component("IonHeader", IonHeader);
+app.component("IonContent", IonContent);
+app.component("IonFooter", IonFooter);
+app.component("IonCheckbox", IonCheckbox);
+app.component("IonSelect", IonSelect);
+app.component("IonSelectOption", IonSelectOption);
+app.component("IonRadioGroup", IonRadioGroup);
+app.component("IonRadio", IonRadio);
+app.component("IonRippleEffect", IonRippleEffect);
+app.component("IonGrid", IonGrid);
+app.component("IonRow", IonRow);
+app.component("IonCol", IonCol);
+app.component("IonIcon", IonIcon);
+app.component("IonImg", IonImg);
+app.component("IonNote", IonNote);
+app.component("IonCard", IonCard);
+app.component("IonCardTitle", IonCardTitle);
+app.component("IonCardHeader", IonCardHeader);
+app.component("IonCardSubtitle", IonCardSubtitle);
+app.component("IonCardContent", IonCardContent);
+app.component("IonRange", IonRange);
+app.component("IonModal", IonModal);
+app.component("IonDatetime", IonDatetime);
+app.component("IonDatetimeButton", IonDatetimeButton);
+app.component("IonTextarea", IonTextarea);
+app.component("IonListHeader", IonListHeader);
+app.component("IonAlert", IonAlert);
+app.component("IonFab", IonFab);
+app.component("IonFabButton", IonFabButton);
+app.component("IonThumbnail", IonThumbnail);
+app.component("IonAvatar", IonAvatar);
+app.component("IonSkeletonText", IonSkeletonText);
+app.component("IonChip", IonChip);
+app.component("IonRouterOutlet", IonRouterOutlet);
+app.component("IonTabs", IonTabs);
+app.component("IonTabBar", IonTabBar);
+app.component("IonTabButton", IonTabButton);
+app.component("IonPopover", IonPopover);
+app.component("IonSegment", IonSegment);
+app.component("IonSegmentButton", IonSegmentButton);
+app.component("IonSpinner", IonSpinner);
+app.component("IonBadge", IonBadge);
+app.component("IonSearchbar", IonSearchbar);
+
+/** custom compnents */
+app.component('BackButton', BackButton);
+app.component('CustomModalLayout', CustomModalLayout);
+app.component('CustomCardItem', CustomCardItem);
+app.component('CustomButton', CustomButton);
+app.component('CustomHeader', CustomHeader);
+app.component('CustomFooter', CustomFooter);
+app.component('CardBox', CardBox);
+app.component('CardBoxTitle', CardBoxTitle);
+
+/** common provider */
+app.provide('alertController', alertController);
+app.provide('loadingController', loadingController);
+app.provide('modalController', modalController);
+// app.provide('InAppBrowser', InAppBrowser);
+
+router.isReady().then(() => {
+  app.mount("#app");
+});
+
+// Call the element loader after the platform has been bootstrapped
+//defineCustomElements(window);
+
+// global.$ = jQuery

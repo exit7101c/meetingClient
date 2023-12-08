@@ -1,0 +1,64 @@
+<template lang="">
+  <ion-card>
+    <ion-text class="icon-rank-badge">{{ index }}</ion-text>
+    <ion-img v-bind:src="'https://' + item.photo2" />
+  </ion-card>
+
+
+
+
+</template>
+<script>
+export default {
+  name: "ContestListItem",
+  props: {
+    index: {
+      type: Number
+    },
+    item: {
+      type: Object
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-card {
+  position: relative;
+  margin: 0;
+  overflow: visible;
+  contain: inherit;
+  max-width: 180px;
+  margin: 0 auto;
+
+  .icon-rank-badge {
+    position: absolute;
+    top: -10px;
+    right: -12px;
+    width: 48px;
+    height: 52px;
+    background-image: url('@/assets/img/contest/icon_rank_badge.svg');
+    background-position: right top;
+    background-repeat: no-repeat;
+    background-size: 42px 52px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+    z-index: 2;
+  }
+
+  ion-img {
+    position: relative;
+    width: 100%;
+    padding-bottom: 120%;
+    border: 2px solid var(--ion-color-secondary);
+
+    &::part(image) {
+      position: absolute;
+      object-fit: cover;
+      z-index: 1;
+    }
+  }
+}
+</style>

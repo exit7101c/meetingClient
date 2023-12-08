@@ -1,0 +1,218 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton @event="goRouter" />
+        </ion-buttons>
+        <ion-title>게시판</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <div class="sticky-top segment-round">
+        <ion-segment
+          v-model="mainValue"
+          mode="md"
+          :scrollable="true"
+          class="segment-round-button"
+        >
+          <ion-segment-button
+            value="home"
+            @click="goHome"
+          >
+            Home
+          </ion-segment-button>
+          <ion-segment-button
+            value="board"
+            @click="mainBtn('board')"
+          >
+            게시판
+          </ion-segment-button>
+          <ion-segment-button
+            value="album"
+            @click="mainBtn('album')"
+          >
+            사진첩
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      <div class="row-box">
+        <div class="sticky-top segment-round">
+          <ion-segment
+            v-model="categoryCd"
+            mode="md"
+            :scrollable="true"
+            class="segment-round-button"
+          >
+            <ion-segment-button
+              v-show="categoryList != null"
+              v-for="item in categoryList"
+              :value="item.categoryCd"
+              @click="categoryBtn(item)"
+              :key="item.categoryCd"
+            >
+              {{ item.categoryNm }}
+            </ion-segment-button>
+            <ion-segment-button
+              v-show="categoryList == null"
+            ></ion-segment-button>
+          </ion-segment>
+        </div>
+        <ion-list lines="none" v-if="mainValue == 'board'">
+          <ion-list-header>
+            <ion-text color="light">게시판</ion-text>
+          </ion-list-header>
+          <ion-list v-if="categoryCd == 'MEET_GROUP'">
+            <ion-item v-if="meetList.length > 0" v-for="(item, index) in meetList" :key="index">
+              {{ item.title }}
+            </ion-item>
+            <ion-text v-else color="light">생성된 모임이 없습니다.</ion-text>
+          </ion-list>
+          <ion-list v-if="categoryCd == 'NOTICE'">
+            <ion-item v-if="noticeList.length > 0" v-for="(item, index) in noticeList" :key="index">
+              {{ item.title }}
+            </ion-item>
+            <ion-text v-else color="light">생성된 공지가 없습니다.</ion-text>
+          </ion-list>
+          <ion-list v-if="categoryCd == 'JOIN_GREETING'">
+            <ion-item v-if="greetingList.length > 0" v-for="(item, index) in greetingList" :key="index">
+              {{ item.title }}
+            </ion-item>
+            <ion-text v-else color="light">생성된 가입인사가 없습니다.</ion-text>
+          </ion-list>
+          <ion-list v-if="categoryCd == 'REVIEW'">
+            <ion-item v-if="reviewList.length > 0" v-for="(item, index) in reviewList" :key="index">
+              {{ item.title }}
+            </ion-item>
+            <ion-text v-else color="light">생성된 후기가 없습니다.</ion-text>
+          </ion-list>
+          <ion-list v-if="categoryCd == 'CALCULATE'">
+            <ion-item v-if="calculateList.length > 0" v-for="(item, index) in calculateList" :key="index">
+              {{ item.title }}
+            </ion-item>
+            <ion-text v-else color="light">생성된 정산내역이 없습니다.</ion-text>
+          </ion-list>
+        </ion-list>
+        <ion-list lines="none" v-if="mainValue == 'album'">
+          <ion-list-header>
+            <ion-text color="light">사진첩</ion-text>
+          </ion-list-header>
+        </ion-list>
+      </div>
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button
+          fill="clear"
+          @click="goWriteOpenChatMeet"
+          style="padding: 5px"
+        >
+          <!--      <ion-fab-button-->
+          <!--        fill="clear"-->
+          <!--        @click="goOpenChatWrite"-->
+          <!--        style="padding: 5px"-->
+          <!--      >-->
+          <ion-ripple-effect></ion-ripple-effect>
+          <ion-icon :icon="pencilOutline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+
+import { openChatViewMapFn, openChatMeetMapFn, openChatMeetMap, getData } from "@/assets/js/common";
+import { pencilOutline } from "ionicons/icons";
+
+export default {
+  name: "OpenChatMeet",
+  ionViewWillEnter() {
+    this.getOpenChatId();
+    this.mainValue = this.mainValue == "home" ? "board" : this.mainValue;
+
+    this.getCategoryList();
+  },
+  data() {
+    return {
+      pencilOutline,
+      openChatId: "",
+      mainValue: "board",
+      categoryList: [],
+      categoryCd: "MEET_GROUP",
+      categoryNm: "",
+      meetList: [],
+      noticeList: [],
+      greetingList: [],
+      reviewList: [],
+      calculateList: []
+    };
+  },
+  methods: {
+    getOpenChatId() {
+      getData({
+        url: "/getOpenchatId",
+        param: openChatMeetMap,
+        then: (data) => {
+          this.openChatId = data;
+          this.getOpenChatMeetList(this.categoryCd);
+        }
+      });
+    },
+
+    goHome() {
+      openChatViewMapFn(openChatMeetMap);
+      this.$router.push("/openchatView");
+    },
+
+    getCategoryList() {
+      getData({
+        url: "/getOpenChatMeetCategory",
+        param: {},
+        then: (data) => {
+          this.categoryList = data;
+        }
+      });
+    },
+
+    categoryBtn(item) {
+      this.categoryCd = item.categoryCd;
+      this.categoryNm = item.categoryNm;
+
+      this.getOpenChatMeetList(item.categoryCd);
+    },
+
+    getOpenChatMeetList(categoryCd) {
+      getData({
+        url: "/getOpenChatMeetList",
+        param: {
+          openChatId: this.openChatId,
+          category: categoryCd
+        },
+        then: (data) => {
+          this.meetList = data;
+        }
+      });
+    },
+
+    goWriteOpenChatMeet() {
+      openChatMeetMapFn({
+        categoryList: this.categoryList,
+        openChatId: this.openChatId,
+        state: "new"
+      });
+      this.$router.push("/openChatMeetWrite");
+    },
+
+    goRouter() {
+      this.$router.push("/messageTalk");
+    },
+
+    mainBtn() {
+
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+
+</style>

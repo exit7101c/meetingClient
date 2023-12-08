@@ -1,0 +1,733 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar class="join-toolbar">
+        <ion-buttons slot="start">
+          <BackButton @event="goRouter" :custom="true" />
+        </ion-buttons>
+        <ion-title>프로필 수정</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <!-- 이미지 업로드 -->
+      <div class="row-box">
+        <ion-row>
+          <ion-col size="4">
+            <AddPhotoButton
+              @click="addPhoto('add1')"
+              :name="cdnNm1"
+              :required="true"
+            />
+          </ion-col>
+          <ion-col size="4">
+            <AddPhotoButton
+              @click="addPhoto('add2')"
+              :name="cdnNm2"
+              :required="true"
+            />
+          </ion-col>
+          <ion-col size="4">
+            <AddPhotoButton
+              @click="addPhoto('add3')"
+              @photoDelete="deletePhoto('add3')"
+              :name="cdnNm3"
+              :delPhoto="true"
+            />
+          </ion-col>
+          <ion-col size="4">
+            <AddPhotoButton
+              @click="addPhoto('add4')"
+              @photoDelete="deletePhoto('add4')"
+              :name="cdnNm4"
+              :delPhoto="true"
+            />
+          </ion-col>
+          <ion-col size="4">
+            <AddPhotoButton
+              @click="addPhoto('add5')"
+              @photoDelete="deletePhoto('add5')"
+              :name="cdnNm5"
+              :delPhoto="true"
+            />
+          </ion-col>
+          <ion-col size="4">
+            <AddPhotoButton
+              @click="addPhoto('add6')"
+              @photoDelete="deletePhoto('add6')"
+              :name="cdnNm6"
+              :delPhoto="true"
+            />
+          </ion-col>
+        </ion-row>
+
+        <input
+          type="file"
+          @change="onFileChange"
+          ref="photo"
+          class="is-blind"
+        />
+      </div>
+
+      <div class="row-box">
+        <ion-card padding="sm" shadow="light">
+          <ion-item class="text-md" lines="none">
+            <ion-text class="sub-text01">초이스에 공개하기</ion-text>
+            <ion-toggle
+              slot="end"
+              mode="ios"
+              :checked="choiceRegisterChecked"
+              :disabled="choiceYn == 'N'"
+              @click="choiceRegister()"
+            >
+            </ion-toggle>
+          </ion-item>
+          <ion-card-content class="text-md" style="color: #fff" lines="none">
+            이 기능을 끄면 내 프로필이 초이스에 노출되지 않습니다.<br />
+            프로필 공개가 부담스러운 분들은 기능을 꺼서 안전하게 이용해봐요:)
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- 내소개 -->
+      <div class="row-box">
+        <MyPageNavButtonItem
+          content
+          title="내 소개 🙂"
+          @click="editBtn('shortWord')"
+        >
+          <ion-text color="light" class="text-md">
+            {{ profileList.shortWord }}
+          </ion-text>
+        </MyPageNavButtonItem>
+      </div>
+      <!-- 내 기본정보 -->
+      <div class="row-box">
+        <MyPageNavButtonItem
+          content
+          title="내 기본정보 ✋"
+          @click="editBtn('info')"
+        >
+          <ion-row>
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">나이</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.age }}
+              </ion-text>
+            </ion-col>
+
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">거주</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.addrLiveSum }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">키</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.tall }}cm
+              </ion-text>
+            </ion-col>
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">몸무게</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.weight }}kg
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">음주</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.drinkNm }}
+              </ion-text>
+            </ion-col>
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">흡연</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.smokeNm }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <ion-col size="2">
+              <ion-text color="secondary" class="text-md">아이콘</ion-text>
+            </ion-col>
+            <ion-col size="4">
+              <ion-text color="light" class="text-md text-bold">
+                {{ profileList.iconNm }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </MyPageNavButtonItem>
+      </div>
+      <div class="row-box">
+        <MyPageNavButtonItem
+          content
+          title="내 지역 👟"
+          @click="editBtn('location')"
+        >
+          <ion-text color="light" class="text-md">
+            {{ profileList.addrLiveSum }}
+          </ion-text>
+        </MyPageNavButtonItem>
+      </div>
+      <!-- 내키워드 -->
+      <div class="row-box">
+        <MyPageNavButtonItem
+          content
+          title="나의 키워드 #"
+          @click="editBtn('keyword')"
+        >
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md">MBTI</ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.mbtiNm }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md">취미</ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ profileList.hobbyNm }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md"
+              >제 이상형은
+              </ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="light" class="text-md text-bold">
+                {{ profileList.idealLookNm }}, {{ profileList.idealFormNm }},
+                {{ profileList.idealCharacterNm }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md"
+              >요즘 빠진 노래
+              </ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="light" class="text-md text-bold">
+                {{ profileList.likeSinger }}, {{ profileList.likeMusic }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </MyPageNavButtonItem>
+      </div>
+      <div class="row-box">
+        <MyPageNavButtonItem
+          content
+          title="나의 뱃지"
+          @click="editBtn('badge')"
+        >
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md">획득한 뱃지 수</ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="primary" class="text-md text-bold"
+              >{{ totalCnt }} 건
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md">반려 뱃지 수</ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="danger" class="text-md text-bold"
+              >{{ rejectCnt }} 건
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-text color="secondary" class="text-md">인증 대기 뱃지 수</ion-text>
+            </ion-col>
+            <ion-col size="8">
+              <ion-text color="light" class="text-md text-bold"
+              >{{ waitCnt }} 건
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </MyPageNavButtonItem>
+      </div>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import { getData, profileMap, setFile } from "@/assets/js/common";
+import MyPageNavButtonItem from "@/components/MyPage/MyPageNavButtonItem.vue";
+import AddPhotoButton from "@/components/AddPhotoButton.vue";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+
+export default {
+  name: "Profile",
+  inject: ["alertController", "loadingController"],
+  components: {
+    MyPageNavButtonItem,
+    AddPhotoButton
+  },
+  data() {
+    return {
+      email: "",
+      phon: "",
+      birth: "",
+      sex: "",
+      sex_str: "",
+      name: "",
+
+      /** 프로필 사진 **/
+      Attachfiles: [],
+      mainFileId: "",
+
+      cdnNm1: null,
+      cdnNm2: null,
+      cdnNm3: null,
+      cdnNm4: null,
+      cdnNm5: null,
+      cdnNm6: null,
+      add1imgFileId: null,
+      add2imgFileId: null,
+      add3imgFileId: null,
+      add4imgFileId: null,
+      add5imgFileId: null,
+      add6imgFileId: null,
+      /** 프로필 사진 **/
+      cardType: null,
+
+      profileList: [],
+
+      nick: "",
+      age: "",
+
+      shortWord: "",
+      profile: "",
+      keyword: "",
+      interview: "",
+
+      loading: null,
+
+      choiceOpenYn: "",
+      choiceRegisterChecked: true,
+
+      choiceYn: "N",
+
+      myBadgeCheck: false,
+      totalCnt: 0,
+      rejectCnt: 0,
+      waitCnt: 0
+    };
+  },
+  computed: {},
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.getSettingUserInfo();
+
+    this.checkChoiceYn();
+    this.checkBadge();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  mounted() {
+    // this.selectOne();
+  },
+  methods: {
+    checkBadge() {
+      getData({
+        url: "/getBadgeSituation",
+        param: {},
+        then: (data) => {
+          if (data.totalCnt > 0) {
+            this.myBadgeCheck = true;
+            this.totalCnt = data.totalCnt;
+            this.rejectCnt = data.rejectCnt;
+            this.waitCnt = data.waitCnt;
+          } else {
+            this.myBadgeCheck = false;
+          }
+        }
+      });
+    },
+    checkChoiceYn() {
+      getData({
+        url: "/choiceYnCheck",
+        param: {},
+        then: (data) => {
+          this.choiceYn = data.choiceYn;
+        }
+      });
+    },
+    goRouter() {
+      if (profileMap.pageType === "profileEdit") {
+        this.$router.push("/mypage");
+      } else {
+        this.$router.go(-1);
+      }
+    },
+    getResult() {
+      let resultObj = {};
+
+      resultObj.photo1 = this.add1imgFileId;
+      resultObj.photo2 = this.add2imgFileId ? this.add2imgFileId : null;
+      resultObj.photo3 = this.add3imgFileId ? this.add3imgFileId : null;
+      resultObj.photo4 = this.add4imgFileId ? this.add4imgFileId : null;
+      resultObj.photo5 = this.add5imgFileId ? this.add5imgFileId : null;
+      resultObj.photo6 = this.add6imgFileId ? this.add6imgFileId : null;
+
+      return resultObj;
+    },
+
+    choiceRegister() {
+      this.showLoading();
+
+      this.choiceOpenYn = this.choiceOpenYn == "Y" ? "N" : "Y";
+
+      getData({
+        url: "/choiceRegister",
+        param: {
+          choiceOpenYn: this.choiceOpenYn
+        },
+        then: (data) => {
+          this.getSettingUserInfo();
+          this.loading.dismiss();
+        }
+      });
+    },
+
+    editBtn(e) {
+      switch (e) {
+        case "shortWord":
+          this.$router.push("/profileShortWord");
+          break;
+        case "profile":
+          this.$router.push("/profileProfile");
+          break;
+        case "location":
+          this.$router.push("/profileLocation");
+          break;
+        case "job":
+          this.$router.push("/profileJob");
+          break;
+        case "school":
+          this.$router.push("/profileEducation");
+          break;
+        case "keyword":
+          this.$router.push("/profileKeyword");
+          break;
+        case "info":
+          this.$router.push("/profileInfo");
+          break;
+        case "interview":
+          this.$router.push("/profileInterview");
+          break;
+        case "badge":
+          if (this.myBadgeCheck) {
+            this.$router.push("/myBadge");
+          } else {
+            this.warningConfirm("내 뱃지 정보가 없습니다. 뱃지 인증신청 화면으로 이동할까요?", () => {
+              this.$router.push("/certification");
+            });
+          }
+          break;
+      }
+    },
+
+    /** 받은 리스트 **/
+    getSettingUserInfo() {
+      getData({
+        url: "/getSettingUserInfo",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.profileList = data;
+
+          /** 이미지 **/
+          this.add1imgFileId = data.photo1;
+          this.add2imgFileId = data.photo2;
+          this.add3imgFileId = data.photo3;
+          this.add4imgFileId = data.photo4;
+          this.add5imgFileId = data.photo5;
+          this.add6imgFileId = data.photo6;
+          this.cdnNm1 = data.cdnNm1;
+          this.cdnNm2 = data.cdnNm2;
+          this.cdnNm3 = data.cdnNm3;
+          this.cdnNm4 = data.cdnNm4;
+          this.cdnNm5 = data.cdnNm5;
+          this.cdnNm6 = data.cdnNm6;
+
+          this.choiceOpenYn =
+            data.choiceOpenYn != null ? data.choiceOpenYn : "Y";
+          if (this.choiceOpenYn == "Y") {
+            this.choiceRegisterChecked = true;
+          } else {
+            this.choiceRegisterChecked = false;
+          }
+        }
+      });
+    },
+
+    getUpdateImg() {
+      getData({
+        url: "/updateProfilePic",
+        param: this.getResult(),
+        target: this,
+        then: (data) => {
+          if (data.isUpdate === true) {
+            this.loading.dismiss();
+            this.warningAlert("사진등록성공");
+            this.getSettingUserInfo();
+          }
+        }
+      });
+    },
+
+    deletePhoto(state) {
+      this.showLoading();
+      getData({
+        url: "/deleteProfilePic",
+        param: { deletePhoto: state },
+        target: this,
+        then: (data) => {
+          this.loading.dismiss();
+          if (data.successYn === "Y") {
+            this.warningAlert(data.message);
+            this.getSettingUserInfo();
+          } else {
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+
+    getDeleteImg() {
+      // getData({
+      //   url: "/deleteProfilePic",
+      //   param: {deletePhoto: },
+      //   target: this,
+      //   then: (data) => {
+      //     if (data.isUpdate === true) {
+      //       this.loading.dismiss();
+      //       this.warningAlert("사진등록성공");
+      //       this.getSettingUserInfo();
+      //     }
+      //   }
+      // });
+    },
+
+    /** 사진 업로드 **/
+    addPhoto(state) {
+      switch (state) {
+        case "add1":
+          this.uploadType = "add1";
+          break;
+        case "add2":
+          this.uploadType = "add2";
+          break;
+        case "add3":
+          this.uploadType = "add3";
+          break;
+        case "add4":
+          this.uploadType = "add4";
+          break;
+        case "add5":
+          this.uploadType = "add5";
+          break;
+        case "add6":
+          this.uploadType = "add6";
+          break;
+      }
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then((r) => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile(this.uploadType);
+        });
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+
+      // this.$refs.photo.click();
+    },
+
+    onFileChange: function onFileChange(e) {
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(this.uploadType);
+      });
+    },
+    /** 사진 저장 **/
+    insertFile(e) {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          /** 상태값 확인후 해당 사진 변경 **/
+          switch (e) {
+            case "add1":
+              this.add1imgFileId = data.fileId;
+              this.cdnNm1 = data.cdnNm;
+              break;
+            case "add2":
+              this.add2imgFileId = data.fileId;
+              this.cdnNm2 = data.cdnNm;
+              break;
+            case "add3":
+              this.add3imgFileId = data.fileId;
+              this.cdnNm3 = data.cdnNm;
+              break;
+            case "add4":
+              this.add4imgFileId = data.fileId;
+              this.cdnNm4 = data.cdnNm;
+              break;
+            case "add5":
+              this.add5imgFileId = data.fileId;
+              this.cdnNm5 = data.cdnNm;
+              break;
+            case "add6":
+              this.add6imgFileId = data.fileId;
+              this.cdnNm6 = data.cdnNm;
+              break;
+          }
+
+          this.getUpdateImg();
+        }
+      });
+    },
+    /** 로딩 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+      await this.loading.present();
+    },
+
+    /** Alert창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    async warningConfirm(message, callBack) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "아니요",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              callBack();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+ion-card {
+  margin: 5px;
+  border-radius: var(--ion-border-radius);
+  border: 1px solid var(--ion-border-color);
+  box-shadow: none;
+
+  + ion-card {
+    margin-top: 10px;
+  }
+
+  ion-item {
+    padding: 5px;
+    --detail-icon-color: white;
+    --detail-icon-opacity: 1;
+    --detail-icon-font-size: 20px;
+
+    &.has-content {
+      + ion-card-content {
+        padding-top: 0;
+      }
+    }
+
+    ion-card-content {
+      padding: 1rem;
+    }
+  }
+}
+</style>

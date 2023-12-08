@@ -1,0 +1,1289 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>{{ BoardDetail.nick }}님</ion-title>
+        <ion-buttons slot="end">
+          <ion-button id="profile-popover-button">
+            <ion-icon slot="icon-only" :icon="menuIcon" color="light" />
+          </ion-button>
+          <ion-popover
+            trigger="profile-popover-button"
+            :dismiss-on-select="true"
+            mode="ios"
+          >
+            <ion-content>
+              <ion-list lines="full">
+                <ion-item :button="true" :detail="false" @click="btnType('p')"
+                >신고하기
+                </ion-item>
+                <ion-item :button="true" :detail="false" @click="btnType('k')"
+                >차단하기
+                </ion-item>
+              </ion-list>
+            </ion-content>
+          </ion-popover>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content ref="myContent" v-if="lodingCheck !== false">
+      <ion-item-group class="ion-padding">
+        <div>
+          <div class="row-box">
+            <swiper
+              :pagination="{ clickable: true }"
+              :modules="modules"
+              :autoplay="{
+              delay: 2000,
+              disableOnInteraction: false,
+              running: true
+            }"
+              style="border-radius: 15px"
+            >
+              <swiper-slide>
+                <ion-img
+                  v-if="this.attr1 !== null"
+                  v-bind:src="'https://' + attr1"
+                  @ionError="$event.srcElement.src = require('../../assets/img/Loading_icon.gif')"
+                />
+              </swiper-slide>
+              <swiper-slide v-if="this.attr2 !== null && this.attr2 !== ''">
+                <ion-img
+                  v-if="this.attr2 !== null"
+                  v-bind:src="'https://' + attr2"
+                  @ionError="$event.srcElement.src = require('../../assets/img/Loading_icon.gif')"
+                />
+              </swiper-slide>
+              <swiper-slide v-if="this.attr3 !== null && this.attr3 !== ''">
+                <ion-img
+                  v-if="this.attr3 !== null"
+                  v-bind:src="'https://' + attr3"
+                  @ionError="$event.srcElement.src = require('../../assets/img/Loading_icon.gif')"
+                />
+              </swiper-slide>
+              <swiper-slide v-if="this.attr4 !== null && this.attr4 !== ''">
+                <ion-img
+                  v-if="this.attr4 !== null"
+                  v-bind:src="'https://' + attr4"
+                  @ionError="$event.srcElement.src = require('../../assets/img/Loading_icon.gif')"
+                />
+              </swiper-slide>
+            </swiper>
+          </div>
+          <!--   내용    -->
+          <div class="row-box">
+            <p>
+              <ion-text color="light" class="text-md" v-html="BoardDetail.replaceContent"></ion-text>
+            </p>
+          </div>
+          <div class="row-box">
+            <CardBox padding="none" class="my-point-info" @click="voteHis">
+              <ion-item lines="none" style="left: 25%;">
+                <ion-icon
+                  slot="start"
+                  :icon="voteIcon"
+                  color="light"
+                  size="large"
+                ></ion-icon>
+                <ion-text class="text-md" color="light"
+                >투표 수 <strong class="text-bold">{{ BoardDetail.votesCnt }}</strong
+                > 표
+                </ion-text>
+              </ion-item>
+            </CardBox>
+          </div>
+          <!-- 투표하기 -->
+          <div class="row-box">
+            <custom-button
+              color="primary"
+              expand="block"
+              size="large"
+              :disabled="!checkDisabled"
+              @click="useContestVote(checkDisabled = false)"
+            >
+              <span>투표하기</span>
+              <span v-if="coupon.quantity > 0" style="margin-left: 5px;"> X {{ coupon.quantity }}</span>
+              <!--              <span v-else>(하트사용)</span>-->
+              <ion-icon slot="end" :icon="voteIcon" />
+            </custom-button>
+          </div>
+
+        </div>
+      </ion-item-group>
+      <!--  댓글 -->
+      <!--<CommentList :item-list="commentList" v-if="BoardDetail.boardId != '7'">
+        <CommentItem v-for="(data, index) in commentList" :key="index">
+          <template #avatar>
+            <CommentAvatar :thumbnail="data.cdnThumbNmIcon" />
+          </template>
+          <template #content>
+            <CommentContent
+              :isReply="true"
+              :data="data"
+              @updateComment="commentReBtn('update', data)"
+              @deleteComment="presentAlertConfirm('comment', data)"
+              @policeComment="policeBtn('comment', data)"
+              @replyComment="commentReBtn('re', data)"
+              @thumbsUp="thumbsUpDown('up', 'comment', data.commentKey)"
+              @thumbsDown="thumbsUpDown('down', 'comment', data.commentKey)"
+              @zoomImg="openZoomedImage(data.cdnNm)"
+              :disabled="!commentUpDownCheckDisabled"
+            />
+            &lt;!&ndash; 댓글 수정 폼&ndash;&gt;
+            <div
+              class="row-box"
+              v-if="updateComment === data && reType === 'update'"
+            >
+              <CommentReplyForm
+                v-model:value="data.contents"
+                :reimgFileId="reimgFileId"
+                :reimgViewFileId="reimgViewFileId"
+                @deleteImg="imgDelete('reComment')"
+                @addPhoto="addPhoto('reComment')"
+                @input="limitComment($event)"
+                @sendComment="commentBtn('update', data.contents)"
+                @handelFocus="emptyBox=true"
+                @handelBlur="emptyBox=false"
+              />
+            </div>
+          </template>
+          <template v-if="reComment === data && reType === 're'">
+            &lt;!&ndash; 대댓글 작성 폼&ndash;&gt;
+            <div class="row-box">
+              <CommentReplyForm
+                v-model:value="childComment"
+                :reimgFileId="reimgFileId"
+                :reimgViewFileId="reimgViewFileId"
+                @addPhoto="addPhoto('reComment')"
+                @input="limitComment($event)"
+                @sendComment="commentBtn('child', childComment)"
+                @handelFocus="handeEmptyBox('f')"
+                @handelBlur="handeEmptyBox('b')"
+              />
+            </div>
+            &lt;!&ndash; 대댓글 목록 &ndash;&gt;
+          </template>
+          <ion-item-group>
+            <CommentItem
+              v-for="data2 in data.childCommentList"
+              :key="data2.commentKey"
+            >
+              <template #avatar>
+                <CommentAvatar :thumbnail="data2.cdnThumbNmIcon" />
+              </template>
+              <template #content>
+                <CommentContent
+                  :data="data2"
+                  @updateComment="commentReBtn('reUpdate', data2)"
+                  @deleteComment="presentAlertConfirm('comment', data2)"
+                  @policeComment="policeBtn('comment', data2)"
+                  @thumbsUp="thumbsUpDown('up', 'comment', data2.commentKey)"
+                  @thumbsDown="
+                      thumbsUpDown('down', 'comment', data2.commentKey)
+                    "
+                  @zoomImg="openZoomedImage(data2.cdnNm)"
+                />
+                &lt;!&ndash; 댓글 수정 &ndash;&gt;
+                <div
+                  class="row-box"
+                  v-if="reUpdateComment === data2 && reType === 'reUpdate'"
+                >
+                  <CommentReplyForm
+                    v-model:value="data2.contents"
+                    :reimgFileId="reimgFileId"
+                    :reimgViewFileId="reimgViewFileId"
+                    @deleteImg="imgDelete('reComment')"
+                    @addPhoto="addPhoto('reComment')"
+                    @input="limitComment($event)"
+                    @sendComment="commentBtn('reUpdate', data2.contents)"
+                    @handelFocus="handeEmptyBox('f')"
+                    @handelBlur="handeEmptyBox('b')"
+                  />
+                </div>
+              </template>
+            </CommentItem>
+          </ion-item-group>
+        </CommentItem>
+      </CommentList>
+      <div style="height: 100px; z-index: -1" />
+      <EmptyBox :is-open="emptyBox" />-->
+
+      <!--<ion-infinite-scroll threshold="100px" @ionInfinite="ionInfinite">
+        <ion-infinite-scroll-content
+          loadingText="Please wait..."
+          loadingSpinner="bubbles"
+        ></ion-infinite-scroll-content>
+      </ion-infinite-scroll>-->
+
+    </ion-content>
+    <ion-content v-if="lodingCheck === false">
+      <PageLoadingCheck
+        style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+              height: 100%;
+            "
+      />
+    </ion-content>
+
+    <!--<ion-footer class="no-padding">
+      <CommunityViewSendComment
+        v-if="BoardDetail.boardId != '7'"
+        v-model:value="commentText"
+        :newimgFileId="newimgFileId"
+        :newimgViewFileId="newimgViewFileId"
+        @deleteImg="imgDelete('newComment')"
+        @addPhoto="addPhoto('newComment')"
+        @input="limitComment($event)"
+        @sendComment="commentBtn('new', commentText)"
+      >
+        <input
+          type="file"
+          @change="onFileChange"
+          ref="photo"
+          class="is-blind"
+        />
+      </CommunityViewSendComment>
+    </ion-footer>-->
+  </ion-page>
+</template>
+
+<script>
+import {
+  bookmark,
+  bookmarkOutline,
+  imageOutline,
+  chatboxOutline,
+  chatboxEllipsesOutline
+} from "ionicons/icons";
+import {
+  getData,
+  setFile,
+  SS_USER_KEY,
+  communityViewMap,
+  communityWriteMapFn,
+  policeMapFn, messageTalkMapFn, communityViewMapFn, contestDetailMapFn, dailyCardInfoMap, partnerInfoMapFn
+} from "@/assets/js/common";
+
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import Hammer from "hammerjs";
+import CommunityViewUserInfo from "@/components/CommunityView/CommunityViewUserInfo.vue";
+import CummunityViewThumbsUpDown from "@/components/CommunityView/CummunityViewThumbsUpDown.vue";
+import CommunityViewSendComment from "@/components/CommunityView/CommunityViewSendComment.vue";
+import CommentList from "@/components/Comment/CommentList.vue";
+import CommentItem from "@/components/Comment/CommentItem.vue";
+import CommentReplyForm from "@/components/Comment/CommentReplyForm.vue";
+import CommentAvatar from "@/components/Comment/CommentAvatar.vue";
+import CommentContent from "@/components/Comment/CommentContent.vue";
+import PageLoadingCheck from "@/components/PageLoadingCheck.vue";
+import EmptyBox from "@/components/EmptyBox.vue";
+import MessageModal from "@/components/Modal/MessageModal.vue";
+import IconMenu from "../../assets/img/icon/icon_menu.svg";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import IconVote from "@/assets/img/icon/icon_vote.svg";
+
+export default {
+  name: "CommunityView",
+  inject: ["alertController", "loadingController"],
+  components: {
+    Swiper,
+    SwiperSlide,
+    CommunityViewUserInfo,
+    CummunityViewThumbsUpDown,
+    CommunityViewSendComment,
+    CommentList,
+    CommentItem,
+    CommentReplyForm,
+    CommentAvatar,
+    CommentContent,
+    PageLoadingCheck,
+    EmptyBox,
+    MessageModal
+  },
+  data() {
+    return {
+      voteIcon: IconVote,
+      modules: [Autoplay, Pagination, Navigation],
+      menuIcon: IconMenu,
+      chatboxEllipsesOutline,
+      bookmark,
+      bookmarkOutline,
+
+      imageOutline,
+      chatboxOutline,
+      SS_USER_KEY,
+
+      noData: true,
+
+      BoardDetail: {},
+      commentList: [],
+      titleType: "",
+      editType: "edit",
+      bookmarkYn: "N",
+
+      commentText: "",
+      commentSelectItem: null,
+
+      reComment: null, // 답글
+      updateComment: null, // 댓글 수정
+      reUpdateComment: null, // 대댓글 수정
+      upComment: "",
+      reUpComment: "",
+      childComment: "",
+      mainFileId: null,
+      Attachfiles: [],
+      imgFileId: "",
+      newimgFileId: null,
+      reimgFileId: null,
+      newimgViewFileId: null,
+      reimgViewFileId: null,
+      addPhotoType: "",
+      articleId: "",
+
+      visible: false,
+      reType: "",
+
+      showReplyForm: false,
+      dynamicRow: 0,
+      likeCnt: 0,
+      badCnt: 0,
+      prevText: "",
+
+      attr1: null,
+      attr2: null,
+      attr3: null,
+      attr4: null,
+
+      loading: null,
+      userPhotoId: "",
+      lodingCheck: false,
+
+      bookmarkCheckDisabled: true, // 북마크 활성화여부 체크
+      mainUpDownCheckDisabled: true, // 작성글 UpDown 활성화여부 체크
+      commentUpDownCheckDisabled: true, // 댓글 UpDown 활성화여부 체크
+      loadingTime: 500, // 버튼 로딩지연
+      emptyBox: false,
+      messageOpen: false,
+      messageTextSend: "",
+      dropYn: "",
+      coupon: "",
+
+      checkDisabled: true,
+      searchType: "first",
+      lastCommentKey: "",
+      voteHisList: [],
+
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false
+    };
+  },
+  ionViewWillEnter() {
+    // if(this.$route.params.routerType === 'doRefresh'){
+    //   this.beforeReset();
+    // }
+    this.getBoardDetail();
+    this.getUserCouponDataOne();
+  },
+  ionViewDidLeave() {
+    // 초기화
+    this.beforeReset();
+  },
+  mounted() {
+  },
+  methods: {
+    btnType(state) {
+      if (state === "p") {
+        policeMapFn({
+          targetKey: communityViewMap.article,
+          type: "contestDetail",
+          item: this.BoardDetail,
+          targetId: communityViewMap.targetUserKey
+        });
+        this.$router.push("/police");
+      } else {
+        this.presentAlertConfirm_blockUser();
+      }
+    },
+    voteHis() {
+      contestDetailMapFn({ targetUserId: this.BoardDetail.targetUserId });
+      this.$router.push("/contestVoteHis");
+    },
+    limitMessage(e) {
+      const text = e.target.value;
+      this.messageTextSend = text;
+    },
+    handeEmptyBox(type) {
+      if (type === "f") {
+        this.emptyBox = true;
+      } else {
+        this.emptyBox = false;
+      }
+    },
+    imgDelete(state) {
+      if (state === "reComment") {
+        this.reimgViewFileId = null;
+        this.reimgFileId = null;
+        this.imgFileId = "";
+      } else if (state === "newComment") {
+        this.newimgViewFileId = null;
+        this.newimgFileId = null;
+        this.imgFileId = "";
+      }
+    },
+    beforeReset() {
+      this.BoardDetail = {};
+      this.mainFileId = null;
+      this.attr1 = null;
+      this.attr2 = null;
+      this.attr3 = null;
+      this.commentList = [];
+      this.commentText = "";
+      this.dynamicRow = 0;
+      this.likeCnt = 0;
+      this.badCnt = 0;
+      this.reType = "";
+      this.userPhotoId = "";
+      this.childComment = ""; // 댓글작성완료후 input 초기화
+      this.reComment = null; // 대댓글 입력창 닫기
+      this.reimgFileId = null; // 댓글 이미지 닫기
+      this.imgFileId = ""; // 담겨있는 이미지 지우기
+    },
+    /** 투표권 보유현황 **/
+    getUserCouponDataOne() {
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: "CU012" },
+        then: (data) => {
+          this.coupon = data;
+          if (this.coupon.quantity > 0) {
+            this.useTypeHeart = "COUPON";
+          } else {
+            this.useTypeHeart = "HEART";
+          }
+        }
+      });
+    },
+    useContestVote() {
+      getData({
+        url: "/useContestVote",
+        param: {
+          couponCd: "CU012",
+          useType: this.useTypeHeart, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          itemCd: this.useTypeHeart === "HEART" ? "IT012_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT002_01
+          pointCd: this.useTypeHeart === "HEART" ? "BUY" : "", // useType 'HEART' 일 시 BUY
+          contestType: 1, // 진행중인 contest_type
+          targetUserKey: communityViewMap.targetUserKey // 선택한 userId
+        },
+        then: (data) => {
+          if (data.successYn === "NH") {
+            this.warningAlertNH(data.message);
+          } else if (data.successYn == "NI") {
+            this.warningConfirm(data.message, () => {
+              this.$router.push("/store");
+            });
+          } else if (data.successYn == "N_START") {
+            this.warningAlert(data.message);
+          } else {
+            this.warningAlert(data.message);
+            this.$router.go(-1);
+          }
+          setTimeout(() => {
+            this.checkDisabled = true;
+          }, 500);
+        }
+      });
+    },
+    /**좋아요이벤트**/
+    thumbsUpDown(type, commentOrMain, commentKey) {
+      this.showLoading();
+      if (commentOrMain === "main") {
+        this.mainUpDownCheckDisabled = false;
+        getData({
+          url: "/setThumbsUpDown",
+          param: {
+            articleKey: communityViewMap.article,
+            type: type,
+            pageType: communityViewMap.type
+          },
+          then: (data) => {
+            this.likeCnt = data.likeCnt;
+            this.badCnt = data.badCnt;
+
+            setTimeout(() => {
+              this.loading.dismiss();
+              this.mainUpDownCheckDisabled = true;
+            }, this.loadingTime);
+          }
+        });
+      } else if (commentOrMain === "comment") {
+        this.commentUpDownCheckDisabled = false;
+        getData({
+          url: "/setThumbsUpDown2",
+          param: {
+            articleKey: communityViewMap.article,
+            commentKey: commentKey,
+            type: type,
+            pageType: communityViewMap.type
+          },
+          then: () => {
+            setTimeout(() => {
+              this.loading.dismiss();
+              this.commentUpDownCheckDisabled = true;
+            }, this.loadingTime);
+
+            this.$nextTick(() => {
+              this.getBoardDetail();
+            });
+          }
+        });
+      }
+    },
+
+    limitComment(e) {
+      const text = e.target.value;
+      const rows = (text.match(/\n/g) || []).length + 1;
+      if (rows > 10) {
+        if (e.inputType !== "deleteContentBackward") {
+          e.preventDefault(); // 줄바꿈을 막는다
+          this.warningAlert("줄바꿈은 10줄까지만 가능합니다");
+          return;
+        }
+      }
+      if (text !== this.prevText) {
+        // 이전에 입력된 텍스트와 비교하여 변경된 경우에만 행 수를 계산하도록 수정
+        this.dynamicRow = rows;
+      }
+      this.prevText = text; // 현재 입력된 텍스트를 저장하여 다음 비교 시 사용
+    },
+    getResult() {
+      let resultObj = {};
+      return resultObj;
+    },
+    bookmarkEvent() {
+      this.showLoading();
+      this.bookmarkCheckDisabled = false;
+      getData({
+        url: "/setCommunityBookmark",
+        param: {
+          articleKey: communityViewMap.article
+        },
+        then: (data) => {
+          this.bookmarkYn = data.bookmarkYn;
+
+          setTimeout(() => {
+            this.loading.dismiss();
+            this.bookmarkCheckDisabled = true;
+          }, this.loadingTime);
+        }
+      });
+    },
+
+    getBoardDetail(isScroll = false) {
+
+      //세션스토리지에 내가 본 게시글을 저장하고 처음보는거면 조회수를 증가시킨다.
+      //viewList = [{articleId: 1}, {articleId:2}]
+
+      let isExist = false;
+      let viewList = sessionStorage.getItem("articleViewList");
+      let time = new Date();
+      let currTime = new Date();
+
+      if (!viewList) {
+        viewList = [];
+      } else {
+        viewList = JSON.parse(viewList);
+      }
+
+      for (let idx in viewList) {
+        if (viewList[idx]["articleId"] === communityViewMap.article) {
+          //이미있음
+          isExist = true;
+        }
+
+        //하루가 경과했으면 삭제한다.
+        let diffTime =
+          (currTime.getTime() - new Date(viewList[idx]["time"]).getTime()) /
+          (60 * 1000);
+        if (diffTime > 1440) {
+          viewList.splice(idx, 1);
+        }
+      }
+
+      //없으면 조회이력을 추가한다.
+      if (!isExist) {
+        viewList.push({ articleId: communityViewMap.article, time: time });
+        sessionStorage.setItem("articleViewList", JSON.stringify(viewList));
+      }
+
+      getData({
+        url: "/getContestDetail",
+        param: {
+          articleKey: communityViewMap.article,
+          type: communityViewMap.type,
+          viewAddYn: isExist ? "Y" : "N"
+        },
+        then: (data) => {
+          this.BoardDetail = data.articleMap;
+          this.likeCnt = data.articleMap.likeCnt;
+          this.badCnt = data.articleMap.badCnt;
+          this.commentList = data.commentList;
+          this.upComment = this.BoardDetail.contents;
+          this.mainFileId = this.BoardDetail.attachFileId;
+          this.attr1 = this.BoardDetail.attr1CdnNm;
+          this.attr2 = this.BoardDetail.attr2CdnNm;
+          this.attr3 = this.BoardDetail.attr3CdnNm;
+          this.attr4 = this.BoardDetail.attr4CdnNm;
+          this.bookmarkYn = this.BoardDetail.bookmarkYn;
+          this.dropYn = this.BoardDetail.dropYn;
+          this.userPhotoId = data.articleMap.cdnThumbNmIcon;
+
+          /*if (isScroll) {
+            this.$nextTick(() => {
+              this.scrollToBottom();
+            });
+          }*/
+          this.lodingCheck = true;
+
+          this.replaceContentURL();
+          this.replaceCommentURL();
+
+          if (this.commentList.length > 0) {
+            this.searchType = "second";
+            this.lastCommentKey = this.commentList[this.commentList.length - 1].commentKey;
+          }
+        }
+      });
+    },
+
+    replaceContentURL() {
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      let _match = this.BoardDetail.content.match(regexp);
+      let match = [...new Set(_match)];
+      this.BoardDetail.replaceContent = this.BoardDetail.content;
+      Array.from(match).forEach((item) => {
+        if (!item.includes("http")) {
+          this.BoardDetail.replaceContent = this.BoardDetail.replaceContent.replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+        } else {
+          this.BoardDetail.replaceContent = this.BoardDetail.replaceContent.replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+        }
+      });
+    },
+
+    replaceCommentURL() {
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      Array.from(this.commentList).forEach((comment, index) => {
+        let _match = comment.contents.match(regexp);
+        let match = [...new Set(_match)];
+        this.commentList[index]["replaceContents"] = comment.contents;
+        Array.from(match).forEach((item) => {
+          if (!item.includes("http")) {
+            this.commentList[index]["replaceContents"] = this.commentList[index]["replaceContents"].replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+          } else {
+            this.commentList[index]["replaceContents"] = this.commentList[index]["replaceContents"].replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+          }
+        });
+        if (comment.childCommentList.length > 0) {
+          Array.from(comment.childCommentList).forEach((childComment, commentIndex) => {
+            let _commentMatch = childComment.contents.match(regexp);
+            let commentMatch = [...new Set(_commentMatch)];
+            this.commentList[index]["childCommentList"][commentIndex]["replaceContents"] = childComment.contents;
+            Array.from(commentMatch).forEach((item) => {
+              if (!item.includes("http")) {
+                this.commentList[index]["childCommentList"][commentIndex]["replaceContents"] = this.commentList[index]["childCommentList"][commentIndex]["replaceContents"].replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+              } else {
+                this.commentList[index]["childCommentList"][commentIndex]["replaceContents"] = this.commentList[index]["childCommentList"][commentIndex]["replaceContents"].replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+              }
+            });
+          });
+        }
+      });
+    },
+
+    /** 스크롤 맨 아래로 **/
+    scrollToBottom() {
+      setTimeout(() => {
+        this.$refs.myContent.$el.scrollToBottom(100);
+      }, 100);
+    },
+    /** 댓글 선택값 **/
+    commentReBtn(state, item) {
+      this.$refs.myContent.$el.scrollByPoint(0, 200);
+      switch (state) {
+        case "re":
+          this.reComment = this.reComment === item ? null : item;
+          this.reType = "re";
+          // this.scrollToBottom();
+          if (this.reComment === null) {
+            this.getBoardDetail(false, true);
+          }
+          break;
+        case "update":
+          this.$refs.myContent.$el.scrollByPoint(0, 100);
+          this.updateComment = this.updateComment === item ? null : item;
+          this.reType = "update";
+          this.reimgFileId = this.updateComment.attachFileId;
+          this.reimgViewFileId = this.updateComment.cdnNm;
+          if (this.updateComment === null) {
+            this.reimgFileId = null;
+            this.showLoading();
+            this.getBoardDetail(false, true);
+          }
+          break;
+        case "reUpdate":
+          this.$refs.myContent.$el.scrollByPoint(0, 200);
+          this.reUpdateComment = this.reUpdateComment === item ? null : item;
+          this.reType = "reUpdate";
+          this.reimgFileId = this.reUpdateComment.attachFileId;
+          this.reimgViewFileId = this.reUpdateComment.cdnNm;
+          if (this.reUpdateComment === null) {
+            this.reimgFileId = null;
+            this.showLoading();
+            this.getBoardDetail(false, true);
+          }
+          break;
+      }
+      this.commentSelectItem = item;
+    },
+
+    /** 댓글 버튼 핸들러 **/
+    commentBtn(state, commentText) {
+      if (this.dynamicRow >= 10) {
+        this.warningAlert("줄바꿈은 10줄까지만 가능합니다. 다시 확인해주세요.");
+        return;
+      } else {
+        const enterCnt = (this.commentText.match(/\n/g) || []).length + 1;
+        if (enterCnt > 10) {
+          this.warningAlert("줄바꿈은 10줄까지만 가능합니다");
+          return;
+        }
+      }
+      if (state === "new") {
+        if (!this.commentText && !this.imgFileId) {
+          this.warningAlert("내용을 입력하거나 이미지를 선택해주세요.");
+          return;
+        }
+
+        this.showLoading();
+        /** 댓글등록 **/
+        getData({
+          url: "/setCommunityComment",
+          param: {
+            articleKey: communityViewMap.article,
+            contents: this.commentText,
+            mainFileId: this.imgFileId,
+            commentType: "comment1",
+            type: communityViewMap.type
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail(true, true);
+              //this.warningAlert(data.message);
+              this.commentText = ""; // 댓글작성완료후 input 초기화
+              this.newimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+              this.dynamicRow = 0; // 줄바꿈 초기화
+            }
+
+            this.loading.dismiss();
+          }
+        });
+        this.newimgViewFileId = null;
+      } else if (state === "child") {
+        if (!this.childComment && !this.imgFileId) {
+          this.warningAlert("내용을 입력하거나 이미지를 선택해주세요.");
+          return;
+        }
+
+        this.showLoading();
+        /** 대댓글 등록**/
+        getData({
+          url: "/setCommunityComment",
+          param: {
+            articleKey: communityViewMap.article,
+            contents: this.childComment,
+            connectCommentKey: this.reComment.commentKey,
+            mainFileId: this.reimgFileId,
+            commentType: "comment2",
+            type: communityViewMap.type
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail(false, true);
+              //this.warningAlert(data.message);
+              this.childComment = ""; // 댓글작성완료후 input 초기화
+              this.reComment = null; // 대댓글 입력창 닫기
+              this.reimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+            }
+
+            this.loading.dismiss();
+          }
+        });
+      } else if (state === "update") {
+        if (!this.updateComment.contents) {
+          this.warningAlert("내용을 입력해주세요.");
+          return;
+        }
+        /** 댓글 수정 **/
+        this.showLoading();
+        getData({
+          url: "/setCommunityCommentUpdate",
+          param: {
+            articleKey: communityViewMap.article,
+            contents: this.updateComment.contents,
+            commentKey: this.updateComment.commentKey,
+            mainFileId: this.reimgFileId,
+            type: communityViewMap.type
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail();
+              this.warningAlert(data.message);
+              this.reimgFileId = null;
+              this.loading.dismiss();
+              this.updateComment = null; // 수정창 닫기
+              this.newimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+            }
+
+            this.loading.dismiss();
+          }
+        });
+      } else if (state === "reUpdate") {
+        if (!this.reUpdateComment) {
+          this.warningAlert("내용을 입력해주세요.");
+          return;
+        }
+        /** 대댓글 수정 **/
+        this.showLoading();
+        getData({
+          url: "/setCommunityCommentUpdate",
+          param: {
+            articleKey: communityViewMap.article,
+            contents: this.reUpdateComment.contents,
+            commentKey: this.reUpdateComment.commentKey,
+            mainFileId: this.reimgFileId,
+            type: communityViewMap.type
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail();
+              this.warningAlert(data.message);
+              this.reUpdateComment = null; // 대댓글 수정창 닫기
+              this.reimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+            }
+            this.loading.dismiss();
+          }
+        });
+      }
+    },
+
+    cancel() {
+      this.$refs.modal.$el.dismiss(null, "cancel");
+    },
+
+    confirm() {
+      const name = this.$refs.input.$el.value;
+      this.$refs.modal.$el.dismiss(name, "confirm");
+    },
+
+    async presentAlertConfirm(state, e) {
+      if (this.reType !== "") {
+        this.warningAlert("댓글 수정 중에는 삭제할수 없습니다.");
+        return;
+      }
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "삭제하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "삭제",
+            handler: () => {
+              if (state === "comment") {
+                /** 댓글 삭제 **/
+                getData({
+                  url: "/setCommunityCommentDel",
+                  param: {
+                    articleKey: communityViewMap.article,
+                    commentKey: e.commentKey
+                  },
+                  then: (data) => {
+                    if (data.successYn === "N") {
+                      this.presentAlert(data.message);
+                    } else {
+                      this.presentAlert(data.message);
+                      this.getBoardDetail();
+                    }
+                  }
+                });
+              } else if (state === "main") {
+                getData({
+                  url: "/setCommunityDel",
+                  param: {
+                    articleKey: communityViewMap.article
+                  },
+                  then: (data) => {
+                    if (data.successYn === "N") {
+                      this.presentAlert(data.message);
+                    } else {
+                      this.$router.push("/community");
+                      this.presentAlert(data.message);
+                    }
+                  }
+                });
+              }
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    /** 사진 업로드 **/
+    addPhoto(e) {
+      this.addPhotoType = e;
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then(r => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile();
+        });
+
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+
+      // this.$refs.photo.click();
+    },
+
+    onFileChange: function onFileChange(e) {
+      // TODO : 첨부 파일 개수 제한
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(e);
+      });
+    },
+    //사진 저장
+    insertFile() {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          this.imgFileId = data.fileId;
+
+          switch (this.addPhotoType) {
+            case "newComment":
+              this.newimgFileId = data.fileId;
+              this.newimgViewFileId = data.cdnNm;
+              break;
+            case "reComment":
+              this.reimgFileId = data.fileId;
+              this.reimgViewFileId = data.cdnNm;
+              break;
+          }
+
+          this.loading.dismiss();
+        }
+      });
+    },
+
+    // 알림창
+    async presentAlert(msg) {
+      const alert = await this.alertController.create({
+        header: "",
+        message: msg,
+        buttons: [
+          {
+            text: "OK",
+            role: "Okay",
+            handler: () => {
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 팝업참 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlertNH(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/store");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 로딩창 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+      await this.loading.present();
+    },
+
+    policeBtn(type, item) {
+      let targetKey = this.BoardDetail.articleKey;
+      if (type === "comment") {
+        policeMapFn({
+          targetKey: targetKey,
+          type: "comment",
+          targetId: item.commentKey
+        });
+        this.$router.push("/police");
+      } else if (type === "commentRe") {
+        policeMapFn({
+          targetKey: targetKey,
+          type: "commentRe",
+          targetId: item.commentKey
+        });
+        this.$router.push("/police");
+      }
+    },
+    /** 이미지 확대, 이동**/
+    openZoomedImage(data) {
+      if (!this.isZoomed) {
+        const imageUrl = "https://" + data;
+        const modal = document.createElement("div");
+        const modalImage = document.createElement("img");
+
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.zIndex = "1000";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+
+        modalImage.src = imageUrl;
+        modalImage.style.width = "90%";
+        modalImage.style.height = "auto";
+        modalImage.style.objectFit = "contain";
+        modalImage.style.transformOrigin = "center";
+        modalImage.style.pointerEvents = "auto";
+
+        modal.appendChild(modalImage);
+        document.body.appendChild(modal);
+
+        const hammer = new Hammer(modalImage);
+
+        let currentScale = 1;
+        let posX = 0;
+        let posY = 0;
+        let lastPosX = 0;
+        let lastPosY = 0;
+
+        hammer.get("pinch").set({ enable: true });
+        hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+        hammer.on("pinchin pinchout", (event) => {
+          if (event.type === "pinchin") {
+            currentScale -= 0.02;
+          } else if (event.type === "pinchout") {
+            currentScale += 0.02;
+          }
+
+          currentScale = Math.min(Math.max(currentScale, 0.5), 3);
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panmove", (event) => {
+          posX = lastPosX + event.deltaX;
+          posY = lastPosY + event.deltaY;
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panend", () => {
+          lastPosX = posX;
+          lastPosY = posY;
+        });
+
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+        this.isZoomed = true;
+      } else {
+        this.isZoomed = false;
+      }
+    },
+    /** 경고 컨펌창 **/
+    async warningConfirm(message, callBack) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "아니요",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              callBack();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    /** 무한스크롤 이벤트 **/
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+
+        if (self.searchType == "second") {
+          getData({
+            url: "/getContestReplyInfinite",
+            param: {
+              articleKey: communityViewMap.article
+              , lastCommentKey: self.lastCommentKey
+            },
+            then: (data) => {
+
+              self.$nextTick(() => {
+                for (let i in data) {
+                  self.commentList.push(data[i]);
+                }
+                self.lastCommentKey = self.commentList[self.commentList.length - 1].commentKey;
+                self.isEndScroll = true;
+
+                self.replaceCommentURL();
+              });
+
+            }
+          });
+        } else {
+          self.isEndScroll = true;
+        }
+        event.target.complete();
+      }, 1000);
+    },
+    async presentAlertConfirm_blockUser() {
+      const alert = await this.alertController.create({
+        // cssClass: 'my-custom-class',
+        header: "( " + this.BoardDetail.nick + " ) 님을 차단하시겠습니까?",
+        message: "더이상 초이스에 해당유저를 노출시키지 않습니다.",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "차단",
+            handler: () => {
+              /** 차단하기 **/
+              getData({
+                url: "/blockByUserInfo",
+                param: { targetUserKey: communityViewMap.targetUserKey },
+                then: (data) => {
+                  this.warningAlert(data.message);
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    }
+
+  }
+};
+</script>
+
+<style scoped></style>

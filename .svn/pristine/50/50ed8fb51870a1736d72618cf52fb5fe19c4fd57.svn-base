@@ -1,0 +1,43 @@
+<template>
+  <ion-item lines="none" color="primary">
+    <ion-text>
+      <h2>{{ item.categoryNm }}</h2>
+      <!--      <p v-if="type !== 'sub'">-->
+      <!--        {{ item.description }}-->
+      <!--      </p>-->
+    </ion-text>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: 'SelectMeetCategoryItem',
+  props: {
+    item: {
+      type: Object
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --border-radius: var(--ion-border-radius);
+  --background-focused: var(--ion-color-secondary);
+
+  &:hover {
+    &::part(native) {
+      background: var(--ion-color-secondary);
+    }
+  }
+
+  ion-text {
+    h2 {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    p {
+      font-size: 12px;
+    }
+  }
+}
+</style>

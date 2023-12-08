@@ -1,0 +1,336 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>기본설정</ion-title>
+      </ion-toolbar>
+      <ProgressBar :currIdx="isValidateForm ? 9 : 8"></ProgressBar>
+    </ion-header>
+    <ion-content>
+      <div class="layout-container">
+        <!-- title -->
+        <JoinTitle>
+          <template v-slot:title>
+            다 왔어요! 대표사진을 <br />
+            2장 이상 올려주세요
+          </template>
+          <template v-slot:desc>첫번째 사진이 대표사진으로 사용돼요</template>
+        </JoinTitle>
+        <!-- 이미지 업로드 -->
+        <ion-grid>
+          <!-- TODO: loop 로 작업하고 싶었으나, 스크립트 작업때문에 하드코딩으로 작업 -->
+          <ion-row>
+            <ion-col size="4">
+              <AddPhotoButton
+                @click="addPhoto('add1')"
+                :name="cdnNm1"
+                :required="true"
+              />
+            </ion-col>
+            <ion-col size="4">
+              <AddPhotoButton
+                @click="addPhoto('add2')"
+                :name="cdnNm2"
+                :required="true"
+              />
+            </ion-col>
+            <ion-col size="4">
+              <AddPhotoButton @click="addPhoto('add3')" :name="cdnNm3" />
+            </ion-col>
+            <ion-col size="4">
+              <AddPhotoButton @click="addPhoto('add4')" :name="cdnNm4" />
+            </ion-col>
+            <ion-col size="4">
+              <AddPhotoButton @click="addPhoto('add5')" :name="cdnNm5" />
+            </ion-col>
+            <ion-col size="4">
+              <AddPhotoButton @click="addPhoto('add6')" :name="cdnNm6" />
+            </ion-col>
+          </ion-row>
+          <ion-row class="profile-img-guide">
+            <ion-img :src="require('@/assets/img/join/profile_img_guide.png')"></ion-img>
+          </ion-row>
+          <input
+            type="file"
+            @change="onFileChange"
+            ref="photo"
+            style="display: none"
+          />
+        </ion-grid>
+      </div>
+    </ion-content>
+    <ion-footer class="join-footer">
+      <div class="layout-container">
+        <div class="btn-group">
+          <custom-button
+            fill="outline"
+            color="primary"
+            size="large"
+            expand="block"
+            shape="round"
+            :disabled="!isValidateForm"
+            @click="validateAndNavigate"
+          >
+            다음으로
+          </custom-button>
+          <custom-button
+            fill="clear"
+            color="secondary"
+            size="large"
+            expand="block"
+            shape="round"
+            @click="this.$router.push('/joinProfile')"
+          >
+            건너뛰기
+          </custom-button>
+        </div>
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import { setFile } from "@/assets/js/common";
+import JoinTitle from "@/components/JoinTitle.vue";
+import ProgressBar from "@/components/ProgressBar.vue";
+import AddPhotoButton from "@/components/AddPhotoButton.vue";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+
+export default {
+  name: "JoinProfile",
+  inject: ["alertController", "loadingController"],
+  components: {
+    JoinTitle,
+    ProgressBar,
+    AddPhotoButton
+  },
+  computed: {
+    // PUB
+    isValidateForm() {
+      return (
+        this.add1imgFileId !== "" &&
+        this.add2imgFileId !== ""
+      );
+    }
+  },
+  data() {
+    return {
+      Attachfiles: [],
+      mainFileId: "",
+
+      cdnNm1: null,
+      cdnNm2: null,
+      cdnNm3: null,
+      cdnNm4: null,
+      cdnNm5: null,
+      cdnNm6: null,
+      add1imgFileId: "",
+      add2imgFileId: "",
+      add3imgFileId: "",
+      add4imgFileId: "",
+      add5imgFileId: "",
+      add6imgFileId: "",
+
+      loading: null
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    // if (tempMap.state !== "ing") {
+    this.add1imgFileId = "";
+    this.add2imgFileId = "";
+    this.add3imgFileId = "";
+    this.add4imgFileId = "";
+    this.add5imgFileId = "";
+    this.add6imgFileId = "";
+    // }
+
+  },
+
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  mounted() {
+  },
+  created() {
+  },
+
+  methods: {
+
+    goRouter() {
+      // tempMap.item.photo1 = this.add1imgFileId;
+      // tempMap.item.photo2 = this.add2imgFileId;
+      // tempMap.item.photo3 = this.add3imgFileId ? this.add3imgFileId : null;
+      // tempMap.item.photo4 = this.add4imgFileId ? this.add4imgFileId : null;
+      // tempMap.item.photo5 = this.add5imgFileId ? this.add5imgFileId : null;
+      // tempMap.item.photo6 = this.add6imgFileId ? this.add6imgFileId : null;
+
+      this.$store.state.joinMap["photo1"] = this.add1imgFileId;
+      this.$store.state.joinMap["photo2"] = this.add2imgFileId;
+      this.$store.state.joinMap["photo3"] = this.add3imgFileId ? this.add3imgFileId : null;
+      this.$store.state.joinMap["photo4"] = this.add4imgFileId ? this.add4imgFileId : null;
+      this.$store.state.joinMap["photo5"] = this.add5imgFileId ? this.add5imgFileId : null;
+      this.$store.state.joinMap["photo6"] = this.add6imgFileId ? this.add6imgFileId : null;
+
+      this.$router.push("/joinIntroduce");
+    },
+
+    /** 사진 업로드 **/
+    addPhoto(state) {
+      switch (state) {
+        case "add1":
+          this.uploadType = "add1";
+          break;
+        case "add2":
+          this.uploadType = "add2";
+          break;
+        case "add3":
+          this.uploadType = "add3";
+          break;
+        case "add4":
+          this.uploadType = "add4";
+          break;
+        case "add5":
+          this.uploadType = "add5";
+          break;
+        case "add6":
+          this.uploadType = "add6";
+          break;
+      }
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then(r => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile(this.uploadType);
+        });
+
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+      // this.$refs.photo.click();
+    },
+
+    onFileChange: function onFileChange(e) {
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(this.uploadType);
+      });
+    },
+    //사진 저장
+    insertFile(e) {
+      this.showLoading(0);
+
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          /** 상태값 확인후 해당 사진 변경 **/
+          switch (e) {
+            case "add1":
+              this.add1imgFileId = data.fileId;
+              this.cdnNm1 = data.cdnNm;
+              break;
+            case "add2":
+              this.add2imgFileId = data.fileId;
+              this.cdnNm2 = data.cdnNm;
+              break;
+            case "add3":
+              this.add3imgFileId = data.fileId;
+              this.cdnNm3 = data.cdnNm;
+              break;
+            case "add4":
+              this.add4imgFileId = data.fileId;
+              this.cdnNm4 = data.cdnNm;
+              break;
+            case "add5":
+              this.add5imgFileId = data.fileId;
+              this.cdnNm5 = data.cdnNm;
+              break;
+            case "add6":
+              this.add6imgFileId = data.fileId;
+              this.cdnNm6 = data.cdnNm;
+              break;
+          }
+          this.loading.dismiss();
+        }
+      });
+    },
+    /** 필수사진 체크후 다음버튼 **/
+    validateAndNavigate() {
+      if (
+        this.add1imgFileId !== "" &&
+        this.add2imgFileId !== ""
+      ) {
+        this.goRouter();
+      } else {
+        this.warningAlert("필수 사진이 등록되지 않았습니다.");
+      }
+    },
+
+    /** 로딩창 **/
+    async showLoading(time) {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: time
+      });
+      await this.loading.present();
+    },
+    /* 경고 팝업창 */
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.profile-img-guide {
+  margin-top: 40px;
+
+  ion-img {
+    width: 180px;
+    margin: 0 auto;
+  }
+}
+</style>

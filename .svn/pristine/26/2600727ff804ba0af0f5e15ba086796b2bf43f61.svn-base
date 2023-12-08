@@ -1,0 +1,175 @@
+<template>
+  <div>
+    <div class="category">
+      <ion-icon :icon="openChatIcon" color="light" />
+      <ion-text class="sub-text01 text-sm"
+      >소모임 <span class="breadcrumb">></span> {{ category }}
+      </ion-text>
+    </div>
+    <swiper
+      :modules="modules"
+      :free-mode="true"
+      :space-between="8"
+      slides-per-view="auto"
+    >
+      <swiper-slide v-for="(item, index) in itemList" :key="index">
+        <ion-card @click="goOpenChatView(item.openChatKey)" mode="ios">
+          <ion-skeleton-text
+            :animated="true"
+            v-if="!loaded"
+            class="skeleton-img"
+          />
+          <ion-img
+            v-else
+            :src="'https://' + item.cdnThumbNm"
+            @ionError="
+              $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+            "
+          />
+          <RankBadge :index="index" />
+          <ion-card-header>
+            <template v-if="!loaded">
+              <ion-card-title>
+                <ion-skeleton-text :animated="true" />
+              </ion-card-title>
+              <ion-card-subtitle>
+                <ion-icon :icon="calendarCheck" />
+                <ion-text>
+                  <ion-skeleton-text :animated="true" />
+                </ion-text>
+              </ion-card-subtitle>
+            </template>
+            <template v-else>
+              <ion-card-title>{{ item.title }}</ion-card-title>
+              <ion-card-subtitle>
+                <ion-icon :icon="calendarCheck" />
+                <ion-text>{{ item.dueDate }}</ion-text>
+              </ion-card-subtitle>
+            </template>
+          </ion-card-header>
+        </ion-card>
+      </swiper-slide>
+    </swiper>
+  </div>
+</template>
+<script>
+import { openChatViewMapFn, openChatMeetMapFn } from "@/assets/js/common";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { FreeMode, Autoplay, Pagination, Navigation } from "swiper/modules";
+import IconCalCheck from "@/assets/img/icon/icon_cal_check.svg";
+import IconOpenChat from "@/assets/img/icon/icon_tabs_open_chat.svg";
+import RankBadge from "@/components/Common/RankBadge.vue";
+
+export default {
+  name: "MainHotPlaceSlider",
+  components: {
+    Swiper,
+    SwiperSlide,
+    RankBadge
+  },
+  props: {
+    category: {
+      type: String
+    },
+    itemList: {
+      type: Array
+    },
+    loaded: {
+      type: Boolean
+    }
+  },
+  data() {
+    return {
+      openChatIcon: IconOpenChat,
+      calendarCheck: IconCalCheck,
+      modules: [FreeMode, Autoplay, Pagination, Navigation]
+    };
+  },
+  methods: {
+    goOpenChatView(openChatKey) {
+      openChatMeetMapFn({ openChatKey: openChatKey, type: "home" });
+      this.$router.push("/openChatMeet");
+      // openChatViewMapFn({ openChatKey: openChatKey, type: "home" });
+      // this.$router.push('/openChatView');
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+$width: 104px;
+$height: 104px;
+.category {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+  padding-left: 18px;
+  font-weight: bold;
+  gap: 6px;
+
+  ion-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .breadcrumb {
+    margin: 0 4px;
+  }
+}
+
+.swiper {
+  padding: 0;
+  margin: 0;
+  padding-left: 18px;
+
+  .swiper-slide {
+    width: 40%;
+    max-width: $width;
+    padding-top: 4px;
+  }
+
+  ion-card {
+    position: relative;
+    margin: 0;
+    box-shadow: none;
+    background: transparent !important;
+    overflow: visible;
+    contain: inherit;
+
+    ion-img,
+    .skeleton-img {
+      position: relative;
+      width: $width;
+      height: $height;
+      object-fit: cover;
+      border-radius: var(--ion-border-radius);
+      overflow: hidden;
+    }
+
+    ion-card-header {
+      margin-top: 10px;
+      padding: 0;
+      text-align: left;
+
+      ion-card-title {
+        --color: white;
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+
+      ion-card-subtitle {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+        --color: #6192ff;
+        font-size: 10px;
+        width: 100%;
+
+        ion-text {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+</style>

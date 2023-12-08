@@ -1,0 +1,146 @@
+<template>
+  <ion-card @click="handleClick">
+    <ion-img
+      :src="'https://' + item.cdnThumbNm"
+      @ionError="
+        $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+      "
+    />
+    <!-- TODO: 별 아이콘 -->
+    <ion-text color="primary" class="icon-star">
+      <ion-text>1</ion-text>
+      <ion-icon :icon="star" size="small" />
+    </ion-text>
+    <!-- TODO: 소모임 분류 -->
+    <ion-chip color="light" outline class="chip-cate shape-round"
+      >사교</ion-chip
+    >
+    <ion-card-header>
+      <ion-card-title>{{ item.title }}</ion-card-title>
+      <ion-card-subtitle>
+        <!-- TODO:  소모임 지역 & 인원 수-->
+        <span>
+          <ion-icon :icon="locationSharp" size="small" />
+          <ion-text>종로구</ion-text>
+        </span>
+        <span>
+          <ion-icon :icon="personSharp" size="small" />
+          <ion-text>30</ion-text>
+        </span>
+      </ion-card-subtitle>
+    </ion-card-header>
+  </ion-card>
+</template>
+<script>
+import { locationSharp, personSharp, star } from 'ionicons/icons';
+export default {
+  name: 'OpenChatCardItem',
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  data() {
+    return {
+      locationSharp,
+      personSharp,
+      star
+    };
+  },
+  methods: {
+    handleClick() {
+      this.$emit('event');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+$width: 186px;
+$height: 130px;
+
+ion-card {
+  position: relative;
+  margin: 0;
+  box-shadow: none;
+  background: transparent !important;
+  overflow: visible;
+  contain: inherit;
+
+  ion-img,
+  .skeleton-img {
+    position: relative;
+    width: 100%;
+    height: $height;
+    object-fit: cover;
+    border-radius: var(--ion-border-radius);
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 1);
+    &::part(image) {
+      opacity: 0.5;
+    }
+  }
+
+  .icon-star {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    font-size: 14px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 1);
+  }
+
+  .chip-cate {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    margin: 0;
+    z-index: 2;
+  }
+
+  ion-card-header {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: 8px;
+    margin: 0;
+    text-align: left;
+    width: 100%;
+
+    ion-card-title {
+      display: block;
+      --color: white;
+      font-size: 14px;
+      font-weight: bold;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+
+    ion-card-subtitle {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      --color: var(--ion-color-light);
+      font-size: 12px;
+      width: 100%;
+      margin-top: 4px;
+
+      span {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      ion-text {
+        width: 100%;
+      }
+    }
+  }
+}
+</style>

@@ -1,0 +1,970 @@
+<template>
+  <ion-page>
+    <custom-header page-name="피드"></custom-header>
+    <ion-content ref="communityContainer">
+      <div v-if="bannerList.length > 0">
+        <!-- 상단 배너 -->
+        <div class="ion-padding pb-0">
+          <MainBanner :bannerList="bannerList" />
+        </div>
+      </div>
+      <!-- 메인  -->
+      <!-- Refresh -->
+      <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+        <ion-refresher-content
+          refreshing-spinner="circles"
+          :pulling-icon="chevronDownCircleOutline"
+        ></ion-refresher-content>
+      </ion-refresher>
+      <!-- /Refresh -->
+      <div class="ion-padding">
+        <ion-row
+          class="ion-align-items-center ion-justify-content-between gap-md"
+        >
+          <ion-text color="light"> {{ communityNick }} 님께 추천하는 피드</ion-text>
+          <ion-icon size="large" color="secondary" :icon="refreshCircle" @click="getBoardList" />
+        </ion-row>
+        <div class="mt-2">
+          <CommunityFeedCategory @click="isOpenCommunityCategoryModal = true" />
+        </div>
+        <div class="mt-2">
+          <ion-list lines="full">
+            <CommunityFeedItem
+              v-for="(data, index) in BoardList"
+              :key="index"
+              :item="data"
+              @goDetail="goRouter(data.articleKey, data)"
+              @edit="editCommunity(data)"
+              @delete="presentAlertConfirm(data)"
+              @thumbsUpDown="thumbsUpDown(data)"
+              @policeBtn="policeBtn(data)"
+              @setHide="setHide(data)"
+              @replaceContentURL="replaceContentURL(data)"
+            />
+          </ion-list>
+        </div>
+        <ion-infinite-scroll
+          :disabled="isEndScroll"
+          threshold="100px"
+          @ionInfinite="ionInfinite"
+        >
+          <ion-infinite-scroll-content></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </div>
+    </ion-content>
+    <!-- /메인  -->
+
+    <!--  하단 플로팅 버튼 -->
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button fill="clear" @click="scrollToTop" style="padding: 5px">
+        <ion-ripple-effect></ion-ripple-effect>
+        <ion-icon :icon="arrowUp"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button
+        fill="clear"
+        @click="nickModal = true"
+        style="padding: 5px"
+      >
+        <ion-ripple-effect
+          style="background-color: #616267"
+        ></ion-ripple-effect>
+        <ion-icon :icon="setting"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button
+        fill="clear"
+        @click="goRouter('', 'new')"
+        style="padding: 5px"
+      >
+        <ion-ripple-effect></ion-ripple-effect>
+        <ion-icon :icon="pencilOutline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+    <!--  /하단 플로팅 버튼 -->
+
+    <ion-modal
+      :is-open="nickModal"
+      @ionModalDidDismiss="nickModal = false"
+      class="nickname-modal"
+    >
+      <ion-content class="ion-padding">
+        <ion-toolbar mode="md">
+          <ion-title class="main-header"> 커뮤니티 닉네임 설정</ion-title>
+        </ion-toolbar>
+        <ion-row>
+          <ion-col size="12">
+            <ion-item
+              counter="true"
+              :counterFormatter="customFormatter"
+              class="input-field"
+            >
+              <ion-input
+                type="text"
+                :clear-input="true"
+                v-model="communityNick"
+                maxlength="8"
+                placeholder="닉네임은 최대 8글자까지 가능해요."
+                class="custom-input"
+                @ionInput="validateNickname($event)"
+              />
+            </ion-item>
+            <ion-note class="errorText" v-if="!isNicknameValid">
+              닉네임이 올바르지 않아요
+            </ion-note>
+          </ion-col>
+        </ion-row>
+
+        <ion-toolbar mode="md">
+          <ion-title class="main-header"> 커뮤니티 아이콘 설정</ion-title>
+        </ion-toolbar>
+
+        <ion-list lines="none">
+          <ion-radio-group v-model="selectedAvatar" class="img-radio-group">
+            <ion-row>
+              <ion-col
+                size="4"
+                v-for="data in iconList"
+                :key="data.iconCd"
+                @click="selectIcon(data)"
+              >
+                <ion-item class="img-radio-button">
+                  <ion-label>
+                    <ion-img :src="'https://' + data.cdnThumbNm" />
+                    <ion-text color="light">{{ data.iconNm }}</ion-text>
+                  </ion-label>
+                  <ion-radio slot="start" :value="data.iconCd"></ion-radio>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-radio-group>
+        </ion-list>
+
+        <ion-col size="12">
+          <div class="text-center">
+            <custom-button
+              color="secondary"
+              fill="outline"
+              @click="nickModal = false"
+            >
+              취소
+            </custom-button>
+            <custom-button
+              color="secondary"
+              fill="solid"
+              @click="saveCommunityNickname()"
+            >
+              변경
+            </custom-button>
+          </div>
+        </ion-col>
+      </ion-content>
+    </ion-modal>
+
+    <!-- TODO: 피드 카테고리 설정 모달 -->
+    <CommunityFeedCategoryModal
+      :is-open="isOpenCommunityCategoryModal"
+      @ionModalDidDismiss="isOpenCommunityCategoryModal = false"
+    />
+  </ion-page>
+</template>
+
+<script>
+import {
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent
+} from "@ionic/vue";
+import {
+  pencilOutline,
+  refreshCircle,
+  chevronDownCircleOutline,
+  search
+} from "ionicons/icons";
+import {
+  getData,
+  communityViewMapFn,
+  communityWriteMapFn, communityViewMap, policeMapFn
+} from "@/assets/js/common";
+import MainBanner from "@/components/Home/MainBanner.vue";
+import CommunityFeedItem from "@/components/CommunityFeed/CommunityFeedItem.vue";
+import IconHotPlace from "@/assets/img/icon/icon_hot_place.svg";
+import IconSetting from "@/assets/img/icon/icon_setting2.svg";
+import IconPencil from "@/assets/img/icon/icon_pencil.svg";
+import IconChatbubbleOutline from "@/assets/img/icon/icon_chatbubbleOutline.svg";
+import IonEyeOutline from "@/assets/img/icon/ion_eyeOutline.svg";
+import IonArrowUp from "@/assets/img/icon/icon_arrow_up.svg";
+
+import CommunityFeedCategory from "@/components/CommunityFeed/CommunityFeedCategory.vue";
+import CommunityFeedCategoryModal from "@/components/CommunityFeed/CommunityFeedCategoryModal.vue";
+
+export default {
+  name: "Community",
+  inject: ["alertController", "loadingController"],
+  components: {
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent,
+    MainBanner,
+    CommunityFeedItem,
+    CommunityFeedCategory,
+    CommunityFeedCategoryModal
+  },
+  data() {
+    return {
+      arrowUp: IonArrowUp,
+      eyeOutline: IonEyeOutline,
+      chatbubble: IconChatbubbleOutline,
+      setting: IconSetting,
+      pencil: IconPencil,
+      hotPlace: IconHotPlace,
+      pencilOutline,
+      chevronDownCircleOutline,
+      refreshCircle,
+      search,
+      dataLoaded: false,
+      BoardList: [],
+      showAll: false,
+      segmentCd: "trouble",
+      segmentType: "1",
+      crDt: "", // 시간
+      searchStr: "", // 검색
+      categoryList: [],
+      categoryCd: "",
+      subCategoryCd: "",
+      subCategoryList: [],
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+
+      bannerList: [],
+      nickModal: false,
+      isNicknameValid: true,
+      communityNick: "",
+      isNicknameCheckValid: false,
+      selectedAvatar: "",
+      iconList: [],
+      userIconNm: "",
+      iconCd: "",
+
+      isOpenCommunityCategoryModal: false
+
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    // this.getCommunityUserNick();
+    // this.getBannerList();
+    // this.getCategoryList();
+    // this.getInfoList();
+    // this.getSelectUserIcon();
+    // this.getSubCategoryList();
+    // if (this.searchStr.length < 2) {
+    //   this.searchStr = "";
+    // }
+    // this.setLocalSearchAfterHide();
+    this.getBannerList();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  mounted() {
+    this.getCommunityUserNick();
+    this.getBannerList();
+    this.getCategoryList();
+    this.getInfoList();
+    this.getSelectUserIcon();
+  },
+
+  methods: {
+    communityChangeNick() {
+      this.getCommunityUserNick();
+      this.nickModal = false;
+    },
+
+    replaceContentURL(data) {
+      const regexp = /(?:http(s?)?|www)\S+\w/g;
+      let _match = data.content.match(regexp);
+      let match = [...new Set(_match)];
+      Array.from(match).forEach((item) => {
+        if (!item.includes("http")) {
+          data.content = data.content.replaceAll(
+            item,
+            `<a href="http://${item}" target="_blank">${item}</a>`
+          );
+        } else {
+          data.content = data.content.replaceAll(
+            item,
+            `<a href="${item}" target="_blank">${item}</a>`
+          );
+        }
+      });
+      this.setLocalSearchAfterHide();
+    },
+
+    scrollToTop() {
+      this.$refs.communityContainer.$el.scrollToTop(500);
+    },
+
+    thumbsUpDown(item) {
+      this.showLoading();
+      getData({
+        url: "/setThumbsUpDown",
+        param: {
+          articleKey: item.articleKey,
+          type: "up",
+          pageType: ""
+        },
+        then: (data) => {
+          this.BoardList[item.rnum - 1]["likeCnt"] = data.likeCnt;
+          setTimeout(() => {
+            this.loading.dismiss();
+          }, this.loadingTime);
+        }
+      });
+    },
+
+    editCommunity(item) {
+      communityWriteMapFn({
+        article: item.articleKey,
+        type: "edit",
+        item: item
+      });
+      this.$router.push("/communityWrite");
+    },
+
+    policeBtn(item) {
+      policeMapFn({
+        targetKey: item.articleKey,
+        type: "community",
+        targetId: item.createdUserKey
+      });
+      this.$router.push("/police");
+    },
+
+    setHide(item) {
+      //이미 숨김되어 있는지확인
+      let localStorageBlockList = [];
+      localStorageBlockList = JSON.parse(
+        localStorage.getItem("articleBlockList")
+      );
+
+      let isExist = false;
+      for (let idx in localStorageBlockList) {
+        if (localStorageBlockList[idx]["articleKey"] == item.articleKey) {
+          isExist = true;
+        }
+      }
+
+      if (isExist) {
+        //숨김해제
+        this.blockCancelConfirmBtn(item);
+      } else {
+        //숨김
+        this.blockConfirmBtn(item);
+      }
+    },
+
+    async blockCancelConfirmBtn(item) {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "이미 숨김처리되어 있습니다. 숨김처리를 해제 하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "해제",
+            cssClass: "alert-button-block",
+            handler: () => {
+              let localStorageBlockList = [];
+              //해당사용자 세션에 추가하여 메시지 걸러냄
+              localStorageBlockList = JSON.parse(
+                localStorage.getItem("articleBlockList")
+              );
+              for (let i in localStorageBlockList) {
+                if (
+                  localStorageBlockList[i]["articleKey"] == item.articleKey
+                ) {
+                  localStorageBlockList.splice(i, 1);
+                }
+              }
+              //체크된
+              if (
+                localStorageBlockList == null &&
+                typeof localStorageBlockList !== "array"
+              ) {
+                localStorageBlockList = [];
+              }
+              //최종 결과물 저장
+              localStorage.setItem(
+                "articleBlockList",
+                JSON.stringify(localStorageBlockList)
+              );
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    async blockConfirmBtn(item) {
+      let confirmMessage = "이 게시글을 더이상 보지 않습니다. 계속 하시겠습니까?";
+
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: confirmMessage,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "숨김",
+            cssClass: "alert-button-block",
+            handler: () => {
+              let localStorageBlockList = [];
+              //해당사용자 세션에 추가하여 메시지 걸러냄
+              localStorageBlockList = JSON.parse(
+                localStorage.getItem("articleBlockList")
+              );
+
+              //체크된
+              if (localStorageBlockList == null && typeof localStorageBlockList !== "array") {
+                localStorageBlockList = [];
+              }
+
+              //최종 결과물 저장
+              localStorageBlockList.push({ articleKey: item.articleKey });
+              localStorage.setItem("articleBlockList", JSON.stringify(localStorageBlockList));
+              item.title = "사용자에 의해 숨김처리된 게시글입니다.";
+              item.content = "";
+              item.cdnNm = null;
+              item.cdnThumbNm = null;
+              item.replaceContent = "";
+              this.setLocalSearchAfterHide();
+              this.blockFinishBtn();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    async blockFinishBtn() {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "숨김처리 되었습니다.",
+        buttons: [
+          {
+            text: "확인",
+            role: "cancel",
+            handler: () => {
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    setLocalSearchAfterHide() {
+      let localStorageBlockList1 = [];
+
+      localStorageBlockList1 = JSON.parse(localStorage.getItem("articleBlockList"));
+
+      for (let idx1 in localStorageBlockList1) {
+        for (let idx2 in this.BoardList) {
+          if (localStorageBlockList1[idx1].articleKey == this.BoardList[idx2].articleKey) {
+            this.BoardList[idx2].title = "사용자에 의해 숨김처리된 게시글입니다.";
+            this.BoardList[idx2].content = "";
+            this.BoardList[idx2].cdnNm = null;
+            this.BoardList[idx2].cdnThumbNm = null;
+            this.BoardList[idx2].replaceContent = "";
+          }
+        }
+      }
+      // if (!isHide) {
+      //   this.getBoardList(true);
+      // }
+    },
+
+    async presentAlertConfirm(item) {
+      const alert = await this.alertController.create({
+        header: "",
+        message: "삭제하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "삭제",
+            handler: () => {
+              getData({
+                url: "/setCommunityDel",
+                param: {
+                  articleKey: item.articleKey
+                },
+                then: (data) => {
+                  if (data.successYn === "N") {
+                    this.presentAlert(data.message);
+                  } else {
+                    this.getBoardList();
+                    this.presentAlert(data.message);
+                  }
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    async presentAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+
+    getCommunityUserNick() {
+      getData({
+        url: "/getCommunityUserNick",
+        param: {},
+        then: (data) => {
+          this.communityNick = data[0].communityLastnick;
+        }
+      });
+    },
+
+    getResult() {
+      let resultObj = {};
+
+      resultObj.categoryCd = this.categoryCd;
+      resultObj.subBoardCd =
+        this.subCategoryCd == "popList" ? "" : this.subCategoryCd;
+
+      resultObj.str = this.searchStr;
+      resultObj.pageNo = this.pageNo;
+      resultObj.pageSize = this.pageSize;
+
+      return resultObj;
+    },
+
+    validateNickname($event) {
+      // 정규식을 사용하여 특수문자 및 자음/모음만 있는지 확인합니다.
+      const regex = /[{}[\]/?.,;:|)*~`!^\\-_+<>@#$%&()='"]/g;
+      const regex2 = /\s/g;
+      // const regex3 = /([^가-힣a-z\x20])/i;
+      const regex3 = /[^가-힣a-zA-Z0-9_\s]/g;
+
+      this.isNicknameValid =
+        !regex.test($event.target.value) &&
+        !regex2.test($event.target.value) &&
+        !regex3.test($event.target.value);
+    },
+
+    saveCommunityNickname() {
+      getData({
+        url: "/getCommunityNickCheck",
+        param: { nick: this.communityNick },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.isNicknameCheckValid = false;
+            this.nickNameValidationMessage = "중복된 닉네임 입니다.";
+            this.warningAlert("중복된 닉네임 입니다.");
+          } else {
+            this.showLoading();
+            getData({
+              url: "/setSaveCommunityNickname",
+              param: { nick: this.communityNick, iconCd: this.iconCd },
+              then: (data) => {
+                if (data.successYn === "Y") {
+                  this.nickModal = false;
+                  this.getCommunityUserNick();
+                  this.warningAlert(data.message);
+                } else {
+                  this.warningAlert(data.message);
+                }
+                this.loading.dismiss();
+              }
+            });
+          }
+        }
+      });
+    },
+    /** 검색영역 입력 시 searchStr 저장 **/
+    inputStr(e) {
+      this.searchStr = e.target.value;
+    },
+
+    /** 인기순 조회 **/
+    popListBtn() {
+      //초기화
+      this.BoardList = [];
+      this.getPopList();
+    },
+
+    getPopList() {
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 30;
+      this.currentPageNo = 1;
+      this.BoardList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getPopList",
+        param: {
+          categoryCd: this.categoryCd,
+          pageNo: this.pageNo,
+          pageSize: this.pageSize,
+          subBoardCd: ""
+        },
+        then: (data) => {
+          this.BoardList = data.result;
+          this.totalCount = data.totalCount;
+        }
+      });
+    },
+
+    /** 로딩창 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+      await this.loading.present();
+    },
+
+    nickSaveClick() {
+      getData({
+        url: "/getCommunityNickCheck",
+        param: {},
+        then: (data) => {
+        }
+      });
+    },
+
+    /** 카테고리 리스트 **/
+    getCategoryList() {
+      getData({
+        url: "/getCategoryList",
+        param: {},
+        then: (data) => {
+          this.categoryList = data;
+
+          // 카테고리 초기화 막아버리기
+          if (this.categoryCd === "") {
+            //this.categoryCd = data[0].boardId;
+            this.categoryCd = "";
+          } // 처음 선택값
+          this.$nextTick(() => {
+            this.getSubCategoryList();
+          });
+        }
+      });
+    },
+
+    getSubCategoryList() {
+      getData({
+        url: "/getSubCategoryList",
+        param: {
+          boardId: this.categoryCd
+        },
+        then: (data) => {
+          this.subCategoryList = data;
+
+          this.$nextTick(() => {
+            if (this.subCategoryCd == "popList") {
+              this.getPopList();
+            } else {
+              this.getBoardList();
+            }
+          });
+        }
+      });
+    },
+    /** 카테고리 선택 아이템 **/
+    categoryBtn(e) {
+      this.subCategoryCd = "";
+
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 30;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      if (e == "all") {
+        this.categoryCd = "";
+        this.subCategoryList = [];
+      } else {
+        this.categoryCd = e.boardId;
+      }
+
+      this.$nextTick(() => {
+        // this.getBoardList();
+        this.getSubCategoryList();
+      });
+    },
+    subCategoryBtn(e) {
+      this.subCategoryCd = e.subBoardCd;
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 30;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      this.$nextTick(() => {
+        if (this.subCategoryCd == "popList") {
+          this.getPopList();
+        } else {
+          this.getBoardList();
+        }
+      });
+    },
+
+    /** 게시판 리스트 **/
+    getBoardList() {
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 30;
+      this.currentPageNo = 1;
+      this.BoardList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getCommunityList",
+        param: this.getResult(),
+        then: (data) => {
+          this.BoardList = data.result;
+          this.totalCount = data.totalCount;
+
+          this.setLocalSearchAfterHide();
+        }
+      });
+    },
+
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        self.pageNo = self.currentPageNo + 1;
+
+        let url = "";
+        if (self.subCategoryCd == "popList") {
+          url = "/getPopList";
+        } else {
+          url = "/getCommunityList";
+        }
+
+        getData({
+          url: url,
+          param: self.getResult(),
+          then: (data) => {
+            for (let i in data.result) {
+              self.BoardList.push(data.result[i]);
+            }
+            self.currentPageNo += 1;
+            self.$nextTick(() => {
+              if (self.BoardList.length === self.totalCount)
+                self.isEndScroll = true;
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    },
+    /* Refresh */
+    doRefresh(e) {
+      // this.getBoardList(this.segmentType);
+      if (this.subCategoryCd == "popList") {
+        this.getPopList();
+      } else {
+        this.getBoardList();
+      }
+      setTimeout(() => {
+        e.target.complete();
+      }, 500);
+    },
+
+    goRouter(articleKey, data) {
+      if (data.delYn === "N") {
+        communityViewMapFn({ article: articleKey, type: "community" });
+        this.$router.push({
+          path: "/communityView",
+          hash: "#commentList"
+        });
+
+        /*getData({
+          url: '/communityDropCheck',
+          param: {
+            articleKey: articleKey
+          },
+          then: (ret) => {
+            if (ret.result == 'Y') {
+              this.warningAlert('❌', '삭제된 게시글입니다.');
+              this.$router.push('/community');
+              return;
+            } else {
+              communityViewMapFn({ article: articleKey, type: 'community' });
+              this.$router.push('/communityView');
+            }
+          }
+        });*/
+      } else if (data === "new") {
+        communityWriteMapFn({ type: "new" });
+        this.$router.push("/CommunityWrite");
+      } else {
+        this.warningAlert("❌", "삭제된 게시글입니다.");
+      }
+    },
+    /** 경고 alert창 **/
+    async warningAlert(title, message) {
+      const alert = await this.alertController.create({
+        header: title,
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 글자수 체크 **/
+    customFormatter(inputLength, maxLength) {
+      if (inputLength > maxLength) {
+        return "더이상 입력할수 없습니다.";
+      } else if (inputLength < 1) {
+        return `최소 ${1 - inputLength}자 / 최대 8자`;
+      } else {
+        return `최소 글자수 완료 / 최대 ${maxLength - inputLength}자`;
+      }
+    },
+    getBannerList() {
+      getData({
+        url: "/getBannerList",
+        param: { bannerType: "COMMUNITY" },
+        //param: { bannerType: "HOME" },
+        then: (data) => {
+          this.$nextTick(() => {
+            let sampleList = data;
+            this.bannerList = [...sampleList].sort(() => Math.random() - 0.5);
+          });
+        }
+      });
+    },
+    getInfoList() {
+      getData({
+        url: "/getInfoList",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.bodyList = data.bodyList;
+          this.drinkingList = data.drinkingList;
+          this.smokeList = data.smokeList;
+          this.iconList = data.iconList;
+        }
+      });
+    },
+    /** 아이콘 모달창 닫기 **/
+    selectIcon(item) {
+      this.iconCd = item.iconCd;
+      this.userIconNm = item.iconNm;
+    },
+    /** 로그인 유저 정보 **/
+    getSelectUserIcon() {
+      getData({
+        url: "/getSelectUserIcon",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.userIconNm = data.iconNm;
+          this.selectedAvatar = data.communityLasticon;
+          this.userNick = data.nick;
+          this.userCommmunityLastNick = data.communityLastNick;
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.nickname-modal {
+  padding: 0 18px;
+  --height: 580px;
+
+  ion-content {
+    &::part(scroll) {
+      overflow: hidden;
+    }
+  }
+
+  &::part(content) {
+    border-radius: var(--ion-border-radius-lg);
+  }
+
+  ion-avatar {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border: 2px solid var(--ion-color-warning);
+    margin: 0 auto;
+
+    .btn-profile {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1rem;
+      margin: 0;
+
+      &::part(native) {
+        width: auto;
+        height: 24px;
+        margin: 0 auto;
+        padding: 0 10px;
+      }
+    }
+  }
+
+  .profile-info {
+    text-align: center;
+  }
+}
+
+.errorText {
+  font-size: 12px;
+  position: absolute;
+  color: #ff002a;
+  margin: -15px 0 0 5px;
+}
+
+.sub-category {
+  background-color: var(--ion-background-color);
+}
+</style>

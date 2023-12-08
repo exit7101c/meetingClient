@@ -1,0 +1,52 @@
+<template>
+  <ion-item lines="none">
+    <ion-img slot="start" :src="item.icon" />
+    <ion-label>
+      <h3>
+        <ion-text color="light" class="text-lg text-bold">{{
+          item.title
+        }}</ion-text>
+      </h3>
+      <ion-text color="secondary" class="text-md">{{
+        item.description
+      }}</ion-text>
+    </ion-label>
+    <ion-icon
+      slot="end"
+      :icon="addCircle"
+      color="secondary"
+      size="large"
+    ></ion-icon>
+  </ion-item>
+</template>
+<script>
+import { addCircle } from 'ionicons/icons';
+export default {
+  name: 'CertificationCardItem',
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  data() {
+    return {
+      addCircle
+    };
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --background: var(--ion-border-color);
+  --border-radius: var(--ion-border-radius);
+
+  + ion-item {
+    margin-top: 16px;
+  }
+
+  ion-img {
+    width: 64px;
+    height: 64px;
+  }
+}
+</style>

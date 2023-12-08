@@ -1,0 +1,192 @@
+<template>
+  <div class="openchat-meet-info">
+    <ion-img
+      v-bind:src="
+        chatDetailMap.cdnNm != ''
+          ? 'https://' + chatDetailMap.cdnNm
+          : require('../../assets/img/Loading_icon.gif')
+      "
+      @ionError="
+        $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+      "
+    ></ion-img>
+    <ion-card>
+      <ion-row class="ion-align-items-center ion-justify-content-between">
+        <ion-text color="primary" @click="openUseOpenChatModal">
+          현재 {{ openchatRank }}위
+        </ion-text>
+        <ion-text color="primary">
+          {{cntBookmark}}
+          <ion-icon color="primary" :icon="star" v-if="bookmarkYn == 'Y'"></ion-icon>
+          <ion-icon color="light" :icon="star" v-else></ion-icon>
+        </ion-text>
+      </ion-row>
+      <div class="user-info">
+        <ion-avatar @click="profileInfo(chatDetailMap.regUserKey)">
+          <img v-if="cdnThumbNmProfile != null"
+            :src="'https://' + cdnThumbNmProfile"
+            @ionError="
+              $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+            "
+            alt=""
+          />
+        </ion-avatar>
+        <p @click="handleClick">
+          <ion-text color="secondary" class="text-md">{{
+            chatDetailMap.nick
+          }}</ion-text
+          ><br />
+          <ion-text color="primary" v-if="recentTime" class="text-sm">
+            <span v-if="recentTime != '방금 전'">
+              모임장이 {{ recentTime }} 마지막으로 활동했습니다.
+            </span>
+            <span v-else> 모임장이 현재 활동 중 입니다 </span>
+          </ion-text>
+        </p>
+      </div>
+      <div class="row-box title-info text-center">
+        <ion-text color="light" class="text-xl text-bold">
+          {{ chatDetailMap.title }}
+        </ion-text>
+      </div>
+      <div class="row-box additional-info">
+        <ion-text>{{chatDetailMap.partitionNm}}</ion-text>
+        <span>
+          <ion-icon :icon="locationSharp"></ion-icon>
+          <ion-text>
+            {{
+              chatDetailMap.location !== ''
+                ? chatDetailMap.location
+                : '장소 미정'
+            }}
+          </ion-text>
+        </span>
+        <span>
+          <ion-icon :icon="personSharp"></ion-icon>
+          <ion-text>
+            {{ chatDetailMap.userCount }} / {{ totalUserCount }}
+          </ion-text>
+        </span>
+      </div>
+    </ion-card>
+  </div>
+</template>
+
+<script>
+import {
+  locationOutline,
+  locationSharp,
+  personSharp,
+  star
+} from 'ionicons/icons';
+import { dailyCardInfoMapFn } from '@/assets/js/common';
+
+export default {
+  name: 'OpenChatMeetInfo',
+  inject: ['alertController', 'loadingController'],
+  props: {
+    cdnThumbNmProfile: {
+      type: String
+    },
+    recentTime: {
+      type: String
+    },
+    openchatRank: {
+      type: String
+    },
+    chatDetailMap: {
+      type: Object
+    },
+    totalUserCount: {
+      type: Number
+    },
+    cntBookmark: {
+      type: Number
+    },
+    bookmarkYn: {
+      type: String
+    },
+  },
+  data() {
+    return {
+      locationOutline,
+      locationSharp,
+      personSharp,
+      star,
+      loading: null
+    };
+  },
+
+  methods: {
+    openUseOpenChatModal() {
+      this.$emit('openUseOpenChatModal');
+    },
+    profileInfo(userKey) {
+      dailyCardInfoMapFn({ userKey: userKey, type: 'openChatView' });
+      this.$router.push('/dailyCardInfo');
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.openchat-meet-info {
+  ion-img {
+    position: relative;
+    width: 100%;
+    height: 40vh;
+    max-height: 50vh;
+    object-fit: cover;
+    border-radius: 0;
+    &:after {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      display: block;
+      content: '';
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        0deg,
+        var(--ion-background-color) 0%,
+        var(--ion-background-color) 10%,
+        transparent 100%
+      );
+    }
+  }
+
+  ion-card {
+    margin: -10vh 16px 20px;
+    padding: 10px;
+    background-color: var(--ion-border-color);
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+    contain: inherit;
+  }
+
+  .user-info {
+    text-align: center;
+    margin-top: -60px;
+    ion-avatar {
+      margin: 0 auto 10px;
+    }
+  }
+
+  .additional-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 8px;
+    color: var(--ion-color-secondary);
+    font-size: 12px;
+    > span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+  }
+}
+</style>

@@ -1,0 +1,256 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar class="join-toolbar">
+        <ion-buttons slot="start">
+          <BackButton @event="alarmPrevPage" :custom="true" />
+        </ion-buttons>
+        <ion-title>알림</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <!--      <ion-row-->
+      <!--        class="ion-align-items-center ion-justify-content-between flex-nowrap"-->
+      <!--      >-->
+      <!--        <ion-col class="text-left">-->
+      <!--          <ion-text color="light" class="text-sm text-bold"> 오늘 </ion-text>-->
+      <!--        </ion-col>-->
+      <!--        <ion-col class="text-right"-->
+      <!--          ><ion-text color="light" class="text-sm text-bold">-->
+      <!--            알림지우기-->
+      <!--          </ion-text>-->
+      <!--        </ion-col>-->
+      <!--      </ion-row>-->
+      <ion-list lines="none">
+        <!-- TODO : 경고 메세지 -->
+        <!--        <AlarmAlertNotice />-->
+        <ion-item-group>
+          <AlarmListItem
+            v-for="item in alarmList"
+            :key="item"
+            :item="item"
+            @handleRouterAlarm="handleRouterAlarm(item)"
+            @removeAlarm="removeAlarm(item)"
+          />
+        </ion-item-group>
+        <!-- TODO : 이전 알림 목록 -->
+        <!--                <ion-item-group>-->
+        <!--                  <AlarmListHeader title="이전 알림" />-->
+        <!--                  <AlarmListItem v-for="item in alarmList" :key="item" :item="item" />-->
+        <!--                </ion-item-group>-->
+      </ion-list>
+      <ion-infinite-scroll threshold="100px" @ionInfinite="ionInfinite">
+        <ion-infinite-scroll-content
+          loadingText="Please wait..."
+          loadingSpinner="bubbles"
+        ></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import {
+  openChatMeetMapFn,
+  communityViewMapFn,
+  getData,
+  joinMap,
+  messageTalkMapFn,
+  openChatViewMapFn
+} from "@/assets/js/common";
+// import AlarmListHeader from "@/components/Alarm/AlarmListHeader.vue";
+import AlarmListItem from "@/components/Alarm/AlarmListItem.vue";
+import AlarmAlertNotice from "@/components/Alarm/AlarmAlertNotice.vue";
+import { IonInfiniteScroll, IonInfiniteScrollContent } from "@ionic/vue";
+
+export default {
+  name: "Alarm",
+  inject: ["alertController", "loadingController"],
+  components: {
+    // AlarmListHeader,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    AlarmListItem,
+    AlarmAlertNotice
+  },
+  computed: {
+    alarmList() {
+      //storex 감시
+      return this.$store.state.alarmList;
+    }
+  },
+  data() {
+    return {
+      nextNo: null
+    };
+  },
+  mounted() {
+    this.nextNo = null;
+    this.getAlarmList();
+    this.setAlarmConfirm();
+  },
+  beforeUnmount() {
+  },
+  methods: {
+    /** 알람 리스트 **/
+    getAlarmList() {
+      getData({
+        url: "/getAlarmList",
+        param: {
+          nextNo: this.nextNo
+        },
+        then: (data) => {
+          this.$store.state.alarmList = data;
+          if (data.length > 0) {
+            this.nextNo = data[data.length - 1].alarmSeq;
+          }
+        }
+      });
+    },
+    removeAlarm(item) {
+      getData({
+        url: "/removeAlarm",
+        param: {
+          userId: item.userId,
+          alarmSeq: item.alarmSeq,
+          alarmCd: item.alarmCd
+        },
+        then: (data) => {
+          //this.warningAlert(data.message);
+          this.$store.state.alarmList = this.$store.state.alarmList.filter(filter => {
+            return filter.alarmSeq != item.alarmSeq;
+          });
+        }
+      });
+    },
+    /** 알람 수신 처리 **/
+    setAlarmConfirm() {
+      getData({
+        url: "/setAlarmConfirm",
+        param: {},
+        then: () => {
+        }
+      });
+    },
+
+    /** 무한스크롤 이벤트 **/
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        getData({
+          url: "/getAlarmList",
+          param: {
+            nextNo: self.nextNo
+          },
+          then: (data) => {
+            self.$nextTick(() => {
+              for (let i in data) {
+                self.$store.state.alarmList.push(data[i]);
+              }
+              if (data.length > 0) {
+                self.nextNo = data[data.length - 1].alarmSeq;
+              }
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    },
+
+    handleRouterAlarm(item) {
+      if (
+        item.pushType == "message" ||
+        item.pushType == "myLikeMatching" ||
+        item.pushType == "communityChat"
+      ) {
+        messageTalkMapFn({
+          chatroomId: item.pushKey,
+          type: item.pushType,
+          chatroomType: "first"
+        });
+        this.$router.push("/messageTalk");
+      } else if (item.pushType == "openChat") {
+        getData({
+          url: "/getAlarmOpenChatDel",
+          param: {
+            openChatKey: item.pushKey
+          },
+          then: (data) => {
+            this.$nextTick(() => {
+              if (data.delYn == "Y") {
+                this.warningAlert(data.message);
+                return;
+              } else {
+                openChatMeetMapFn({ openChatKey: item.pushKey, type: item.pushType });
+                this.$router.push("/openChatMeet");
+                // openChatViewMapFn({ openChatKey: item.pushKey, type: item.pushType });
+                // this.$router.push("/openChatView");
+              }
+            });
+          }
+        });
+
+      } else if (item.pushType == "community") {
+        getData({
+          url: "/getAlarmCommunityDel",
+          param: {
+            articleKey: item.pushKey
+          },
+          then: (data) => {
+            this.$nextTick(() => {
+              if (data.delYn == "Y") {
+                this.warningAlert(data.message);
+                return;
+              } else {
+                communityViewMapFn({ article: item.pushKey, type: item.pushType });
+                this.$router.push("/communityView");
+              }
+            });
+          }
+        });
+      } else if (item.pushType == "contestDetail") {
+        getData({
+          url: "/getAlarmCommunityDel",
+          param: {
+            articleKey: item.pushKey
+          },
+          then: (data) => {
+            this.$nextTick(() => {
+              if (data.delYn == "Y") {
+                this.warningAlert(data.message);
+                return;
+              } else {
+                communityViewMapFn({ article: item.pushKey, type: item.pushType });
+                this.$router.push("/contestDetail");
+              }
+            });
+          }
+        });
+      } else if (item.pushType == "myLike") {
+        this.$router.push("/myLike");
+      } else if (item.pushType == "else") {
+        this.$router.push("/alarm");
+      }
+    },
+    alarmPrevPage() {
+      // 알람을 확인 한 후 이전 페이지로 돌아가면 신규알람 아이콘 제거
+      joinMap({ checkedAlarm: true });
+      this.$router.go(-1);
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style scoped></style>

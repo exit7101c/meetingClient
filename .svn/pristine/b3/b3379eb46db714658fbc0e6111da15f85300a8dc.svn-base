@@ -1,0 +1,108 @@
+<template>
+  <ion-card @click="handleClick">
+    <ion-card>
+      <div class="card-item-img">
+        <ion-img
+          v-bind:src="'https://' + item.cdnThumbNm"
+          @ionError="$event.srcElement.src = require('../../assets/img/Loading_icon.gif')"
+        />
+        <ion-text color="light">
+          <template v-if="item.latlonDistance !== null"
+          >약 {{ item.latlonDistance }}km
+          </template
+          >
+          <template v-else>상관없음</template>
+        </ion-text>
+      </div>
+    </ion-card>
+    <ion-card-header>
+      <ion-card-title>{{ item.title }}</ion-card-title>
+      <ion-card-subtitle>
+        <ion-icon :icon="calendarCheck" />
+        <ion-text>{{ item.dueDate }}</ion-text>
+      </ion-card-subtitle>
+    </ion-card-header>
+  </ion-card>
+</template>
+<script>
+import IconCalCheck from "@/assets/img/icon/icon_cal_check.svg";
+
+export default {
+  name: "OpenChatCardItem",
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  data() {
+    return {
+      calendarCheck: IconCalCheck
+    };
+  },
+  methods: {
+    handleClick() {
+      this.$emit("event");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-card {
+  position: relative;
+  margin: 0;
+
+  .card-item-img {
+    position: relative;
+
+    ion-img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      overflow: hidden;
+    }
+
+    ion-text {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 2;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 8px 16px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  }
+
+  ion-card-header {
+    margin-top: 10px;
+    padding: 0;
+    text-align: left;
+
+    ion-card-title {
+      --color: white;
+      font-size: 14px;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+    }
+
+    ion-card-subtitle {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      --color: var(--ion-color-secondary);
+      font-size: 12px;
+      width: 100%;
+      color: #ef918f;
+
+      ion-text {
+        width: 100%;
+      }
+    }
+  }
+}
+</style>

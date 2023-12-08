@@ -1,0 +1,363 @@
+<template>
+  <ion-page>
+    <custom-header page-name="Message"></custom-header>
+    <ion-content>
+      <!--<div v-if="bannerList.length > 0">
+        &lt;!&ndash; 상단 배너 &ndash;&gt;
+        <div class="ion-padding pb-0">
+          <MainBanner :bannerList="bannerList" />
+        </div>
+        &lt;!&ndash;  탭   &ndash;&gt;
+      </div>-->
+      <div class="sticky-top">
+        <ion-segment
+          mode="ios"
+          :scrollable="true"
+          class="segment-chip"
+          @ionChange="changeSegment"
+          :value="segmentValue"
+        >
+          <!--          <ion-segment-button class="segment-lg" value=""-->
+          <!--          >전체-->
+          <!--          </ion-segment-button>-->
+          <ion-segment-button class="segment-lg" value="single">
+            <ion-row
+              class="ion-align-items-center ion-justify-content-center gap-sm flex-nowrap"
+            >
+              <ion-icon :icon="messageIcon"></ion-icon>
+              <ion-text>개인채팅</ion-text>
+              <ion-chip
+                class="chip-sm shape-round chip-alarm"
+                v-if="messageBadgeCountSingle > 0"
+              >
+                {{
+                  messageBadgeCountSingle > 99
+                    ? `${messageBadgeCountSingle}+`
+                    : messageBadgeCountSingle
+                }}
+              </ion-chip>
+            </ion-row>
+          </ion-segment-button>
+          <ion-segment-button class="segment-lg" value="openchat">
+            <ion-row
+              class="ion-align-items-center ion-justify-content-center gap-sm flex-nowrap"
+            >
+              <ion-icon :icon="opentChatOutline"></ion-icon>
+              <ion-text>소모임</ion-text>
+              <ion-chip
+                class="chip-sm shape-round chip-alarm"
+                v-if="messageBadgeCountOpenChat > 0"
+              >
+                {{
+                  messageBadgeCountOpenChat > 99
+                    ? `${messageBadgeCountOpenChat}+`
+                    : messageBadgeCountOpenChat
+                }}
+              </ion-chip>
+            </ion-row>
+          </ion-segment-button>
+          <ion-segment-button class="segment-lg" value="anonymous">
+            <ion-row
+              class="ion-align-items-center ion-justify-content-center gap-sm flex-nowrap"
+            >
+              <ion-icon :icon="anonymousOutline"></ion-icon>
+              <ion-text>익명채팅</ion-text>
+              <ion-chip
+                class="chip-sm shape-round chip-alarm"
+                v-if="messageBadgeCountAnonymous > 0"
+              >
+                {{
+                  messageBadgeCountAnonymous > 99
+                    ? `${messageBadgeCountAnonymous}+`
+                    : messageBadgeCountAnonymous
+                }}
+              </ion-chip>
+            </ion-row>
+          </ion-segment-button>
+          <!-- 스타일을 잡기위한 더미용 -->
+          <!--          <ion-segment-button-->
+          <!--            v-for="(n, index) in 1"-->
+          <!--            :key="index"-->
+          <!--            class="is-blind"-->
+          <!--          >-->
+          <!--          </ion-segment-button>-->
+        </ion-segment>
+      </div>
+      <!-- Refresh -->
+      <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+        <ion-refresher-content
+          refreshing-spinner="circles"
+          :pulling-icon="chevronDownCircleOutline"
+        ></ion-refresher-content>
+      </ion-refresher>
+      <div
+        class="ion-padding"
+        :class="{
+          'no-comment':
+            messageMainMap[this.segmentValue] === null ||
+            !messageMainMap[this.segmentValue]?.length
+        }"
+      >
+        <ion-list
+          lines="full"
+          v-if="
+            messageMainMap[this.segmentValue] != null &&
+            messageMainMap[this.segmentValue].length > 0
+          "
+        >
+          <MessageItem
+            :thumbnail="item.cdnThumbNm"
+            v-for="item in messageMainMap[this.segmentValue]"
+            :key="item.chatroomId"
+            @click="talk(item)"
+          >
+            <template #content>
+              <h3>
+                <ion-text color="light" class="text-bold text-lg">
+                  <ion-label v-if="item.title != null"
+                  >{{ item.title }}
+                  </ion-label>
+                  <ion-label v-else style="color: #676767"
+                  >대화상대가 없습니다.
+                  </ion-label>
+                </ion-text>
+              </h3>
+              <p>
+                <ion-text color="light">
+                  <ion-label>{{ item.lastChat }}</ion-label>
+                </ion-text>
+              </p>
+            </template>
+            <template #count>
+              <p>
+                <ion-text color="light" class="text-sm">
+                  {{ item.lastTimeMm }}
+                </ion-text>
+              </p>
+              <p class="text-center" style="">
+                <ion-badge color="secondary" v-if="item.badgeCount !== 0"
+                >{{ item.badgeCount }}
+                </ion-badge>
+              </p>
+            </template>
+          </MessageItem>
+        </ion-list>
+        <ion-list v-else>
+          <ion-item lines="none">
+            <ion-label>
+              <p>
+                <ion-icon color="light" size="large" :icon="messageIcon" />
+              </p>
+              <p>
+                <ion-text
+                  color="light"
+                  style="font-size: 16px"
+                  v-if="this.segmentValue != 'anonymous'"
+                >참여중인 대화방이 없어요😢<br />초이스와 소모임을 통해<br />
+                  소중한 사람들과 대화를 나눠보세요!
+                </ion-text>
+                <ion-text color="light" style="font-size: 16px" v-else
+                >참여중인 대화방이 없어요😢<br />커뮤니티에서 익명메시지를
+                  통해<br />
+                  익명이 보장된 대화를 시작해보세요!
+                </ion-text>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import { getData, messageTalkMapFn, openChatMeetMapFn } from "@/assets/js/common";
+import MessageItem from "@/components/Message/MessageItem.vue";
+import IconMessage from "@/assets/img/icon/icon_tabs_message.svg";
+import IconOpenChat from "@/assets/img/icon/icon_tabs_open_chat.svg";
+import MainBanner from "@/components/Home/MainBanner.vue";
+import { helpOutline, chevronDownCircleOutline } from "ionicons/icons";
+
+export default {
+  name: "Message",
+  components: { MessageItem, MainBanner },
+  data() {
+    return {
+      chevronDownCircleOutline,
+      messageIcon: IconMessage,
+      opentChatOutline: IconOpenChat,
+      anonymousOutline: helpOutline,
+      messageMainList: [],
+
+      bannerList: [],
+      segmentValue: "single"
+    };
+  },
+  computed: {
+    messageMainMap() {
+      //storex 감시
+      return this.$store.state.messageMainMap;
+    },
+    messageBadgeCountSingle() {
+      let count = 0;
+      for (let idx in this.$store.state.messageMainMap.single) {
+        this.$store.state.messageMainMap.single[idx].badgeCount;
+        if (this.$store.state.messageMainMap.single[idx].badgeCount > 0) {
+          count =
+            count + this.$store.state.messageMainMap.single[idx].badgeCount;
+        }
+      }
+      return count;
+    },
+    messageBadgeCountOpenChat() {
+      let count = 0;
+      for (let idx in this.$store.state.messageMainMap.openchat) {
+        this.$store.state.messageMainMap.openchat[idx].badgeCount;
+        if (this.$store.state.messageMainMap.openchat[idx].badgeCount > 0) {
+          count =
+            count + this.$store.state.messageMainMap.openchat[idx].badgeCount;
+        }
+      }
+      return count;
+    },
+    messageBadgeCountAnonymous() {
+      let count = 0;
+      for (let idx in this.$store.state.messageMainMap.anonymous) {
+        this.$store.state.messageMainMap.anonymous[idx].badgeCount;
+        if (this.$store.state.messageMainMap.anonymous[idx].badgeCount > 0) {
+          count =
+            count + this.$store.state.messageMainMap.anonymous[idx].badgeCount;
+        }
+      }
+      return count;
+    }
+  },
+  ionViewWillEnter() {
+    this.getBannerList();
+    //this.messageMainList = JSON.parse(localStorage.getItem("messageMainList"));
+    // this.getMessageMainList(this.segmentValue);
+  },
+  ionViewDidLeave() {
+    // 초기화
+  },
+  mounted() {
+    // this.getMessageMainList();
+  },
+
+  updated() {
+    /* 메세지가 오면 지속 업데이트 하기 위해.. */
+    this.$nextTick(() => {
+    });
+  },
+
+  methods: {
+    /** Refresh **/
+    doRefresh(event) {
+      this.getMessageMainMap();
+      setTimeout(() => {
+        event.target.complete();
+      }, 500);
+    },
+    talk(item) {
+      this.$nextTick(() => {
+        if (item.chatroomType == "openchat") {
+          openChatMeetMapFn({ openChatKey: item.openChatKey, type: "openChatMessage", chatroomId: item.chatroomId });
+          this.$router.push("/openChatMeet");
+        } else {
+          messageTalkMapFn({
+            chatroomId: item.chatroomId,
+            type: "message",
+            chatroomType: this.segmentValue
+          });
+          this.$router.push("/messageTalk");
+        }
+      });
+
+    },
+    getMessageMainList(chatroomType) {
+      getData({
+        url: "/messageMain/getMessageMainList",
+        param: { chatroomType: chatroomType },
+        then: (data) => {
+          this.$nextTick(() => {
+            this.messageMainList = data;
+            this.imgsLength = this.imgsLength + data.length;
+            //localStorage.setItem("messageMainList", JSON.stringify(data));
+          });
+        }
+      });
+    },
+    getMessageMainMap() {
+      getData({
+        url: "/messageMain/getMessageMainMap",
+        param: {},
+        then: (data) => {
+          this.$nextTick(() => {
+            this.$store.state.messageMainMap = data;
+          });
+        }
+      });
+    },
+
+    changeSegment(event) {
+      this.segmentValue = event.detail.value;
+      this.getMessageMainMap();
+      // this.getMessageMainList(this.segmentValue);
+    },
+
+    getBannerList() {
+      getData({
+        url: "/getBannerList",
+        param: { bannerType: "MESSAGE" },
+        then: (data) => {
+          this.$nextTick(() => {
+            this.getMessageMainMap();
+            let sampleList = data;
+            this.bannerList = [...sampleList].sort(() => Math.random() - 0.5);
+          });
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.segment-chip {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+ion-segment.segment-chip {
+  padding: 14px 14px 14px 14px;
+}
+
+ion-list {
+  ion-list-header {
+    padding: 20px 18px;
+
+    ion-label {
+      color: white;
+      font-weight: bold;
+    }
+  }
+}
+
+.no-comment {
+  height: calc(100% - 207px);
+
+  ion-list {
+    height: 100%;
+
+    ion-item {
+      text-align: center;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      --inner-padding-end: 0;
+    }
+  }
+}
+</style>

@@ -1,0 +1,38 @@
+<template>
+  <ion-list-header>
+    <h3>
+      <ion-text class="text-xl">{{ title }}</ion-text>
+    </h3>
+  </ion-list-header>
+</template>
+<script>
+
+
+export default {
+  name: "BadgeCardTitle",
+  props: {
+    title: {
+      type: String
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-list-header {
+  padding-left: 0;
+  color: white;
+  margin-bottom: 10px;
+
+  h3 {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+
+    ion-text {
+      line-height: 1;
+    }
+  }
+}
+</style>

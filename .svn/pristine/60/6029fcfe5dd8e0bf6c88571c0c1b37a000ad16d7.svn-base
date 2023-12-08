@@ -1,0 +1,180 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>기본설정</ion-title>
+      </ion-toolbar>
+      <ProgressBar :currIdx="introduce.length > 0 ? 10 : 9"></ProgressBar>
+    </ion-header>
+    <ion-content>
+      <div class="layout-container">
+        <!-- title -->
+        <JoinTitle>
+          <template v-slot:title>
+            자기소개를<br />
+            해주세요
+          </template>
+          <template v-slot:desc>나에대해 보다 잘 알려줄 수 있어요!</template>
+        </JoinTitle>
+        <ion-list class="form-wrapper">
+          <ion-item
+            class="input-field"
+            counter="true"
+            :counterFormatter="customFormatter"
+          >
+            <ion-input
+              type="text"
+              :clear-input="true"
+              maxlength="50"
+              placeholder="한줄소개는 50자까지 가능해요!"
+              class="custom-input"
+              v-model="introduce"
+            />
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-content>
+    <ion-footer class="join-footer">
+      <div class="layout-container">
+        <div class="btn-group">
+          <ion-button
+            color="primary"
+            size="large"
+            expand="block"
+            shape="round"
+            :disabled="!introduce.length || !joinInCheckDisabled"
+            @click="validateAndNavigate"
+          >
+            <ion-ripple-effect></ion-ripple-effect>
+            회원가입 완료하기
+          </ion-button>
+        </div>
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import { getData, tempMap, joinMap } from "@/assets/js/common";
+import JoinTitle from "@/components/JoinTitle.vue";
+import ProgressBar from "@/components/ProgressBar.vue";
+
+export default {
+  name: "JoinIntroduce",
+  inject: ["alertController", "loadingController"],
+  components: {
+    JoinTitle,
+    ProgressBar
+  },
+  data() {
+    return {
+      introduce: "",
+      profile: "",
+      joinInCheckDisabled: true, // 가입버튼 활성화여부 체크
+      loading: null
+    };
+  },
+  mounted() {
+  },
+
+  methods: {
+    getResult() {
+      var resultObj = {};
+
+      resultObj = this.$store.state.joinMap;
+      resultObj.profile = this.profile;
+      resultObj.msg = this.introduce;
+
+      return resultObj;
+    },
+
+    goJoin() {
+      let url = "";
+      const resultData = this.getResult();
+
+      getData({
+        url: "/join/reservationCheck",
+        param: {
+          mobileNo: resultData.mobileNo
+        },
+        then: (data) => {
+          if (parseInt(data.cnt) > 0) {
+            url = "/join/getUpdateUser";
+          } else {
+            url = "/join/getInsertUser";
+          }
+          getData({
+            url: url,
+            param: {
+              ...resultData
+            },
+            then: (data) => {
+              if (data.successYn === "N") {
+                this.warningAlert(data.message);
+
+                this.loading.dismiss();
+                this.joinInCheckDisabled = true;
+              } else {
+                this.warningAlert(data.message);
+                joinMap({});
+                this.$router.push("/login");
+
+                this.loading.dismiss();
+                this.joinInCheckDisabled = true;
+              }
+            }
+          });
+        }
+      });
+    },
+    /** Introduce bar **/
+    customFormatter(inputLength, maxLength) {
+      if (inputLength > maxLength) {
+        return "더이상 입력할수 없습니다.";
+      } else if (inputLength < 5) {
+        return `${5 - inputLength} 글자 남음 (최소입력글자)`;
+      } else {
+        return `${maxLength - inputLength} 글자 남음`;
+      }
+    },
+
+
+    /** next btn **/
+    validateAndNavigate() {
+      this.showLoading();
+      this.joinInCheckDisabled = false;
+      if (this.introduce.trim() !== "") {
+        this.goJoin();
+      } else {
+        this.loading.dismiss();
+        this.joinInCheckDisabled = true;
+        this.warningAlert("한줄소개를 입력하지 않았습니다.");
+      }
+    },
+
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 로딩 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+      await this.loading.present();
+    }
+  }
+};
+</script>
+
+<style scoped></style>

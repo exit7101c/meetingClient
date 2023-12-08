@@ -1,0 +1,38 @@
+<template>
+  <ion-item lines="none">
+    <ion-img :src="icon" slot="start" />
+    <ion-label>
+      <ion-text color="light" class="text-lg">{{ title }}</ion-text>
+      <p>
+        <ion-text color="secondary" class="text-sm">{{ description }}</ion-text>
+      </p>
+    </ion-label>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: '',
+  props: {
+    icon: {
+      type: String
+    },
+    title: {
+      type: String
+    },
+    description: {
+      type: String
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --padding-start: 0;
+
+  ion-img {
+    width: 64px;
+    height: 64px;
+    margin-right: 16px;
+  }
+}
+</style>

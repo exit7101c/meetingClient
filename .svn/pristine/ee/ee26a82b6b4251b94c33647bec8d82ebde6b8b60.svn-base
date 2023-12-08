@@ -1,0 +1,37 @@
+<template>
+  <ion-list>
+    <ion-item
+      lines="none"
+      color="primary"
+      button
+      detail="true"
+      @click="handleClick"
+    >
+      <ion-label> {{ title }}</ion-label>
+    </ion-item>
+  </ion-list>
+</template>
+<script>
+export default {
+  name: 'GuideBanner',
+  props: {
+    title: {
+      type: String
+    }
+  },
+  methods: {
+    handleClick() {
+      this.$emit('event');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-list {
+  ion-item {
+    --border-radius: var(--ion-border-radius);
+    --detail-icon-color: white;
+    font-size: 14px;
+  }
+}
+</style>

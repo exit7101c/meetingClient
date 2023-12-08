@@ -1,0 +1,152 @@
+<template>
+  <transition name="fade">
+    <div v-if="videoCheck">
+      <div class="fullscreen-video">
+        <img ref="video" :src="gifSource" alt="" />
+      </div>
+      <div class="fullscreen-title">
+        <!-- 로고 -->
+        <h1 class="logo">
+          <LogoSymbol />
+        </h1>
+        <div class="inner">
+          <IntroTitle />
+          <div class="btn-group">
+            <ion-button
+              color="primary"
+              size="large"
+              expand="block"
+              shape="round"
+              class="close-button ion-activatable ripple-parent rounded-rectangle"
+              @click="closeVideo"
+            >
+              <ion-ripple-effect></ion-ripple-effect>
+              시작하기
+            </ion-button>
+          </div>
+          <ion-row class="ion-align-items-center ion-justify-content-center"
+                   @click="$router.push('/notificationWhoIsNAVY')">
+            <ion-text color="light" class="text-sm">네이비</ion-text>
+            <ion-text
+              color="secondary"
+              class="text-sm text-link"
+            >알아보기
+            </ion-text
+            >
+          </ion-row>
+          <!--<ion-button @click="testgo">임시테스트</ion-button>-->
+        </div>
+      </div>
+    </div>
+  </transition>
+</template>
+
+<script>
+import LogoSymbol from "@/components/LogoSymbol.vue";
+import IntroTitle from "@/components/IntroTitle.vue";
+
+export default {
+  name: "FullscreenVideo",
+  components: {
+    LogoSymbol,
+    IntroTitle
+  },
+  props: {
+    videoCheck: Boolean
+  },
+  data() {
+    return {
+      // showVideo: true,
+      gifSource: require("@/assets/img/start.gif")
+    };
+  },
+  mounted() {
+    this.setfullScreen();
+  },
+  methods: {
+    testgo() {
+      this.$router.push("/inputTest");
+    },
+    closeVideo() {
+      // this.showVideo = false;
+      // this.$refs.video.pause();
+      // this.$refs.video.currentTime = 0;
+      this.$router.push("/login");
+    },
+    // PUB : 퍼블리싱 관련 메서드 추가
+    setfullScreen() {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+      window.addEventListener("resize", () => {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty("--vh", `${vh}px`);
+      });
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.fullscreen-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+
+  &:after {
+    display: block;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(57, 57, 57, 0.25);
+  }
+
+  img,
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.fullscreen-title {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  padding: 40px 0;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  overflow-y: auto;
+
+  .logo {
+    width: 80px;
+    margin: 0 auto;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  > .inner {
+    padding: 0 24px;
+  }
+
+  .btn-group {
+    margin: 40px 0 20px;
+
+    .button-large {
+      max-width: 345px;
+      margin: 0 auto;
+    }
+  }
+}
+</style>

@@ -1,0 +1,117 @@
+<template>
+  <div class="verification-info">
+    <div class="verification-info-list">
+      <div class="verification-info-item">
+        <span class="verification-info-title">
+          <span class="verification-info-icon">
+            <img
+              src="../assets/img/icon/icon_verification_check.svg"
+              alt="제출문서 본인확인 아이콘"
+          /></span>
+          <ion-text> 제출 문서 본인확인 </ion-text>
+        </span>
+        <span class="verification-info-desc">
+          <ion-text>본인 인증</ion-text>
+        </span>
+      </div>
+      <div class="verification-info-item">
+        <span class="verification-info-title">
+          <span class="verification-info-icon">
+            <img
+              src="../assets/img/icon/icon_verification_age.svg"
+              alt="연령 확인 아이콘"
+            />
+          </span>
+          <ion-text> 연령 확인 </ion-text>
+        </span>
+        <span class="verification-info-desc">
+          <ion-text>19세 미만 확인</ion-text>
+        </span>
+      </div>
+      <div class="verification-info-item">
+        <span class="verification-info-title">
+          <span class="verification-info-icon">
+            <img
+              src="../assets/img/icon/icon_verification_van.svg"
+              alt="중복가입 및 불량회원 아이콘"
+            />
+          </span>
+          <ion-text> 중복가입 및 불량회원 </ion-text>
+        </span>
+        <span class="verification-info-desc">
+          <ion-text>회원 차단</ion-text>
+        </span>
+      </div>
+      <div class="verification-info-item">
+        <span class="verification-info-title">
+          <span class="verification-info-icon">
+            <img
+              src="../assets/img/icon/icon_verification_security.svg"
+              alt="단방향 암호화를 통한 아이콘"
+            />
+          </span>
+          <ion-text> 단방향 암호화를 통한 </ion-text>
+        </span>
+        <span class="verification-info-desc">
+          <ion-text>개인정보 보호</ion-text>
+        </span>
+      </div>
+    </div>
+  </div>
+  <ion-text class="text-sm" color="secondary"
+    >인증 후 개인정보 즉시 폐기 / 폐기 완료 SMS 통보</ion-text
+  >
+</template>
+<script>
+import { IonText } from '@ionic/vue';
+
+export default {
+  name: 'VerificationInfo',
+  components: {
+    IonText
+  }
+};
+</script>
+<style scoped lang="scss">
+.verification-info {
+  border: 1px solid var(--ion-border-color);
+  padding: 24px 24px;
+  border-radius: 16px;
+
+  .verification-info-list {
+    max-width: 256px;
+    margin: 0 auto;
+
+    .verification-info-item {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      + .verification-info-item {
+        margin-top: 16px;
+      }
+
+      .verification-info-title {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 16px;
+      }
+      .verification-info-icon {
+        display: inline-block;
+        text-align: center;
+        width: 18px;
+      }
+    }
+  }
+
+  + ion-text {
+    display: block;
+    margin-top: 9px;
+    margin-left: 4px;
+  }
+}
+</style>

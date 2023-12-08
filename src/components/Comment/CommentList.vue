@@ -1,0 +1,64 @@
+<template>
+  <ion-list lines="full">
+    <ion-list-header>
+      <ion-label>댓글</ion-label>
+    </ion-list-header>
+    <template v-if="itemList.length > 0">
+      <slot></slot>
+    </template>
+    <template v-else>
+      <ion-item class="no-comment">
+        <ion-label>
+          <p>
+            <ion-icon size="large" color="light" :icon="chatboxOutline" />
+          </p>
+          <p>
+            <ion-text color="light"
+              >댓글이 없어요 <br />
+              가장 먼저 댓글을 달아보세요!!</ion-text
+            >
+          </p>
+        </ion-label>
+      </ion-item>
+    </template>
+  </ion-list>
+</template>
+<script>
+import { chatboxOutline } from 'ionicons/icons';
+export default {
+  name: 'CommentList',
+  props: {
+    itemList: {
+      type: Array
+    }
+  },
+  data() {
+    return {
+      chatboxOutline
+    };
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-list {
+  border-top: 2px solid var(--ion-border-color);
+  ion-list-header {
+    padding: 20px 18px 0;
+    min-height: auto;
+    ion-label {
+      font-size: 18px;
+      color: white;
+      font-weight: bold;
+      margin: 0;
+    }
+  }
+
+  ion-item.no-comment {
+    text-align: center;
+    margin-top: 18px;
+    --padding-bottom: 20px;
+    --padding-top: 20px;
+    border-top: 1px solid var(--ion-border-color);
+  }
+}
+</style>

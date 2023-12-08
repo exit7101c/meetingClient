@@ -1,0 +1,95 @@
+<template>
+  <ion-item lines="none">
+    <!--    <ion-img slot="start" :src="'https://' + item.icon" />-->
+    <font-awesome-icon class="badgeIcon" :icon="computedIcon" />
+    <ion-label>
+      <h3>
+        <ion-text color="light" class="text-lg text-bold">
+          {{ item.badgeNm }}
+        </ion-text>
+        <ion-icon
+          v-if="edit"
+          slot="end"
+          :icon="createOutline"
+          color="secondary"
+          size="small"
+          @click="editCertified">
+        </ion-icon>
+      </h3>
+      <ion-text color="secondary" class="text-md">
+        {{ item.badgeDescription }}
+      </ion-text>
+      <ion-row>
+        <ion-text color="danger" class="text-md" v-if="item.rejectDescription">
+          {{ item.rejectDescription }}
+        </ion-text>
+      </ion-row>
+    </ion-label>
+    <ion-icon
+      v-if="item.reject != 'Y'"
+      slot="end"
+      :icon="checkmarkCircleOutline"
+      color="secondary"
+      size="large"
+    ></ion-icon>
+  </ion-item>
+</template>
+<script>
+import { createOutline, checkmarkCircleOutline } from "ionicons/icons";
+
+export default {
+  name: "BadgeCardItem",
+  props: {
+    item: {
+      type: Object
+    },
+    edit: {
+      type: Boolean
+    }
+  },
+  computed: {
+    computedIcon() {
+      if (this.$props.item.icon) {
+        if (this.$props.item.icon == "youtube") {
+          return ["fab", this.$props.item.icon];
+        } else {
+          return ["fas", this.$props.item.icon];
+        }
+      }
+      return "";
+    }
+  },
+  data() {
+    return {
+      createOutline, checkmarkCircleOutline
+    };
+  },
+  methods: {
+    editCertified() {
+      this.$emit("editCertified");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --background: var(--ion-border-color);
+  --border-radius: var(--ion-border-radius);
+
+  + ion-item {
+    margin-top: 16px;
+  }
+
+  ion-img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .badgeIcon {
+    width: 35px;
+    height: 35px;
+    margin-right: 20px;
+    color: #fff;
+  }
+}
+</style>

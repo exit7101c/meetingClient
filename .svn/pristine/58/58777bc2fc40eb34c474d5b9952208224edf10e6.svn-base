@@ -1,0 +1,1467 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton @event="presentAlertConfirm()" :custom="true" />
+        </ion-buttons>
+        <ion-title>모임 생성하기</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <!-- 오픈챗 가이드 -->
+      <GuideBanner
+        @event="goRouter('guide')"
+        :title="'소모임을 더 즐기기 위한 가이드 보기 배너'"
+      />
+      <!--   게시판 선택   -->
+      <div class="row-box">
+        <div class="btn-tab-group">
+          <ion-button @click.stop="openModal('category')" fill="outline">
+            <span v-if="partitionCd == ''">게시판 선택하기</span>
+            <span v-else>{{ partitionNm }}</span>
+          </ion-button>
+          <ion-button
+            @click.stop="openModal('subCategory')"
+            fill="outline"
+            :disabled="partitionCd == ''"
+          >
+            <span v-if="subPartitionCd == ''">서브게시판 선택하기</span>
+            <span v-else>{{ subPartitionNm }}</span>
+          </ion-button>
+        </div>
+      </div>
+      <!--   입력 폼   -->
+      <div class="row-box">
+        <ion-list>
+          <ion-item
+            ref="title"
+            counter="true"
+            :counterFormatter="COUNTE_FORMAT"
+            class="input-field"
+          >
+            <ion-input
+              type="text"
+              maxlength="20"
+              placeholder="모임 제목은 최대 20자까지 가능해요"
+              v-model="title"
+              @ionChange="COM_VALIDATION(title, 'title', this)"
+              @input="handleInput"
+            />
+          </ion-item>
+          <ion-item
+            ref="content"
+            lines="none"
+            counter="true"
+            :counterFormatter="COUNTE_FORMAT"
+            class="input-field"
+          >
+            <ion-textarea
+              v-model="content"
+              :rows="15"
+              maxlength="2000"
+              @ionChange="COM_VALIDATION(content, 'content', this)"
+              placeholder="매너를 지켜주세요.&#10;특정인이나 집단을 비하하거나 저격하는 행위,&#10;욕설 및 비방글은 삭제됩니다."
+            />
+          </ion-item>
+        </ion-list>
+      </div>
+      <!-- 사진 첨부 -->
+      <!-- TODO: 이미지 첨부 관련 개발 로직 공통 처리 필요 -->
+      <div class="row-box">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="4">
+              <AddPhotoButton
+                @click="openImgPopup"
+                :name="imgCdnNm"
+                :required="true"
+              />
+              <input
+                type="file"
+                @change="onFileChange"
+                ref="photo"
+                style="display: none"
+              />
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+      <!--   하단 시간 및 장소   -->
+      <div class="row-box">
+        <ion-list class="schedule-info">
+          <div class="row-box">
+            <CustomCardItem>
+              <ion-label class="text-left">
+                <ion-row class="gap-md ion-align-items-center">
+                  <ion-icon :icon="calendarCheck" color="light"></ion-icon>
+                  <template v-if="type == 'always'"> 항상</template>
+                  <template v-else>
+                    <ion-datetime-button
+                      datetime="datetime"
+                      class="d-inline btn-datetime"
+                    ></ion-datetime-button>
+                  </template>
+                </ion-row>
+              </ion-label>
+              <ion-select v-model="type" placeholder="모집 형식 선택">
+                <ion-select-option value="always">상시모집</ion-select-option>
+                <ion-select-option value="time">기간지정</ion-select-option>
+              </ion-select>
+              <ion-modal :keep-contents-mounted="true" class="datetimeModal">
+                <ion-datetime
+                  id="datetime"
+                  mode="md"
+                  presentation="date"
+                  :show-default-buttons="true"
+                  v-model="dueDate"
+                  datetime="datetime"
+                  :min="getCurrentDate()"
+                ></ion-datetime>
+              </ion-modal>
+            </CustomCardItem>
+          </div>
+
+          <!-- 오픈챗 방 활성/ 비활성화 -->
+          <!--          <div class="row-box">-->
+          <!--            <CustomCardItem>-->
+          <!--              <ion-label>-->
+          <!--                <ion-row class="gap-md ion-align-items-center" style="text-align: center !important;">-->
+          <!--                  <ion-text color="light">-->
+          <!--                    <span style="font-size: 12px; color: #336dff;" v-if="privateYn == true"> 오픈채팅 활성화 상태로 생성됩니다.</span>-->
+          <!--                    <span style="font-size: 12px; color: #f63d3d;" v-else> 오픈채팅은 비활성화 상태로 생성됩니다. </span>-->
+          <!--                  </ion-text>-->
+          <!--                </ion-row>-->
+          <!--              </ion-label>-->
+          <!--            </CustomCardItem>-->
+          <!--          </div>-->
+
+          <div class="row-box" @click="openModal('address')">
+            <CustomCardItem>
+              <ion-label class="text-left">
+                <ion-row class="gap-md ion-align-items-center">
+                  <ion-icon :icon="locationOutline" color="light" />
+                  <ion-text>모임장소를 정해 주세요 !</ion-text>
+                  <ion-input
+                    type="text"
+                    placeholder="주소를 입력해주세요."
+                    class="address-field"
+                    v-model="location"
+                    readonly
+                    style="padding-right: 10px !important; text-align: right"
+                  />
+                  <!--                  <ion-input-->
+                  <!--                    @click="openModal('address')"-->
+                  <!--                    type="text"-->
+                  <!--                    placeholder="주소를 입력해주세요."-->
+                  <!--                    class="address-field"-->
+                  <!--                    v-model="location"-->
+                  <!--                    readonly-->
+                  <!--                    style="padding-right: 10px !important; text-align: right"-->
+                  <!--                  />-->
+                </ion-row>
+              </ion-label>
+            </CustomCardItem>
+          </div>
+        </ion-list>
+      </div>
+      <!-- 하단 체크박스 -->
+      <ion-list class="activateCheckList">
+        <ion-item class="activateCheckList-item" lines="none">
+          <ion-checkbox
+            slot="start"
+            @click="activeTimeCheck"
+            v-model="activeTimeToggle"
+          />
+          <ion-label class="text-left">
+            <ion-text class="activeTimeText" readonly>
+              다른 사용자들이 모임 정보에서 <br />마지막 활동 시간을 볼 수
+              있어요 !
+            </ion-text>
+          </ion-label>
+        </ion-item>
+        <ion-item class="activateCheckList-item" lines="none">
+          <ion-checkbox
+            slot="start"
+            @click="activeCheck"
+            v-model="activeToggle"
+          />
+          <ion-label class="text-left">
+            <ion-text class="activeText" readonly>
+              방장은 48시간동안 활동하지 않으면 <br />모임은 비활성화 처리됩니다
+              !
+            </ion-text>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <PageLoadingCheck
+        v-if="lodingCheck != false"
+        style="position: fixed; top: 48%; left: 48%; z-index: 9999"
+      />
+    </ion-content>
+    <ion-footer>
+      <div class="layout-container">
+        <ion-button
+          color="primary"
+          shape="round"
+          expand="block"
+          size="large"
+          @click="checkBth(this.state)"
+          :disabled="!checkDisabledBtn"
+        >
+          소모임 {{ this.state == 'edit' ? '수정하기' : '생성하기' }}
+        </ion-button>
+      </div>
+    </ion-footer>
+    <!-- 주소 검색 모달 -->
+    <ion-modal
+      class="location-modal"
+      :is-open="modalOpen"
+      @ionModalDidDismiss="saveLocationBtn"
+      @ionModalDidPresent="mapOpen"
+      :initial-breakpoint="1"
+      :breakpoints="[0, 1]"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button @click="saveLocationBtn()">
+              <ion-icon slot="icon-only" :icon="chevronBack" />
+            </ion-button>
+          </ion-buttons>
+          <ion-title>지도에서 위치 확인</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <div id="openchatWriteMap" style="width: 100%; height: 80%" />
+      </ion-content>
+      <ion-footer
+        class="location-modal-footer"
+        style="height: 110px; background-color: #191a39; padding: 10px"
+      >
+        <div class="layout-container">
+          <ion-grid style="padding: 0 10px 0 10px">
+            <ion-row class="ion-align-items-end ion-justify-content-between">
+              <ion-text color="light">
+                {{ locationView }}
+              </ion-text>
+              <ion-text color="light" @click="jibunGuCheck">
+                <ion-icon
+                  :icon="swapHorizontalOutline"
+                  class="v-middle"
+                ></ion-icon>
+                <span class="v-middle">{{ checkBtnText }}</span>
+              </ion-text>
+            </ion-row>
+          </ion-grid>
+          <div class="btn-group">
+            <ion-button
+              color="primary"
+              size="large"
+              expand="block"
+              shape="round"
+              @click="saveLocationBtn"
+            >
+              <ion-ripple-effect></ion-ripple-effect>
+              이 위치로 주소 설정
+            </ion-button>
+          </div>
+        </div>
+      </ion-footer>
+    </ion-modal>
+
+    <!--  이미지 선택 모달  -->
+    <ion-modal
+      :is-open="imgModalOpen"
+      @ionModalDidDismiss="imgModalOpen = false"
+      :initial-breakpoint="1.0"
+      :breakpoints="[0, 0.15, 0.5, 1.0]"
+    >
+      <ion-page>
+        <ion-header>
+          <ion-toolbar class="text-left">
+            <ion-title>한장의 사진을 선택할 수 있어요</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-list class="ion-padding">
+            <ion-radio-group v-model="radioValue">
+              <div class="row-box">
+                <ion-list-header>
+                  <ion-text color="light" class="text-md text-bold"
+                    >직접등록
+                  </ion-text>
+                </ion-list-header>
+                <ion-row>
+                  <ion-col size="4">
+                    <template v-if="imgCdnNm2 == null">
+                      <AddPhotoButton
+                        @click="addPhoto('insert')"
+                        :name="imgCdnNm2"
+                        label="직접등록"
+                      />
+                    </template>
+                    <template v-else>
+                      <AddPhotoButton
+                        @click="addPhoto('update')"
+                        :name="imgCdnNm2"
+                        label="직접등록"
+                      />
+                    </template>
+                  </ion-col>
+                </ion-row>
+              </div>
+              <div class="row-box">
+                <ion-list-header>
+                  <ion-text color="light" class="text-md text-bold"
+                    >기본사진
+                  </ion-text>
+                </ion-list-header>
+                <ion-row>
+                  <ion-col
+                    size="4"
+                    v-for="item in defaultImgList"
+                    :key="item.fileId"
+                  >
+                    <OpenChatDefaultImgItem
+                      :item="item"
+                      @event="checkImg(item, 'default')"
+                    />
+                  </ion-col>
+                </ion-row>
+              </div>
+              <div class="row-box">
+                <ion-list-header>
+                  <ion-text color="light" class="text-md text-bold"
+                    >PLUS PHOTO
+                  </ion-text>
+                  <div class="bonus-label">
+                    <NavyPlusLabel />
+                  </div>
+                </ion-list-header>
+                <ion-row>
+                  <ion-col
+                    size="4"
+                    v-for="item in defaultSubscribeImgList"
+                    :key="item.fileId"
+                  >
+                    <OpenChatDefaultImgItem
+                      :item="item"
+                      :type="'plus'"
+                      @event="checkImg(item, 'plus')"
+                    />
+                  </ion-col>
+                </ion-row>
+              </div>
+            </ion-radio-group>
+          </ion-list>
+        </ion-content>
+        <ion-footer>
+          <div class="ion-padding">
+            <ion-button
+              color="primary"
+              size="large"
+              shape="round"
+              expand="block"
+              @click="imgComplete()"
+            >
+              사진등록하기
+            </ion-button>
+          </div>
+        </ion-footer>
+      </ion-page>
+    </ion-modal>
+
+    <!-- 카테고리 모달 -->
+    <ion-modal
+      ref="modal"
+      :is-open="categoryModalOpen"
+      @ionModalDidDismiss="categoryModalOpen = false"
+      :initial-breakpoint="1.0"
+      :breakpoints="[0, 0.15, 0.5, 1.0]"
+    >
+      <ion-page>
+        <ion-header>
+          <ion-toolbar class="text-left">
+            <ion-title>카테고리를 선택해 주세요</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-list class="ion-padding">
+            <SelectCategoryItem
+              class="row-box"
+              v-for="(item, idx) in partitionList"
+              :key="idx"
+              :item="item"
+              @click="closeCategory(item, 'category')"
+            />
+          </ion-list>
+        </ion-content>
+      </ion-page>
+    </ion-modal>
+
+    <!-- 서브 카테고리 모달 -->
+    <ion-modal
+      ref="modal"
+      :is-open="subCategoryModalOpen"
+      @ionModalDidDismiss="subCategoryModalOpen = false"
+      :initial-breakpoint="1.0"
+      :breakpoints="[0, 1.0]"
+      style="--height: 50%"
+    >
+      <ion-page>
+        <ion-header>
+          <ion-toolbar class="text-left">
+            <ion-title>서브 카테고리를 선택해 주세요</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-list class="ion-padding">
+            <div
+              class="row-box"
+              v-for="item in partitionSubList"
+              :key="item.idx"
+            >
+              <SelectCategoryItem
+                :item="item"
+                :type="'sub'"
+                @click="closeCategory(item, 'subCategory')"
+              />
+            </div>
+          </ion-list>
+        </ion-content>
+      </ion-page>
+    </ion-modal>
+    <AlertMessageModal
+      :is-open="subscribeMessage"
+      :title="'NAVY+'"
+      :message="'회원님은 현재 구독 상태가 아닙니다.'"
+      :subMessage="'NAVY PASS 에 가입하시면 더많은 혜택을 받으실수 있습니다.'"
+      :btnName="'이동'"
+      :height="220"
+      :disabledCheck="false"
+      @ionModalDidDismiss="subscribeMessage = false"
+      @handleClickBtn="goRouter('store')"
+    />
+  </ion-page>
+</template>
+
+<script>
+import { locationOutline, mapOutline } from 'ionicons/icons';
+import { IonDatetime, IonDatetimeButton } from '@ionic/vue';
+import NavyPlusLabel from '@/components/NavyPlusLabel.vue';
+import {
+  chevronBack,
+  addOutline,
+  swapHorizontalSharp,
+  swapHorizontalOutline
+} from 'ionicons/icons';
+import {
+  getData,
+  setFile,
+  openChatWriteMap,
+  COM_VALIDATION,
+  COUNTE_FORMAT,
+  openChatViewMapFn,
+  openChatWriteMapFn,
+  storeMapFn,
+  openChatViewMap
+} from '@/assets/js/common';
+import GuideBanner from '@/components/Common/GuideBanner.vue';
+import AddPhotoButton from '@/components/AddPhotoButton.vue';
+import CustomCardItem from '@/components/Custom/CustomCardItem.vue';
+import IconCalCheck from '@/assets/img/icon/icon_cal_check.svg';
+import OpenChatDefaultImgItem from '@/components/OpenChat/OpenChatDefaultImgItem.vue';
+import SelectCategoryItem from '@/components/Common/SelectCategoryItem.vue';
+import PageLoadingCheck from '@/components/PageLoadingCheck.vue';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
+import AlertMessageModal from '@/components/Modal/AlertMessageModal';
+
+export default {
+  name: 'OpenChatWrite',
+  inject: ['loadingController', 'alertController'],
+  components: {
+    NavyPlusLabel,
+    IonDatetime,
+    IonDatetimeButton,
+    GuideBanner,
+    AddPhotoButton,
+    CustomCardItem,
+    OpenChatDefaultImgItem,
+    SelectCategoryItem,
+    PageLoadingCheck,
+    AlertMessageModal
+  },
+  computed: {
+    validate() {
+      return this.COM_VALIDATION([
+        { value: this.title, type: 'title' },
+        { value: this.content, type: 'content' },
+        { value: this.partitionNm, type: 'select' }
+      ]);
+    },
+    checkDisabledBtn() {
+      return (
+        // this.partitionCd != "" &&
+        this.title != '' && this.content != '' && this.imgFileId != null
+      );
+    }
+  },
+  data() {
+    return {
+      mapOutline,
+      locationOutline,
+      swapHorizontalOutline,
+      calendarCheck: IconCalCheck,
+      COM_VALIDATION,
+      COUNTE_FORMAT,
+      swapHorizontalSharp,
+      chevronBack,
+      addOutline,
+      dateData: '',
+      state: '',
+      type: '',
+      partitionList: [],
+      partitionCd: '',
+      partitionNm: '',
+      partitionSubList: [],
+      subPartitionCd: '',
+      subPartitionNm: '',
+      title: '',
+      content: '',
+      fileKey: '',
+      alwaysYn: '',
+      privateYn: false,
+      date: '',
+      dueDate: '',
+      conDate: '',
+      location: '',
+      dateString: '',
+      inputType: '',
+      showModal: false,
+      modalOpen: false,
+      categoryModalOpen: false,
+      subCategoryModalOpen: false,
+      visible: false,
+
+      loading: null,
+
+      addr1: '', // 사는곳 전체주소
+      addr2: '', // 활동하는곳 전체주소
+      shotaddr1: '', // 사는곳 시,도
+      shotaddr2: '', // 활동하는 시,도
+      chatDetailMap: {},
+      uploadType: '',
+      Attachfiles: [],
+      imgFileId: null,
+      imgFileId2: null,
+      imgFileId3: null,
+      imgCdnNm: null,
+      imgCdnNm2: null,
+      imgCdnNm3: null,
+      openChatKey: '',
+      paramImgFile: '',
+
+      imgModalOpen: false,
+      defaultImgList: [],
+      defaultSubscribeImgList: [],
+      radioValue: '',
+
+      locationView: '',
+
+      currLat: '', // 로그인 유저 기본 위치의 위도
+      currLon: '', // 로그인 유저 기본 위치의 경도
+
+      selectedLat: null, // 클릭한 위치의 위도
+      selectedLng: null, // 클릭한 위치의 경도
+
+      selectedjibunAddress: null, // 클릭한 위치의 지번 주소
+      selectedroadAddress: null, // 클릭한 위치의 도로명 주소
+
+      selectedAddressGu: null, // 클릭한 위치의 지번 주소 구까지
+      selectedjibunAddressDong: null, // 클릭한 위치의 지번 주소 동까지만
+      selectedroadAddressDong: null, // 클릭한 위치의 도로명 주소 동까지만
+
+      checkBtn: 'dong', // 버튼상태
+      checkBtnText: '구까지 표시',
+      routerType: '',
+      checkSubCategory: '', // 카테고리 체크
+      lodingCheck: false,
+      showMap: false,
+
+      activeTimeToggle: false,
+      activeToggle: false,
+
+      gpsLat: '',
+      gpsLon: '',
+      userSubscribeYn: '',
+      subscribeMessage: false
+    };
+  },
+  ionViewDidLeave() {
+    // 초기화
+    // if(this.$route.params.routerType == 'doRefrash'){}
+    this.lodingCheck = false;
+    if (this.routerType != 'guide') {
+      this.showMap = false;
+      this.privateYn = true;
+      this.partitionCd = '';
+      this.subPartitionCd = '';
+      this.title = '';
+      this.content = '';
+      this.type = '';
+      this.dueDate = '';
+      this.location = '';
+      this.imgFileId = null;
+      this.imgFileId2 = null;
+      this.imgCdnNm = null;
+      this.imgCdnNm2 = null;
+    }
+
+    this.activeTimeToggle = false;
+    this.activeToggle = false;
+  },
+  ionViewWillEnter() {
+    this.openChatKey =
+      openChatWriteMap.openChatKey == '' ? '' : openChatWriteMap.openChatKey;
+    if (openChatWriteMap.type == 'new') {
+      this.partitionCd = '';
+      this.partitionNm = '';
+      this.subPartitionCd = '';
+      this.subPartitionNm = '';
+      this.title = '';
+      this.content = '';
+      this.type = 'time';
+      this.dueDate = '';
+      this.location = '';
+      this.imgFileId = null;
+      this.imgFileId2 = null;
+      this.imgFileId3 = null;
+      this.imgCdnNm = null;
+      this.imgCdnNm2 = null;
+      this.imgCdnNm3 = null;
+    } else if (openChatWriteMap.type == 'edit') {
+      this.partitionCd = openChatWriteMap.item.partitionCd;
+      this.partitionNm = openChatWriteMap.item.partitionNm;
+      this.subPartitionCd = openChatWriteMap.item.subPartitionCd;
+      this.subPartitionNm = openChatWriteMap.item.subPartitionNm;
+      this.location = openChatWriteMap.item.location;
+      this.selectedLat = openChatWriteMap.item.lat;
+      this.selectedLng = openChatWriteMap.item.lon;
+      this.checkSubCategory = openChatWriteMap.item.partitionCd;
+      this.dueDate = openChatWriteMap.item.dueDate;
+      this.title = openChatWriteMap.item.title;
+      this.content = openChatWriteMap.item.content;
+      this.imgFileId = openChatWriteMap.item.mainFileId;
+      this.imgCdnNm = openChatWriteMap.item.cdnNm;
+      // this.imgCdnNm = openChatWriteMap.item.cdnThumbNm;
+    }
+
+    this.state = openChatWriteMap.type;
+    if (this.state == 'edit') {
+      this.activeTimeToggle = true;
+      this.activeToggle = true;
+    }
+    this.$nextTick(() => {
+      this.userSubscribeYn = localStorage.getItem('SS_USER_SUBSCRIBE_YN');
+    });
+  },
+  methods: {
+    activeTimeCheck(e) {
+      this.activeTimeToggle = e.target.checked;
+    },
+    activeCheck(e) {
+      this.activeToggle = e.target.checked;
+    },
+    goRouter(type) {
+      if (type == 'guide') {
+        this.routerType = 'guide';
+        openChatWriteMapFn({
+          page: 'openChatWrite',
+          type: openChatWriteMap.type
+        });
+        this.$router.push('/notificationOpenChatGuide');
+      } else if (type == 'store') {
+        this.subscribeMessage = false;
+        storeMapFn({ subscribeYn: 'Y' });
+        this.$router.push('/store');
+      }
+    },
+    // setCheckPrivateYn(e) {
+    //   this.privateYn = e.target.ariaChecked == "true" ? true : false;
+    // },
+
+    saveLocationBtn() {
+      this.location = this.locationView;
+
+      if (this.locationView != '') {
+        this.showMap = true;
+      } else {
+        this.showMap = false;
+      }
+      this.modalOpen = false;
+    },
+    jibunGuCheck() {
+      if (this.checkBtn == 'dong') {
+        if (this.selectedAddressGu != null) {
+          this.locationView = this.selectedAddressGu;
+        }
+        this.checkBtnText = '동까지 표시';
+        this.checkBtn = 'gu';
+      } else {
+        if (this.selectedroadAddressDong != null) {
+          this.locationView = this.selectedjibunAddressDong;
+        }
+        this.checkBtnText = '구까지 표시';
+        this.checkBtn = 'dong';
+      }
+    },
+    handleInput() {
+      if (this.title.length > 20) {
+        this.title = this.title.slice(0, 20);
+      }
+    },
+    openImgPopup() {
+      this.imgModalOpen = true;
+      this.radioValue = 'self';
+      this.getDefaultImgList();
+      this.getDefaultSubscribeImgList();
+    },
+
+    getDefaultImgList() {
+      getData({
+        url: '/getDefaultImgList',
+        param: { subscribeYn: 'N' },
+        then: (data) => {
+          this.defaultImgList = data;
+        }
+      });
+    },
+
+    getDefaultSubscribeImgList() {
+      getData({
+        url: '/getDefaultImgList',
+        param: { subscribeYn: 'Y' },
+        then: (data) => {
+          this.defaultSubscribeImgList = data;
+        }
+      });
+    },
+
+    getPartitionList() {
+      let today = new Date();
+
+      let year = today.getFullYear();
+      let month = ('0' + (today.getMonth() + 1)).slice(-2);
+      let day = ('0' + today.getDate()).slice(-2);
+
+      this.dateString = year + '-' + month + '-' + day;
+      this.dueDate =
+        Object.keys(this.dueDate).length > 0
+          ? this.dueDate
+          : year + '-' + month + '-' + day;
+
+      getData({
+        url: '/getPartitionList',
+        param: {},
+        then: (data) => {
+          this.partitionList = data;
+        }
+      });
+    },
+    getPartitionSubList() {
+      getData({
+        url: '/getPartitionSubList',
+        param: { partitionCd: this.partitionCd },
+        then: (data) => {
+          this.partitionSubList = data;
+        }
+      });
+    },
+    closeCategory(item, type) {
+      if (type == 'category') {
+        this.categoryModalOpen = false;
+        this.partitionCd = item.partitionCd;
+        this.partitionNm = item.partitionNm;
+        if (item.partitionCd != this.checkSubCategory) {
+          this.checkSubCategory = item.partitionCd;
+          this.subPartitionCd = '';
+          this.subPartitionNm = '';
+        }
+      } else if (type == 'subCategory') {
+        this.subCategoryModalOpen = false;
+        this.subPartitionCd = item.subPartitionCd;
+        this.subPartitionNm = item.subPartitionNm;
+      }
+    },
+    getOpenChatDetail() {
+      getData({
+        url: '/getOpenChatDetail',
+        param: {
+          openChatKey: openChatWriteMap.openChatKey,
+          viewAddYn: 'N'
+        },
+        then: (data) => {
+          this.chatDetailMap = data;
+
+          this.partitionCd = data.partitionCd;
+          this.partitionNm = data.partitionNm;
+          this.title = data.title;
+          this.content = data.content;
+          this.type = data.alwaysYn == 'N' ? 'time' : 'always';
+          this.dueDate = data.dueDate;
+          this.location = data.location;
+          if (openChatWriteMap.type == 'edit') {
+            this.imgFileId = openChatWriteMap.item.mainFileId;
+          } else {
+            this.imgFileId = data.cdnThumbNm;
+          }
+          this.imgFileId2 = data.cdnThumbNm;
+          this.imgCdnNm = data.cdnThumbNm;
+          this.imgCdnNm2 = data.cdnThumbNm;
+        }
+      });
+    },
+
+    /** 글자수 체크 **/
+    counterFormatter(inputLength, maxLength) {
+      return `${maxLength - inputLength}자 남음`;
+    },
+    /** 사진 업로드 **/
+    addPhoto(type) {
+      this.radioValue = 'self';
+      this.uploadType = type;
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then((r) => r.blob());
+        const file = new File([blob], 'fileName.' + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile();
+        });
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+
+      // this.$refs.photo.click();
+    },
+    onFileChange: function onFileChange(e) {
+      // TODO : 첨부 파일 개수 제한
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+      const allowedTypes = [
+        'image/jpg',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert('이미지 파일만 업로드 가능해요'); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+      //파일 첨부 insert와 update 구분
+      this.$nextTick(() => {
+        this.insertFile();
+      });
+    },
+    //사진 저장
+    insertFile() {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: '/setImage',
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          this.imgFileId2 = data.fileId;
+          this.imgCdnNm2 = data.cdnNm;
+          // this.imgCdnNm2 = data.cdnThumbNm;
+          this.loading.dismiss();
+        }
+      });
+    },
+    /** 완료 or 수정 버튼 **/
+    checkBth(type) {
+      if (this.partitionCd === '') {
+        this.warningAlert('게시판을 선택해주세요.');
+        return;
+      }
+
+      if (!this.activeTimeToggle) {
+        this.warningAlert('모임 활동시간 공유에 대해 <br />동의 해 주세요 !');
+        return;
+      }
+      if (!this.activeToggle) {
+        this.warningAlert('모임 비활성화에 대해<br />동의 해 주세요 !');
+        return;
+      }
+
+      if (this.validate) {
+        //검수 통과
+        this.confirmBtn(type);
+      } else {
+        this.warningAlert('잘못된 항목이 있습니다. 내용을 다시 확인해주세요.');
+      }
+    },
+    async confirmBtn(type) {
+      let checkPrivateYn = this.privateYn == true ? 'N' : 'Y';
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: '',
+        message:
+          type == 'edit'
+            ? `'입력한 내용대로 수정 할까요? <br /> ※ 수정한뒤에는 소모임이 비활성화가되니 활성화는 다시 진행해야합니다.`
+            : '채팅방을 생성합니다.',
+        buttons: [
+          {
+            text: '취소',
+            role: 'cancel',
+            cssClass: 'secondary',
+            handler: () => {}
+          },
+          {
+            text: '완료',
+            handler: () => {
+              let date = this.dateString.replace(/-/g, '');
+              let rawDate = new Date(this.dueDate);
+              let conDate = this.conDate.replace(/-/g, '');
+              let formatDate = rawDate
+                .toLocaleString('sv-SE', {
+                  timeZone: 'Asia/Seoul',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                })
+                .replace(/\D/g, '-');
+              if (type == 'new' || type == 'guide') {
+                getData({
+                  url: '/setOpenChat',
+                  param: {
+                    partitionCd: this.partitionCd,
+                    subPartitionCd: this.subPartitionCd,
+                    title: this.title,
+                    content: this.content,
+                    fileId: this.imgFileId,
+                    alwaysYn: this.type == 'always' ? 'Y' : 'N',
+                    // privateYn: checkPrivateYn,
+                    privateYn: 'Y',
+                    date: date,
+                    dueDate: formatDate,
+                    conDate: conDate,
+                    location: this.locationView,
+                    lat: this.selectedLat,
+                    lon: this.selectedLng
+                  },
+                  then: (data) => {
+                    this.openChatId = data.openChatId;
+
+                    this.$nextTick(() => {
+                      // this.$router.push('/openChatView/' + this.openChatId);
+                      // this.$router.push({name: 'OpenChatView', params: {openChatId: this.openChatId, type: 'openChat'}})
+
+                      openChatViewMapFn({
+                        openChatKey: data.openChatKey,
+                        type: 'openChat'
+                      });
+                      this.$router.push('/openChatView');
+                    });
+                  }
+                });
+              } else if (type == 'edit') {
+                getData({
+                  url: '/setOpenChatUpdate',
+                  param: {
+                    partitionCd: this.partitionCd,
+                    subPartitionCd: this.subPartitionCd,
+                    title: this.title,
+                    content: this.content,
+                    fileId: this.imgFileId,
+                    alwaysYn: this.type == 'always' ? 'Y' : 'N',
+                    privateYn: 'N',
+                    date: date,
+                    dueDate: formatDate,
+                    location: this.locationView,
+                    lat: this.selectedLat,
+                    lon: this.selectedLng,
+                    openChatKey: openChatWriteMap.openChatKey
+                  },
+                  then: (data) => {
+                    // this.$router.push('/openChatView/' + this.$route.params.openChatId);
+                    // this.$router.push({name: 'OpenChatView', params: {openChatId: this.$route.params.openChatId, type: 'openChat'}})
+
+                    // openChatViewMapFn({openChatKey: openChatWriteMap.openChatKey, type: 'openChat'});
+                    if (data.successYn == 'Y') {
+                      this.warningAlert(data.message);
+                      this.$router.push('/openChatView');
+                    } else {
+                      this.warningAlert(data.message);
+                      return;
+                    }
+                  }
+                });
+              }
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    async presentAlertConfirm() {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: '',
+        message: '이 화면에서 나가면 입력한 내용은 저장되지 않습니다.',
+        buttons: [
+          {
+            text: '취소',
+            role: 'cancel',
+            cssClass: 'secondary',
+            handler: () => {}
+          },
+          {
+            text: '나가기',
+            handler: () => {
+              // 오픈챗뷰로 가기 직전 메뉴 체크
+              if (
+                openChatWriteMap.type == 'openChatView' ||
+                openChatWriteMap.type == 'myOpenChat' ||
+                openChatWriteMap.type == 'edit'
+              ) {
+                this.$router.push('/openChatView');
+                // } else if (openChatWriteMap.type == 'myOpenChat' || openChatWriteMap.type == 'edit' ) {
+                //   this.$router.push('/openChatView');
+              } else {
+                this.$router.push('/openChat');
+              }
+              // this.$router.go(-1);
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    mapOpen() {
+      // let lat;
+      // let lon;
+
+      this.lodingCheck = true;
+
+      this.$nextTick(() => {
+        // if (this.gpsLat == "" || this.gpsLon == "") {
+        //   /** 값이 없을때 광화문으로 고정값 **/
+        //   lat = 37.5751959;
+        //   lon = 126.9764627;
+        // } else {
+        //   lat = this.gpsLat;
+        //   lon = this.gpsLon;
+        // }
+
+        if (this.selectedLat != null || this.selectedLng != null) {
+          // this.$nextTick(() => {
+          this.naverMap(this.selectedLat, this.selectedLng);
+          // });
+        } else {
+          this.getLoginUser();
+        }
+
+        // this.naverMap(lat, lon);
+      });
+    },
+    /** gps **/
+    async getGps() {
+      // if (Capacitor.getPlatform() !== "web") {
+      await Geolocation.getCurrentPosition().then((position) => {
+        //console.log('capacitor : ' + position.coords.latitude);
+        this.gpsLat = position.coords.latitude;
+        this.gpsLon = position.coords.longitude;
+      });
+      // } else {
+      //   console.log("[개발환경] web 에서 GPS는 활성화 되지 않습니다.");
+      //   clearInterval(this.intervalLatLon);
+      // }
+    },
+
+    /** naver map **/
+    naverMap(lat, lng) {
+      const mapEl = document.getElementById('openchatWriteMap');
+      if (mapEl == null) {
+        this.lodingCheck = false;
+        return;
+      }
+      this.lodingCheck = false;
+      const navermaps = window.naver.maps;
+
+      /** 맵 초기 설정 **/
+      let mapOptions = {
+        center: new navermaps.LatLng(lat, lng),
+        zoom: 17,
+        /** 줌 컨트롤러 **/
+        zoomControl: true,
+        zoomControlOptions: {
+          style: navermaps.ZoomControlStyle.LARGE,
+          position: navermaps.Position.TOP_RIGHT
+        }
+      };
+
+      /** 맵 생성 **/
+      const NAVER_MAP = new navermaps.Map(mapEl, mapOptions);
+      this.reverseGeocodes(mapOptions.center);
+
+      // 마커 객체 생성
+      const marker = new navermaps.Marker({
+        position: NAVER_MAP.getCenter(), // 중심 좌표에 마커 설정
+        map: NAVER_MAP, // 지도에 마커 추가
+        icon: {
+          url: 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png', // 마커의 이미지 URL
+          size: new navermaps.Size(24, 37), // 이미지의 원래 크기
+          scaledSize: new navermaps.Size(24, 37), // 화면에 표시될 이미지 크기
+          origin: new navermaps.Point(0, 0), // 이미지의 시작점
+          anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+        }
+      });
+
+      navermaps.Event.addListener(NAVER_MAP, 'drag', () => {
+        marker.setPosition(NAVER_MAP.getCenter()); // 마커 위치 변경
+      });
+
+      // 지도 초기화 후 커스텀 컨트롤 생성
+      navermaps.Event.once(NAVER_MAP, 'init', () => {
+        /** 현재위치로 이동 버튼 **/
+        let locationBtnHtml = `<a style="
+                z-index: 100;
+                overflow: hidden;
+                display: inline-block;
+                position: absolute;
+                top: 7px;
+                left: 5px;
+                width: 34px;
+                height: 34px;
+                border: 1px solid rgba(58,70,88,.45);
+                border-radius: 2px;
+                background: #fcfcfd;
+                  background-clip: border-box;
+                text-align: center;
+                -webkit-background-clip: padding;
+                background-clip: padding-box;
+              "
+            >
+            <span style="
+                overflow: hidden;
+                display: inline-block;
+                color: transparent !important;
+                vertical-align: top;
+                background: url(https://ssl.pstatic.net/static/maps/m/spr_trff_v6.png) 0 0;
+                background-position-x: 0px;
+                background-position-y: 0px;
+                background-size: auto;
+                background-size: 200px 200px;
+                -webkit-background-size: 200px 200px;
+                width: 20px;
+                height: 20px;
+                margin: 7px 0 0 0;
+                background-position: -153px -31px;
+              ">중심위치</span>
+           </a>`;
+        let customControl = new navermaps.CustomControl(locationBtnHtml, {
+          position: window.naver.maps.Position.TOP_LEFT // 버튼의 위치 설정
+        });
+
+        customControl.setMap(NAVER_MAP); // 버튼을 지도에 추가
+        /** 현재위치로 이동 버튼 **/
+
+        window.naver.maps.Event.addDOMListener(
+          customControl.getElement(),
+          'click',
+          () => {
+            NAVER_MAP.setCenter(new navermaps.LatLng(lat, lng)); // 버튼 클릭 시 지도 중심 변경
+            marker.setPosition(NAVER_MAP.getCenter());
+          }
+        );
+      });
+
+      // 클릭 이벤트 핸들러 설정
+      navermaps.Event.addListener(NAVER_MAP, 'dragend', (e) => {
+        // 클릭한 위치의 좌표 저장
+        // this.selectedLat = e.coord.y; // e.coord.lat();
+        // this.selectedLng = e.coord.x; //e.coord.lng();
+        this.selectedLat = NAVER_MAP.getCenter().y;
+        this.selectedLng = NAVER_MAP.getCenter().x;
+
+        let latlng = new window.naver.maps.LatLng(
+          NAVER_MAP.getCenter().y,
+          NAVER_MAP.getCenter().x
+        );
+        this.reverseGeocodes(latlng);
+      });
+      // navermaps.Event.addListener(this.map, "dragend", (e) => {
+      //   // 마커 위치 변경
+      //   // 클릭한 위치의 좌표 저장
+      //   this.selectedLat = this.map.getCenter().y;
+      //   this.selectedLng = this.map.getCenter().x;
+      //   let latlng = new navermaps.LatLng(this.map.getCenter());
+      //
+      //   this.reverseGeocodes(latlng);
+      // });
+    },
+
+    /** 좌표값 주소로 변환 **/
+    reverseGeocodes(latlng) {
+      let self = this;
+
+      const navermaps = window.naver.maps;
+      navermaps.Service.reverseGeocode(
+        {
+          coords: latlng,
+          orders: [
+            navermaps.Service.OrderType.ADDR,
+            navermaps.Service.OrderType.ROAD_ADDR
+          ].join(',')
+        },
+        function (status, response) {
+          if (status === navermaps.Service.Status.ERROR) {
+            return alert('Something Wrong!');
+          }
+
+          let idx = response.v2.results.length > 1 ? 1 : 0;
+          // 지번 주소 구까지
+          self.selectedAddressGu =
+            response.v2.results[idx].region.area1.name +
+            ' ' +
+            response.v2.results[idx].region.area2.name;
+
+          // 지번 주소 동까지
+          self.selectedjibunAddressDong =
+            response.v2.results[idx].region.area1.name +
+            ' ' +
+            response.v2.results[idx].region.area2.name +
+            ' ' +
+            response.v2.results[idx].region.area3.name;
+
+          // 도로명 주소
+          self.selectedroadAddressDong =
+            response.v2.results[idx].region.area1.name +
+            ' ' +
+            response.v2.results[idx].region.area2.name +
+            ' ' +
+            response.v2.results[idx].land.name;
+
+          if (self.checkBtn === 'dong') {
+            self.locationView = self.selectedjibunAddressDong;
+          } else {
+            self.locationView = self.selectedAddressGu;
+          }
+        }
+      );
+    },
+    /** 모달 시작 **/
+    openModal(type) {
+      // this.modalOpen = true;
+      if (type == 'address') {
+        this.modalOpen = true;
+        this.getGps();
+        this.inputType = type;
+        // if (this.selectedLat != null || this.selectedLng != null) {
+        //   // this.$nextTick(() => {
+        //   console.log('@@@@@@@@@@@@@');
+        //   this.naverMap(this.selectedLat, this.selectedLng);
+        //   // });
+        // } else {
+        //   this.getLoginUser();
+        // }
+      } else if (type == 'category') {
+        this.getPartitionList();
+        this.categoryModalOpen = true;
+      } else if (type == 'subCategory') {
+        this.getPartitionSubList();
+        this.subCategoryModalOpen = true;
+      }
+    },
+    getLoginUser() {
+      // this.showLoading()
+
+      getData({
+        url: '/getOpenChatUserAddr',
+        param: {},
+        then: (data) => {
+          this.addrItem = data[0];
+          // this.locationView = this.addrItem.addrLiveSum;
+
+          /** 위치업데이트값 null 인경우 기본주소로 **/
+          if (this.addrItem.currLat != null || this.addrItem.currLon != null) {
+            this.currLat = this.addrItem.currLat;
+            this.currLon = this.addrItem.currLon;
+          } else {
+            this.currLat = this.addrItem.lat;
+            this.currLon = this.addrItem.lon;
+          }
+
+          this.naverMap(this.currLat, this.currLon);
+        }
+      });
+    },
+
+    /** 모달창 닫기 **/
+    closeModal() {
+      this.modalOpen = false;
+    },
+
+    getCurrentDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
+    /** 주소 검색 결과를 선택했을 때 호출되는 내용 **/
+    selectAddress(addressInfo) {
+      if (this.inputType == 'address') {
+        this.addr1 = addressInfo.address; // 사는지역 전체주소
+        this.location = this.addr1; // input 에서 보여지는값
+      }
+
+      this.modalOpen = false;
+    },
+
+    /** Default Img 선택 했을 때 **/
+    checkImg(item, state) {
+      if (state == 'plus') {
+        if (this.userSubscribeYn == 'N') {
+          this.imgModalOpen = false;
+          this.subscribeMessage = true;
+          return;
+        }
+      }
+      this.radioValue = item.fileId;
+      this.imgFileId3 = item.fileId;
+      this.imgCdnNm3 = item.cdnNm;
+      // this.imgCdnNm3 = item.cdnThumbNm;
+    },
+
+    /** 사진을 선택을 완료 했을 때 **/
+    imgComplete() {
+      if (this.fileId == '') {
+        this.warningAlert('사진을 선택 해 주세요.');
+        return;
+      }
+      if (this.radioValue == 'self') {
+        this.imgFileId = this.imgFileId2;
+        this.imgCdnNm = this.imgCdnNm2;
+      } else {
+        this.imgFileId = this.imgFileId3;
+        this.imgCdnNm = this.imgCdnNm3;
+      }
+      this.imgModalOpen = false;
+    },
+    /** 모달 **/
+
+    /** 로딩 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: 'Loading...',
+        duration: 0
+      });
+
+      await this.loading.present();
+    },
+    /** 경고창 팝업 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: '',
+        subHeader: '',
+        message: message,
+        buttons: ['OK']
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.schedule-info {
+  .btn-datetime {
+    &::part(native) {
+      background-color: transparent;
+      color: white;
+      padding: 0;
+    }
+  }
+
+  ion-icon {
+    width: 16px;
+    height: 14px;
+  }
+
+  ion-input.address-field {
+    gap: 20px;
+
+    width: auto;
+    position: absolute;
+    right: 0px;
+
+    .native-input {
+      --padding-bottom: 0px;
+      --padding-top: 0px;
+      --padding-end: 0px;
+      --padding-start: 6px;
+    }
+  }
+}
+
+.activateCheckList {
+  margin-top: 13px;
+  padding: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(43, 57, 132, 0.3);
+  color: white;
+
+  .activateCheckList-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .activeTimeText {
+      word-wrap: normal;
+      font-size: 13px;
+      height: 50px !important;
+      padding-top: 10px;
+    }
+
+    .activeText {
+      word-wrap: normal;
+      font-size: 13px;
+      height: 50px !important;
+      padding-top: 10px;
+    }
+  }
+}
+
+.bonus-label {
+  position: absolute;
+  left: 100px;
+  top: 18px;
+  min-width: 32px;
+  height: 20px;
+}
+</style>

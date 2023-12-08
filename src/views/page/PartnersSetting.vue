@@ -1,0 +1,849 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton @event="prevPage" :custom="true" />
+        </ion-buttons>
+        <ion-title>파트너 정보 수정</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="row-box">
+        <div class="row" style="text-align: center">
+          <ion-text color="light" style="font-size: 25px; font-weight: 700">{{
+            partnersName
+          }}</ion-text>
+        </div>
+      </div>
+      <div class="row-box">
+        <CardBox>
+          <ion-text color="light" class="text-lg"
+            ><strong>파트너 소개</strong></ion-text
+          >
+          <div class="mt-2">
+            <ion-item lines="none" class="input-field">
+              <ion-textarea
+                v-model="introduce"
+                color="light"
+                placeholder="가게 소개를 입력해 주세요!"
+                class="custom-textarea"
+              >
+              </ion-textarea>
+            </ion-item>
+          </div>
+        </CardBox>
+      </div>
+      <div class="row-box">
+        <CardBox>
+          <ion-text color="light" class="text-lg"
+            ><strong>한줄 소개</strong></ion-text
+          >
+          <div class="mt-2">
+            <ion-item lines="none" class="input-field">
+              <ion-textarea
+                v-model="shortWord"
+                color="light"
+                placeholder="한 줄 소개를 입력해 주세요!"
+              >
+              </ion-textarea>
+            </ion-item>
+          </div>
+        </CardBox>
+      </div>
+      <div class="row-box">
+        <CardBox>
+          <ion-text color="light" class="text-lg"
+            ><strong>파트너 위치</strong></ion-text
+          >
+          <div class="mt-2">
+            <ion-item lines="none" class="input-field" @click="openModal">
+              <ion-input
+                type="text"
+                placeholder="위치를 선택해주세요"
+                v-model="location"
+                readonly
+                color="light"
+              />
+              <ion-img
+                slot="end"
+                :src="require('@/assets/img/icon/icon_location.svg')"
+              />
+            </ion-item>
+            <ion-item lines="none" class="input-field">
+              <ion-input
+                v-model="locationDetail"
+                color="light"
+                placeholder="상세주소를 입력해 주세요!"
+              >
+              </ion-input>
+            </ion-item>
+          </div>
+        </CardBox>
+      </div>
+      <div class="row-box">
+        <CardBox>
+          <ion-text color="light" class="text-lg"
+            ><strong>연락처</strong></ion-text
+          >
+          <div class="mt-2">
+            <ion-item lines="none" class="input-field">
+              <ion-input
+                v-model="partnersNumber"
+                color="light"
+                placeholder="파트너 연락처를 입력해 주세요!"
+              >
+              </ion-input>
+            </ion-item>
+          </div>
+        </CardBox>
+      </div>
+      <div class="row-box">
+        <CardBox>
+          <ion-text color="light" class="text-lg"
+            ><strong>영업시간</strong></ion-text
+          >
+          <div class="mt-1">
+            <ion-row
+              class="ion-align-items-center ion-justify-content-between gap-sm flex-nowrap"
+            >
+              <ion-label color="light">open</ion-label>
+              <ion-select v-model="openTime">
+                <ion-select-option value="">선택하세요</ion-select-option>
+                <ion-select-option
+                  v-for="(item, index) in hourArr"
+                  :key="index"
+                  :value="item.value"
+                  >{{ item.text }}시
+                </ion-select-option>
+              </ion-select>
+            </ion-row>
+            <ion-row
+              class="ion-align-items-center ion-justify-content-between gap-sm flex-nowrap"
+            >
+              <ion-label color="light">close</ion-label>
+              <ion-select v-model="closeTime">
+                <ion-select-option value="">선택하세요</ion-select-option>
+                <ion-select-option
+                  v-for="(item, index) in hourArr"
+                  :key="index"
+                  :value="item.value"
+                  >{{ item.text }}시
+                </ion-select-option>
+              </ion-select>
+            </ion-row>
+          </div>
+        </CardBox>
+      </div>
+      <ion-modal
+        class="location-modal"
+        :is-open="modalOpen"
+        @ionModalDidDismiss="saveLocationBtn"
+        @ionModalDidPresent="mapOpen"
+        :initial-breakpoint="1"
+        :breakpoints="[0, 1]"
+      >
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button @click="saveLocationBtn()">
+                <ion-icon slot="icon-only" :icon="chevronBack" />
+              </ion-button>
+            </ion-buttons>
+            <ion-title>지도에서 위치 확인</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <div id="partnersSettingMap" style="width: 100%; height: 80%" />
+        </ion-content>
+        <ion-footer
+          class="location-modal-footer"
+          style="height: 110px; background-color: #191a39; padding: 10px"
+        >
+          <div class="layout-container">
+            <ion-grid style="padding: 0 10px 0 10px">
+              <ion-row class="ion-align-items-end ion-justify-content-between">
+                <ion-text color="light">{{ locationView }}</ion-text>
+                <ion-text color="light" @click="jibunGuCheck">
+                  <ion-icon
+                    :icon="swapHorizontalOutline"
+                    class="v-middle"
+                  ></ion-icon>
+                  <span class="v-middle">{{ checkBtnText }}</span>
+                </ion-text>
+              </ion-row>
+            </ion-grid>
+            <div class="btn-group">
+              <ion-button
+                color="primary"
+                size="large"
+                expand="block"
+                shape="round"
+                @click="saveLocationBtn"
+              >
+                <ion-ripple-effect></ion-ripple-effect>
+                이 위치로 주소 설정
+              </ion-button>
+            </div>
+          </div>
+        </ion-footer>
+      </ion-modal>
+    </ion-content>
+    <ion-footer>
+      <custom-button
+        color="primary"
+        size="large"
+        expand="block"
+        shape="round"
+        @click="save"
+        >저장하기</custom-button
+      >
+    </ion-footer>
+  </ion-page>
+</template>
+<script>
+import { getData, setFile } from '@/assets/js/common';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
+import {
+  chevronBack,
+  swapHorizontalOutline,
+  locationOutline,
+  mapOutline
+} from 'ionicons/icons';
+
+export default {
+  name: 'partnersSetting',
+  inject: ['alertController', 'loadingController'],
+  data() {
+    return {
+      chevronBack,
+      swapHorizontalOutline,
+      locationOutline,
+      mapOutline,
+
+      hourArr: [],
+      minuteArr: [],
+
+      partnersCode: '',
+      partnersName: '',
+      partnersNumber: '',
+      shortWord: '',
+      introduce: '',
+
+      businessAllTime: false,
+      openTime: '',
+      closeTime: '',
+
+      exposureAllTime: false,
+      hourMin: '',
+      hourMax: '',
+
+      isKmMaxSelect: true,
+      kmMax: '',
+
+      isAgeSelect: true,
+      ageMin: '',
+      ageMax: '',
+
+      exposureCycle: '',
+
+      Attachfiles: [],
+
+      uploadType: '',
+      cdnNm1: null,
+      cdnNm2: null,
+      cdnNm3: null,
+      cdnNm4: null,
+      cdnNm5: null,
+      cdnNm6: null,
+
+      add1imgFileId: null,
+      add2imgFileId: null,
+      add3imgFileId: null,
+      add4imgFileId: null,
+      add5imgFileId: null,
+      add6imgFileId: null,
+
+      partnersMap: {},
+
+      modalOpen: false,
+      showMap: '',
+      location: '',
+      locationView: '',
+      locationDetail: '',
+
+      currLat: 37.5666612,
+      currLon: 126.9783785,
+
+      selectedLat: null,
+      selectedLng: null,
+
+      selectedjibunAddress: null,
+      selectedroadAddress: null,
+
+      selectedAddressGu: null,
+      selectedjibunAddressDong: null,
+      selectedroadAddressDong: null,
+
+      checkBtn: 'dong',
+      checkBtnText: '구까지 표시',
+      routerType: '',
+      checkSubCategory: '',
+      lodingCheck: false,
+
+      activeTimeToggle: false,
+      activeToggle: false,
+
+      gpsLat: '',
+      gpsLon: ''
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    for (let i = 0, len = 24; i <= len; i++) {
+      let obj = {};
+      obj['text'] = i.toString().length == 1 ? '0' + i : i;
+      obj['value'] = i;
+      this.hourArr.push(obj);
+    }
+    for (let i = 0, len = 60; i <= len; i++) {
+      let obj = {};
+      obj['text'] = i.toString().length == 1 ? '0' + i : i;
+      obj['value'] = i;
+      this.minuteArr.push(obj);
+    }
+
+    this.partnersInfo();
+  },
+  ionViewDidLeave() {
+    // 초기화
+  },
+  methods: {
+    partnersMapFn(data) {
+      this.partnersCode = data.partnersCode;
+      this.partnersName = data.partnersName;
+      this.location = data.partnersAddress;
+      this.locationDetail = data.partnersAddressDetail;
+      this.partnersNumber = data.partnersNumber;
+      this.shortWord = data.shortWord;
+      this.introduce = data.introduce;
+      this.currLat = data.lat ? data.lat : 37.5666612;
+      this.currLon = data.lon ? data.lon : 126.9783785;
+      this.openTime = data.openTime;
+      this.closeTime = data.closeTime;
+      this.hourMin = data.hourMin;
+      this.hourMax = data.hourMax;
+      this.kmMax = data.kmMax;
+      this.ageMin = data.ageMin;
+      this.ageMax = data.ageMax;
+      this.exposureCycle = data.exposureCycle;
+      this.cdnNm1 = data.cdnNm1;
+      this.cdnNm2 = data.cdnNm2;
+      this.cdnNm3 = data.cdnNm3;
+      this.cdnNm4 = data.cdnNm4;
+      this.cdnNm5 = data.cdnNm5;
+      this.cdnNm6 = data.cdnNm6;
+      this.add1imgFileId = data.photo1;
+      this.add2imgFileId = data.photo2;
+      this.add3imgFileId = data.photo3;
+      this.add4imgFileId = data.photo4;
+      this.add5imgFileId = data.photo5;
+      this.add6imgFileId = data.photo6;
+
+      this.partnersMap = data;
+    },
+    partnersInfo() {
+      getData({
+        url: '/partnersInfo',
+        param: {
+          partnersCode: this.partnersCode
+        },
+        then: (data) => {
+          if (data.successYn == 'Y') {
+            this.partnersMapFn(data.result);
+            this.businessAllTime =
+              data.result.openTime == 0 && data.result.closeTime == 24;
+            this.exposureAllTime =
+              data.result.hourMin == 0 && data.result.hourMax == 24;
+            this.isAgeSelect =
+              data.result.ageMin == 0 && data.result.ageMax == 0;
+            this.isKmMaxSelect = data.result.kmMax == 0;
+          }
+        }
+      });
+    },
+    prevPage() {
+      // 페이지 넘어가는 방향... push: 오 -> 왼, go: 왼 -> 오
+      // 뒤로가기 표현할 때는 go가 맞는듯....
+      // this.$router.push("/myPage");
+      this.$router.go(-1);
+    },
+    businessChange() {
+      this.businessAllTime = this.businessAllTime === false ? true : false;
+      if (!this.businessAllTime) {
+        this.openTime = 0;
+        this.closeTime = 24;
+      }
+    },
+    exposureChange() {
+      this.exposureAllTime = this.exposureAllTime === true ? false : true;
+      if (this.exposureAllTime) {
+        this.hourMin = 0;
+        this.hourMax = 24;
+      }
+    },
+    kmMaxChange() {
+      this.isKmMaxSelect = this.isKmMaxSelect === true ? false : true;
+      if (this.isKmMaxSelect) {
+        this.kmMax = 0;
+      }
+    },
+    ageChange() {
+      this.isAgeSelect = this.isAgeSelect === true ? false : true;
+      if (this.isAgeSelect) {
+        this.ageMin = 0;
+        this.ageMax = 0;
+      }
+    },
+    ageRangeChange($event) {
+      this.ageMin = $event.detail.value.lower;
+      this.ageMax = $event.detail.value.upper;
+    },
+    addPhoto(state) {
+      switch (state) {
+        case 'add1':
+          this.uploadType = 'add1';
+          break;
+        case 'add2':
+          this.uploadType = 'add2';
+          break;
+        case 'add3':
+          this.uploadType = 'add3';
+          break;
+        case 'add4':
+          this.uploadType = 'add4';
+          break;
+        case 'add5':
+          this.uploadType = 'add5';
+          break;
+        case 'add6':
+          this.uploadType = 'add6';
+          break;
+      }
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then((r) => r.blob());
+        const file = new File([blob], 'fileName.' + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile(this.uploadType);
+        });
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+    },
+    onFileChange: function onFileChange(e) {
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        'image/jpg',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert('이미지 파일만 업로드 가능해요'); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(this.uploadType);
+      });
+    },
+    /** 사진 저장 **/
+    insertFile(e) {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: '/setImage',
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          /** 상태값 확인후 해당 사진 변경 **/
+          switch (e) {
+            case 'add1':
+              this.add1imgFileId = data.fileId;
+              this.cdnNm1 = data.cdnNm;
+              break;
+            case 'add2':
+              this.add2imgFileId = data.fileId;
+              this.cdnNm2 = data.cdnNm;
+              break;
+            case 'add3':
+              this.add3imgFileId = data.fileId;
+              this.cdnNm3 = data.cdnNm;
+              break;
+            case 'add4':
+              this.add4imgFileId = data.fileId;
+              this.cdnNm4 = data.cdnNm;
+              break;
+            case 'add5':
+              this.add5imgFileId = data.fileId;
+              this.cdnNm5 = data.cdnNm;
+              break;
+            case 'add6':
+              this.add6imgFileId = data.fileId;
+              this.cdnNm6 = data.cdnNm;
+              break;
+          }
+          this.getUpdateImg();
+        }
+      });
+    },
+    getUpdateImg() {
+      getData({
+        url: '/partnersPhotoUpdate',
+        param: {
+          photo1: this.add1imgFileId ? this.add2imgFileId : null,
+          photo2: this.add2imgFileId ? this.add2imgFileId : null,
+          photo3: this.add3imgFileId ? this.add3imgFileId : null,
+          photo4: this.add4imgFileId ? this.add4imgFileId : null,
+          photo5: this.add5imgFileId ? this.add5imgFileId : null,
+          photo6: this.add6imgFileId ? this.add6imgFileId : null,
+          partnersCode: this.partnersCode
+        },
+        target: this,
+        then: (data) => {
+          if (data.isUpdate === true) {
+            this.loading.dismiss();
+            this.warningAlert('사진등록성공');
+            this.partnersInfo();
+          }
+        }
+      });
+    },
+    deletePhoto(state) {
+      this.showLoading();
+      getData({
+        url: '/partnersPhotoDelete',
+        param: {
+          deletePhoto: state,
+          partnersCode: this.partnersCode
+        },
+        target: this,
+        then: (data) => {
+          this.loading.dismiss();
+          this.warningAlert(data.message);
+          this.partnersInfo();
+        }
+      });
+    },
+    saveLocationBtn() {
+      this.location = this.locationView;
+
+      if (this.locationView != '') {
+        this.showMap = true;
+      } else {
+        this.showMap = false;
+      }
+      this.modalOpen = false;
+    },
+    jibunGuCheck() {
+      if (this.checkBtn == 'dong') {
+        if (this.selectedAddressGu != null) {
+          this.locationView = this.selectedAddressGu;
+        }
+        this.checkBtnText = '동까지 표시';
+        this.checkBtn = 'gu';
+      } else {
+        if (this.selectedroadAddressDong != null) {
+          this.locationView = this.selectedjibunAddressDong;
+        }
+        this.checkBtnText = '구까지 표시';
+        this.checkBtn = 'dong';
+      }
+    },
+    mapOpen() {
+      this.lodingCheck = true;
+
+      this.$nextTick(() => {
+        if (this.selectedLat != null || this.selectedLng != null) {
+          this.naverMap(this.selectedLat, this.selectedLng);
+        } else {
+          this.naverMap(this.currLat, this.currLon);
+        }
+      });
+    },
+    /** gps **/
+    async getGps() {
+      if (
+        Capacitor.getPlatform() == 'android' ||
+        Capacitor.getPlatform() == 'ios'
+      ) {
+        await Geolocation.getCurrentPosition().then((position) => {
+          this.gpsLat = position.coords.latitude;
+          this.gpsLon = position.coords.longitude;
+          this.naverMap(this.gpsLat, this.gpsLon);
+        });
+      } else {
+        this.naverMap(this.currLat, this.currLon);
+      }
+    },
+    openModal() {
+      this.modalOpen = true;
+      this.getGps();
+      this.inputType = 'address';
+    },
+    selectAddress(addressInfo) {
+      this.addr1 = addressInfo.address; // 사는지역 전체주소
+      this.location = this.addr1; // input 에서 보여지는값
+      this.modalOpen = false;
+    },
+    /** naver map **/
+    naverMap(lat, lng) {
+      const mapEl = document.getElementById('partnersSettingMap');
+      if (mapEl == null) {
+        this.lodingCheck = false;
+        return;
+      }
+      this.lodingCheck = false;
+      const navermaps = window.naver.maps;
+
+      /** 맵 초기 설정 **/
+      let mapOptions = {
+        center: new navermaps.LatLng(lat, lng),
+        zoom: 17,
+        /** 줌 컨트롤러 **/
+        zoomControl: true,
+        zoomControlOptions: {
+          style: navermaps.ZoomControlStyle.LARGE,
+          position: navermaps.Position.TOP_RIGHT
+        }
+      };
+
+      /** 맵 생성 **/
+      const NAVER_MAP = new navermaps.Map(mapEl, mapOptions);
+      this.reverseGeocodes(mapOptions.center);
+
+      // 마커 객체 생성
+      const marker = new navermaps.Marker({
+        position: NAVER_MAP.getCenter(), // 중심 좌표에 마커 설정
+        map: NAVER_MAP, // 지도에 마커 추가
+        icon: {
+          url: 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png', // 마커의 이미지 URL
+          size: new navermaps.Size(24, 37), // 이미지의 원래 크기
+          scaledSize: new navermaps.Size(24, 37), // 화면에 표시될 이미지 크기
+          origin: new navermaps.Point(0, 0), // 이미지의 시작점
+          anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+        }
+      });
+
+      navermaps.Event.addListener(NAVER_MAP, 'drag', () => {
+        marker.setPosition(NAVER_MAP.getCenter()); // 마커 위치 변경
+      });
+
+      // 지도 초기화 후 커스텀 컨트롤 생성
+      navermaps.Event.once(NAVER_MAP, 'init', () => {
+        /** 현재위치로 이동 버튼 **/
+        let locationBtnHtml = `<a style="
+                z-index: 100;
+                overflow: hidden;
+                display: inline-block;
+                position: absolute;
+                top: 7px;
+                left: 5px;
+                width: 34px;
+                height: 34px;
+                border: 1px solid rgba(58,70,88,.45);
+                border-radius: 2px;
+                background: #fcfcfd;
+                  background-clip: border-box;
+                text-align: center;
+                -webkit-background-clip: padding;
+                background-clip: padding-box;
+              "
+            >
+            <span style="
+                overflow: hidden;
+                display: inline-block;
+                color: transparent !important;
+                vertical-align: top;
+                background: url(https://ssl.pstatic.net/static/maps/m/spr_trff_v6.png) 0 0;
+                background-position-x: 0px;
+                background-position-y: 0px;
+                background-size: auto;
+                background-size: 200px 200px;
+                -webkit-background-size: 200px 200px;
+                width: 20px;
+                height: 20px;
+                margin: 7px 0 0 0;
+                background-position: -153px -31px;
+              ">중심위치</span>
+           </a>`;
+        let customControl = new navermaps.CustomControl(locationBtnHtml, {
+          position: window.naver.maps.Position.TOP_LEFT // 버튼의 위치 설정
+        });
+
+        customControl.setMap(NAVER_MAP); // 버튼을 지도에 추가
+        /** 현재위치로 이동 버튼 **/
+
+        window.naver.maps.Event.addDOMListener(
+          customControl.getElement(),
+          'click',
+          () => {
+            NAVER_MAP.setCenter(new navermaps.LatLng(lat, lng)); // 버튼 클릭 시 지도 중심 변경
+            marker.setPosition(NAVER_MAP.getCenter());
+          }
+        );
+      });
+
+      // 클릭 이벤트 핸들러 설정
+      navermaps.Event.addListener(NAVER_MAP, 'dragend', () => {
+        // 클릭한 위치의 좌표 저장
+        // this.selectedLat = e.coord.y; // e.coord.lat();
+        // this.selectedLng = e.coord.x; //e.coord.lng();
+        this.selectedLat = NAVER_MAP.getCenter().y;
+        this.selectedLng = NAVER_MAP.getCenter().x;
+
+        let latlng = new window.naver.maps.LatLng(
+          NAVER_MAP.getCenter().y,
+          NAVER_MAP.getCenter().x
+        );
+        this.reverseGeocodes(latlng);
+      });
+    },
+    /** 좌표값 주소로 변환 **/
+    reverseGeocodes(latlng) {
+      let self = this;
+
+      const navermaps = window.naver.maps;
+      navermaps.Service.reverseGeocode(
+        {
+          coords: latlng,
+          orders: [
+            navermaps.Service.OrderType.ADDR,
+            navermaps.Service.OrderType.ROAD_ADDR
+          ].join(',')
+        },
+        function (status, response) {
+          if (status === navermaps.Service.Status.ERROR) {
+            return alert('Something Wrong!');
+          }
+
+          let idx = response.v2.results.length > 1 ? 1 : 0;
+          // 지번 주소 구까지
+          self.selectedAddressGu =
+            response.v2.results[idx].region.area1.name +
+            ' ' +
+            response.v2.results[idx].region.area2.name;
+
+          // 지번 주소 동까지
+          self.selectedjibunAddressDong =
+            response.v2.results[idx].region.area1.name +
+            ' ' +
+            response.v2.results[idx].region.area2.name +
+            ' ' +
+            response.v2.results[idx].region.area3.name;
+
+          // 도로명 주소
+          self.selectedroadAddressDong =
+            response.v2.results[idx].region.area1.name +
+            ' ' +
+            response.v2.results[idx].region.area2.name +
+            ' ' +
+            response.v2.results[idx].land.name;
+
+          if (self.checkBtn === 'dong') {
+            self.locationView = self.selectedjibunAddressDong;
+          } else {
+            self.locationView = self.selectedAddressGu;
+          }
+        }
+      );
+    },
+
+    save() {
+      this.showLoading();
+
+      let param = {};
+      param['partnersCode'] = this.partnersCode;
+      param['partnersName'] = this.partnersName;
+      param['partnersNumber'] = this.partnersNumber;
+      param['shortWord'] = this.shortWord;
+      param['introduce'] = this.introduce;
+      param['lat'] = this.selectedLat;
+      param['lon'] = this.selectedLng;
+      param['partnersAddress'] = !this.isEmpty(this.locationView)
+        ? this.nullToBlank(this.locationView)
+        : null;
+      param['partnersAddressDetail'] = !this.isEmpty(this.locationDetail)
+        ? this.nullToBlank(this.locationDetail)
+        : null;
+      param['openTime'] = this.openTime;
+      param['closeTime'] = this.closeTime;
+      param['hourMin'] = this.hourMin;
+      param['hourMax'] = this.hourMax;
+      param['kmMax'] = this.kmMax;
+      param['ageMin'] = this.ageMin;
+      param['ageMax'] = this.ageMax;
+      param['exposureCycle'] = this.exposureCycle;
+
+      getData({
+        url: '/partnersInfoSave',
+        param: param,
+        then: (data) => {
+          this.loading.dismiss();
+          this.warningAlert(data.message);
+          this.partnersInfo();
+        }
+      });
+    },
+    isEmpty(s) {
+      return Object.keys(s).length == 0;
+    },
+    nullToBlank(s) {
+      if (Object.keys(s).length == 0) {
+        return ' ';
+      } else {
+        return s;
+      }
+    },
+
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: 'Loading...',
+        duration: 0
+      });
+      await this.loading.present();
+    },
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: '',
+        subHeader: '',
+        message: message,
+        buttons: ['OK']
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+<style lang="scss" scoped></style>

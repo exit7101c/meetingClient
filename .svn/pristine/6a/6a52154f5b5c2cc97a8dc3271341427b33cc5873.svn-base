@@ -1,0 +1,388 @@
+<template>
+  <ion-modal
+    ref="modal"
+    :is-open="modalOpen"
+    @ionModalDidDismiss="dismissedModal"
+    :initial-breakpoint="0.95"
+    :breakpoints="[0, 0.15, 0.5, 0.95]"
+    class="custom-modal"
+  >
+    <ion-content class="ion-padding">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-text color="light" class="text-xl text-bold">
+            (
+            <span>{{ nick }}</span>
+            )님의 심장을 폭격해보세요
+            <ion-icon :icon="choiceSuperlike" class="superLikeIcon" />
+            <!--            )님의 심장을 폭격해보세요{{ emoji }}-->
+          </ion-text>
+        </ion-buttons>
+      </ion-toolbar>
+      <ion-row>
+        <ion-select
+          aria-label="fruit"
+          placeholder="직접입력"
+          @ionChange="selectCategory"
+        >
+          <ion-select-option value="">직접입력</ion-select-option>
+          <ion-select-option
+            v-for="item in categoryList"
+            :value="item"
+            :key="item.categoryCd"
+          >
+            {{ item.categoryNm }}
+          </ion-select-option>
+        </ion-select>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <ion-item
+            ref="content"
+            lines="none"
+            counter="true"
+            class="input-field"
+          >
+            <ion-textarea
+              :value="modalText"
+              :rows="10"
+              @input="limitComment($event)"
+              maxlength="50"
+              :placeholder="placeholderText"
+              :readonly="readonlyText"
+            />
+            <ion-note slot="helper"
+            >보유 아이템
+              <ion-icon :icon="choiceSuperlike" class="superLikeIcon" />
+              {{ quantity }} 개
+              <!--            >보유 아이템 {{ emoji }} {{ quantity }} 개-->
+              <span v-if="subscribeInfo.isActionInfinite == 'Y'"
+              >({{ subscribeInfo.subscribeNm }} 이용중)</span
+              >
+            </ion-note>
+            <ion-note slot="error">내용을 입력해주세요</ion-note>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="6">
+          <custom-button
+            shape="round"
+            fill="outline"
+            color="light"
+            expand="block"
+            @click="modalBtn('close')"
+          >취소
+          </custom-button>
+        </ion-col>
+        <ion-col size="6" class="text-right">
+          <custom-button
+            shape="round"
+            expand="block"
+            v-if="isBonusYn === 'Y'"
+            @click="modalBtn('newText')"
+          >
+            매일1회무료
+          </custom-button>
+          <custom-button
+            shape="round"
+            expand="block"
+            v-else
+            @click="modalBtn('newText', quantity, target)"
+          >
+            <!--            <template v-if="subscribeInfo.isActionInfinite == 'Y'">사용</template>-->
+            <!--            <template v-else-if="quantity > 0">사용</template>-->
+            <!--            <template v-else>하트8개차감</template>-->
+            보내기
+          </custom-button>
+        </ion-col>
+      </ion-row>
+      <AlertMessageModal
+        :is-open="alertMessage"
+        :title="'NAVY'"
+        :message="'아이템 수량이 부족합니다.'"
+        :subMessage="'아이템을 구매하기위해 상점으로 이동하시겠습니까?'"
+        :btnName="'이동'"
+        :height="210"
+        :disabledCheck="false"
+        @ionModalDidDismiss="alertMessage = false"
+        @handleClickBtn="goRouter()"
+      />
+    </ion-content>
+  </ion-modal>
+</template>
+
+<script>
+import { getData, storeMapFn, dailyCardInfoMap } from "@/assets/js/common";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal";
+import IconChoiceSuperike from "@/assets/img/choice/choice_superlike.svg";
+
+export default {
+  inject: ["alertController"],
+  name: "SuperLikeModal",
+  props: {
+    modalOpen: {
+      type: Boolean
+    },
+    categoryList: {
+      type: Object
+    },
+    nick: {
+      type: String
+    },
+    emoji: {
+      type: String
+    },
+    quantity: {
+      type: Number
+    },
+    isBonusYn: {
+      type: String
+    },
+    target: {
+      type: String
+    },
+    likeType: {
+      type: String
+    },
+    subscribeInfo: {
+      type: Object
+    }
+  },
+  components: {
+    AlertMessageModal
+  },
+  data() {
+    return {
+      choiceSuperlike: IconChoiceSuperike,
+      selectTargetUserData: "",
+      selectedCategory: "",
+      placeholderText: "상대방에게 나의 마음을 표현해주세요.",
+      modalText: "",
+      readonlyText: false,
+      useTypeHeart: "COUPON",
+      alertMessage: false
+    };
+  },
+  methods: {
+    modalBtn(type, quantity, target) {
+      if (type === "close") {
+        this.dismissedModal();
+      } else if (type === "newText") {
+        // newText?? 사용로직추가 confirm창 필요하면 추가 후 로직 이동
+        if (this.modalText === "") {
+          this.warningAlert("메시지를 입력해주세요.");
+        } else {
+          this.selectTargetUserData = target;
+          if (quantity > 0) {
+            this.useTypeHeart = "COUPON";
+          } else {
+            this.useTypeHeart = "HEART";
+          }
+
+          this.useHeartAttack();
+        }
+      }
+    },
+    selectCategory(e) {
+      this.selectedCategory = e.detail.value;
+
+      if (this.selectedCategory === "") {
+        this.readonlyText = false;
+        this.placeholderText = "상대방에게 나의 마음을 표현해주세요.";
+        this.modalText = "";
+      } else {
+        this.readonlyText = true;
+        this.modalText = this.selectedCategory.description;
+        this.placeholderText = this.modalText;
+      }
+    },
+
+    /** 하트어택 사용 로직 **/
+    useHeartAttack() {
+
+      getData({
+        url: "/useHeartAttack",
+        param: {
+          couponCd: "CU001",
+          useType: "COUPON",
+          itemCd: "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT001_01
+          pointCd: "",
+          // useType: this.useTypeHeart, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          // itemCd: this.useTypeHeart === "HEART" ? "IT001_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT001_01
+          // pointCd: this.useTypeHeart === "HEART" ? "BUY" : "", // useType 'HEART' 일 시 BUY
+          targetUserKey: this.selectTargetUserData, // 상대방 userKey
+          message: this.modalText,
+          likeType: this.likeType,
+          likeSeq: dailyCardInfoMap.likeSeq == undefined ? "" : dailyCardInfoMap.likeSeq
+        },
+        then: (data) => {
+          // if (data.successYn === "N" || data.successYn === "NE") {
+          //   this.superLikeModalOpen = false;
+          //   this.warningAlert(data.message);
+          // } else if (data.successYn === "NH") {
+          //   this.warningAlertNH(data.message);
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NE" ||
+            data.successYn === "NH"
+          ) {
+            this.alertMessage = true;
+          } else {
+            if (data.successYn == "MATCH") {
+              this.warningAlertMatch(data.message);
+            }
+
+            this.alertMessage = false;
+            this.superLikeModalOpen = false;
+            this.selectTargetUserData = {};
+            this.modalText = "";
+            this.placeholderText = "상대방에게 나의 마음을 표현해주세요.";
+            this.readonlyText = false;
+            this.$emit("endNext");
+          }
+        }
+      });
+    },
+    goRouter() {
+      this.$emit("superLikeModalOpen");
+      this.alertMessage = false;
+      storeMapFn({ categoryType: "item" });
+      this.$router.push("/store");
+    },
+    /** 엔터체크 **/
+    limitComment(e) {
+      const text = e.target.value;
+      const rows = (text.match(/\n/g) || []).length + 1;
+      if (rows > 10) {
+        if (e.inputType !== "deleteContentBackward") {
+          e.preventDefault(); // 줄바꿈을 막는다
+          this.warningAlert("줄바꿈은 10줄까지만 가능합니다");
+          e.target.value = this.prevText;
+          return;
+        }
+      }
+      if (text !== this.prevText) {
+        // 이전에 입력된 텍스트와 비교하여 변경된 경우에만 행 수를 계산하도록 수정
+        this.dynamicRow = rows;
+      }
+      this.prevText = text; // 현재 입력된 텍스트를 저장하여 다음 비교 시 사용
+      this.modalText = text;
+    },
+    dismissedModal() {
+      this.placeholderText = "상대방에게 나의 마음을 표현해주세요.";
+      this.modalText = "";
+      this.readonlyText = false;
+      this.selectTargetUserData = {};
+      this.$emit("superLikeModalOpen");
+    },
+    /** 경고 팝업창 **/
+    async warningAlertNH(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$emit("superLikeModalOpen");
+              this.$router.push("/store");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlertMatch(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/messageMain");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+ion-modal {
+  --border-radius: 10px;
+
+  &.custom-modal {
+    --width: 100%;
+    --height: 90%;
+
+    ion-select {
+      margin: 10px 0;
+      padding: 0;
+      font-size: 14px;
+    }
+
+    icon-col {
+      --padding-start: 0;
+      --padding-end: 0;
+    }
+  }
+
+  &.alert-modal {
+    padding: 0 18px;
+    --width: 400px;
+    --height: 250px;
+  }
+}
+
+/*!* 내용 입력창*!*/
+ion-textarea {
+  --color: white;
+  font-size: 14px;
+  height: 180px;
+
+  + ion-note {
+    --color: white;
+    font-size: 14px;
+  }
+}
+
+.superLikeIcon {
+  border-radius: 25px;
+  background: linear-gradient(180deg, #f5cb6b 0%, #e5a049 100%);
+  vertical-align: middle;
+  height: 16px;
+}
+
+</style>

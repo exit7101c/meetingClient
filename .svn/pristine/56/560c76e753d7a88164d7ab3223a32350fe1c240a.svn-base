@@ -1,0 +1,1745 @@
+<template>
+  <!-- 우측 메뉴 -->
+  <!--<ion-router-outlet id="main-content"></ion-router-outlet>-->
+
+  <ion-page>
+    <ion-menu side="end" content-id="main-content">
+      <ion-header class="ion-padding pb-0" style="margin-top: 30px;">
+        <ion-list lines="full" class="message-talk-info">
+          <ion-item-group>
+            <ion-item
+              v-if="this.messageType == 'message' && this.chatroomType == 'openchat'">
+              <ion-label>
+                <ion-text
+                  class="text-pink text-bold text-sm"
+                  @click="openUseOpenChatModal"
+                >현재 {{ openchatRank }}위 모임 🔥
+                </ion-text>
+                <h3>
+                  <ion-text color="light" class="text-bold text-xl"
+                  >{{ title }}
+                  </ion-text>
+                </h3>
+                <ion-text color="light" class="text-sm"
+                          v-if="this.chatroomType == 'openchat'">
+                  <ion-label>{{ talkUserCnt }} / 300명</ion-label>
+                </ion-text>
+              </ion-label>
+              <!--              <ion-icon-->
+              <!--                slot="end"-->
+              <!--                color="light"-->
+              <!--                :icon="notificationShakeIcon"-->
+              <!--              />-->
+              <ion-icon
+                slot="end"
+                color="light"
+                :icon="alarmCheck ? notifications : notificationsOff"
+                @click="alarmCheckBtn"
+              />
+            </ion-item>
+            <ion-item v-if="chatroomType != 'anonymous'">
+              <ion-row
+                class="ion-align-items-center ion-justify-content-between gap-sm w-full flex-nowrap"
+              >
+                <ion-buttons>
+                  <ion-button
+                    fill="outline"
+                    shape="round"
+                    color="tertiary"
+                    class="mt-2 mb-2"
+                    @click="goRouter('map', this.chatroomId)"
+                  >
+                    <ion-icon
+                      slot="start"
+                      color="light"
+                      :icon="mapOutline"
+                      size="small"
+                    />
+                    <ion-text color="light"> 지도에서 보기</ion-text>
+                  </ion-button>
+                </ion-buttons>
+                <div>
+                  <ion-item
+                    lines="none"
+                    v-for="item in this.locationList"
+                    v-show="this.SS_USER_KEY === item.userKey"
+                    :key="item.userKey"
+                    class="ion-align-items-center"
+                  >
+                    <ion-label>
+                      <ion-text color="light" class="text-xs text-bold"
+                      >내 위치공유
+                      </ion-text>
+                    </ion-label>
+                    <ion-toggle
+                      slot="end"
+                      :checked="this.toggleLocation"
+                      class="v-middle"
+                      mode="ios"
+                      @click="setLocationYn"
+                    ></ion-toggle>
+                  </ion-item>
+                </div>
+              </ion-row>
+            </ion-item>
+          </ion-item-group>
+          <ion-item color="light" class="text-xs text-bold" style="text-align: right;"
+                    v-if="this.messageType == 'message' && this.chatroomType == 'openchat'"
+                    @click="goOpenChatMeet">
+            <ion-label> 게시판 ></ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <div class="row-box">
+          <ion-list>
+            <MessageTalkAttendList>
+              <template #title>
+                <ion-text>참여자</ion-text>
+              </template>
+              <template #content>
+                <ion-list
+                  v-for="data in userRoomList"
+                  :key="data.userId"
+                  class="pt-0 pb-0"
+                >
+                  <MessageTalkAttendItem
+                    :item="data"
+                    :messageType="chatroomType !== 'openchat'"
+                    :myCheck="this.SS_USER_KEY === data.userKey"
+                    :id="'currentPopoverTrigger' + data.userId"
+                  >
+                  </MessageTalkAttendItem>
+                  <ion-popover
+                    :trigger="'currentPopoverTrigger' + data.userId"
+                    :dismiss-on-select="true"
+                    mode="ios"
+                    v-if="chatroomType != 'anonymous' || this.SS_USER_KEY !== data.userKey"
+                  >
+                    <ion-content>
+                      <ion-list lines="full">
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('profile', data)"
+                          v-if="chatroomType != 'anonymous'"
+                        >프로필보기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('kick', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey
+                          "
+                        >강퇴하기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('change', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey
+                          "
+                        >방장위임
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('police', data)"
+                          v-show="this.SS_USER_KEY !== data.userKey"
+                        >신고하기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="setBlock(data)"
+                          v-show="this.SS_USER_KEY !== data.userKey"
+                          v-if="chatroomType == 'openchat'"
+                        >차단하기
+                        </ion-item>
+                      </ion-list>
+                    </ion-content>
+                  </ion-popover>
+                </ion-list>
+              </template>
+            </MessageTalkAttendList>
+          </ion-list>
+        </div>
+        <div class="row-box">
+          <ion-list v-if="leaderYn === 'Y' && chatroomType != 'single'">
+            <MessageTalkAttendList>
+              <template #title>
+                <ion-text>참여 신청자</ion-text>
+                <ion-text class="text-sub01"
+                >{{ attendList.length }}명
+                </ion-text>
+              </template>
+              <template #actions>
+                <!--                <ion-text class="text-link text-sm sub-text01 text-bold"-->
+                <!--                >일괄수락-->
+                <!--                </ion-text>-->
+              </template>
+              <template #content>
+                <ion-list
+                  v-for="data in attendList"
+                  :key="data.userId"
+                  class="pt-0 pb-0"
+                >
+                  <MessageTalkAttendItem
+                    :item="data"
+                    :id="'currentPopoverTrigger' + data.userId"
+                  >
+                    <template #actions>
+                      <custom-button
+                        fill="outline"
+                        color="success"
+                        size="small"
+                        shape="round"
+                        @click.stop="agreeYn('Y', data)"
+                      >수락
+                      </custom-button>
+                      <custom-button
+                        fill="outline"
+                        color="danger"
+                        size="small"
+                        shape="round"
+                        @click.stop="agreeYn('N', data)"
+                      >거절
+                      </custom-button>
+                    </template>
+                  </MessageTalkAttendItem>
+                  <ion-popover
+                    :trigger="'currentPopoverTrigger' + data.userId"
+                    :dismiss-on-select="true"
+                    mode="ios"
+                  >
+                    <ion-content>
+                      <ion-list lines="full">
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('profile', data)"
+                        >프로필보기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('kick', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey
+                          "
+                        >강퇴하기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('police', data)"
+                          v-show="this.SS_USER_KEY !== data.userKey"
+                        >신고하기
+                        </ion-item>
+                      </ion-list>
+                    </ion-content>
+                  </ion-popover>
+                </ion-list>
+              </template>
+            </MessageTalkAttendList>
+          </ion-list>
+        </div>
+      </ion-content>
+
+      <ion-footer>
+        <!-- 업소 홍보 배너 -->
+        <MessageTalkAddBanner @click="goRouter('partnersMap')" />
+        <p class="text-right">
+          <ion-text class="text-link text-sm" color="light" @Click="chatRoomOut"
+          >채팅 나가기
+          </ion-text
+          >
+        </p>
+      </ion-footer>
+    </ion-menu>
+
+    <ion-page id="main-content">
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <BackButton @event="goRouter('back')" :custom="true" />
+          </ion-buttons>
+          <ion-title>{{ title }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-menu-button @click="menuBtn">
+              <ion-icon :icon="menuIcon" color="light" />
+            </ion-menu-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content ref="msgContainer" class="ion-padding important-height">
+        <div
+          v-if="this.messageType == 'message' && this.chatroomType == 'openchat'"
+          class="custom-fixed" @click="openUseOpenChatModal"
+        >
+          <ion-img
+            :src="'https://cmdg.speedycdn.net/202308/20230808143353_5905a0f6-1461-4d41-ac99-6b4c8c41dd0d.png'"
+            style="width:35px; height: 35px;"
+          />
+          <ion-text color="light" class="text-bold text-lg">
+            &nbsp;TOP {{ openchatRank }}
+          </ion-text>
+        </div>
+        <ion-infinite-scroll threshold="100px" @ionInfinite="ionInfinite" position="top">
+          <ion-infinite-scroll-content
+            loadingText="Please wait..."
+            loadingSpinner="bubbles"
+          ></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+
+
+        <ion-label ref="msgArea">
+          <div v-for="item in messageTalkList" v-bind:key="item.messageId">
+            <!--상대방-->
+            <template
+              v-if="
+                this.SS_USER_KEY !== item.regUserKey && item.messageType !== 'Y'
+              "
+            >
+              <!--@onImgDidLoad="scrollToBottom(item)"-->
+              <!--@ionScroll="handleScroll($event)"-->
+              <MessageTalkItem
+                :item="item"
+                :chatroomType="chatroomType"
+                @zoomImg="openZoomedImage(item.cdnNmImage)"
+              />
+            </template>
+            <!--나-->
+            <template
+              v-if="
+                this.SS_USER_KEY === item.regUserKey && item.messageType !== 'Y'
+              "
+            >
+              <!--@onImgDidLoad="scrollToBottom(item)"-->
+              <MessageTalkItem
+                :type="true"
+                :item="item"
+                :chatroomType="chatroomType"
+                @zoomImg="openZoomedImage(item.cdnNmImage)"
+              />
+            </template>
+
+            <MessageTalkLabel
+              :message="item.message"
+              v-if="item.messageType === 'Y'"
+            />
+          </div>
+        </ion-label>
+      </ion-content>
+      <!-- TODO : 커뮤니티 댓글 폼과 구조가 달라서 개발 로직 통일 필요 -->
+      <ion-footer @keyup.enter="checkContent" class="no-padding">
+        <!--@input="limitComment($event)"-->
+        <MessageTalkSendForm
+          v-model:value="content"
+          :newimgFileId="imgCdnNm"
+          :newimgViewFileId="imgCdnNm"
+          :emoticonList="emoticonList"
+          @handleAddPhoto="addPhoto()"
+          @sendComment="send('chat')"
+          @emoticonClick="emoticonClick"
+          @handleEmoji="handleEmoji"
+        />
+        <input
+          type="file"
+          @change="onFileChange"
+          ref="photo"
+          class="is-blind"
+        />
+      </ion-footer>
+    </ion-page>
+    <!-- 허니부스트 모달창 시작 -->
+
+    <!-- 강퇴 모달  -->
+    <UserKickModal
+      :is-open="modalMessage"
+      @ionModalDidDismiss="modalMessage = false"
+      @ok="modalBtn('save')"
+      @cancel="modalBtn('cancel')"
+    />
+
+    <!-- 모임부스트 모달창 시작 -->
+    <CustomBoostModal
+      :is-open="boostModal"
+      :isBuffYn="isBuffYn"
+      :coupon="coupon"
+      :openchatRank="openchatRank"
+      :totalRoom="totalRoom"
+      :useCnt="useCnt"
+      :calTimeStr="calTimeStr"
+      @ionModalDidDismiss="boostModalClose"
+      @close="boostModalClose"
+      @event="useOpenChatBoost"
+    />
+    <AlertMessageModal
+      :is-open="messageTalkModal"
+      :title="'채팅방 나가기'"
+      :message="chatRoomLeaderYn == 'Y' && leaderCanOutYn == 'N' ? '방장은 혼자 남은 경우에만 나갈 수 있습니다.' : '나가기를 하면 대화내용이 모두 삭제되고 채팅목록에서도 삭제됩니다.' "
+      :subMessage="''"
+      :btnName="'나가기'"
+      :height="210"
+      :disabledCheck="chatRoomLeaderYn == 'Y' && leaderCanOutYn == 'N'"
+      @ionModalDidDismiss="messageTalkModal=false"
+      @handleClickBtn="roomExit"
+    />
+  </ion-page>
+</template>
+
+<script>
+import { flameOutline, mapOutline } from "ionicons/icons";
+import {
+  IonMenu,
+  IonToggle,
+  IonMenuButton,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  loadingController,
+  alertController
+} from "@ionic/vue";
+import {
+  getData,
+  SS_USER_SEQ,
+  API_BASE_URL,
+  SS_USER_KEY,
+  setFile,
+  dailyCardInfoMapFn,
+  messageTalkMapFn,
+  messageTalkMap,
+  policeMapFn,
+  currentMsgHeightCalc,
+  currentMsgHeightCalcFn, openChatViewMap, openChatMeetMap
+} from "@/assets/js/common";
+
+import SockJS from "sockjs-client";
+import Stomp from "webstomp-client";
+import Hammer from "hammerjs";
+
+import MessageTalkItem from "@/components/MessageTalk/MessageTalkItem.vue";
+import MessageTalkLabel from "@/components/MessageTalk/MessageTalkLabel.vue";
+import MessageTalkSendForm from "@/components/MessageTalk/MessageSendForm.vue";
+import MessageTalkAttendList from "@/components/MessageTalk/MessageTalkAttendList.vue";
+import MessageTalkAttendItem from "@/components/MessageTalk/MessageTalkAttendItem.vue";
+import MessageTalkAddBanner from "@/components/MessageTalk/MessageTalkAddBanner.vue";
+import UserKickModal from "@/components/Modal/UserKickModal.vue";
+import CustomBoostModal from "@/components/Custom/CustomBoostModal.vue";
+
+import IconMenu from "@/assets/img/icon/icon_menu.svg";
+import IconNotificationShake from "@/assets/img/icon/icon_notification_shake.svg";
+import IconNotifications from "@/assets/img/icon/icon_notifications.svg";
+import IconNotificationsOff from "@/assets/img/icon/icon_notifications_off.svg";
+
+//import { Keyboard } from '@capacitor/keyboard';
+
+
+import {
+  CapacitorSQLite,
+  SQLiteConnection,
+  SQLiteDBConnection
+} from "@capacitor-community/sqlite";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal.vue";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+
+import { Capacitor } from "@capacitor/core";
+import { MarkerClustering } from "@/assets/js/MarkerClustering";
+
+import { openChatMeetMapFn } from "@/assets/js/common";
+
+
+export default {
+  name: "MessageTalk",
+  inject: ["loadingController", "alertController"],
+  components: {
+    AlertMessageModal,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    MessageTalkItem,
+    MessageTalkLabel,
+    MessageTalkSendForm,
+    MessageTalkAttendList,
+    MessageTalkAttendItem,
+    MessageTalkAddBanner,
+    IonMenu,
+    IonToggle,
+    IonMenuButton,
+    UserKickModal,
+    CustomBoostModal
+  },
+  computed: {
+    messageTalkList() {
+      //storex 감시
+      return this.$store.state.messageList;
+    }
+  },
+  watch: {
+    messageTalkList: {
+      deep: true,
+      handler() {
+        //computed messageTalkList가 변형될때 실행되는 함수
+        if (this.currentMsgHeightCalc <= 350) {
+          this.scrollToBottom();
+        }
+      }
+    }
+  },
+  data() {
+    return {
+      menuIcon: IconMenu,
+      notificationShakeIcon: IconNotificationShake,
+      notifications: IconNotifications,
+      notificationsOff: IconNotificationsOff,
+      mapOutline,
+      flameOutline,
+      API_BASE_URL,
+      SS_USER_KEY,
+      chatroomId: "",
+      messageType: "",
+      chatroomType: "",
+      loginSeq: SS_USER_SEQ,
+      userSeq: "",
+      userPhoto: null,
+      userNick: "",
+      lastSearchTime: "",
+      chatBeforeList: [],
+      chatList: [],
+      content: "",
+      container: this.$refs.msgContent,
+      stompClient: "",
+      connected: false,
+      interval: null,
+      isFirst: true,
+      Attachfiles: [],
+      imgFileId: "",
+      imgCdnNm: "",
+      loading: null,
+      isZoomed: false,
+      selectType: "first",
+      nextNo: 0,
+      userRoomList: [],
+      attendList: [],
+      showUserList: false,
+      showProfileOptions: false,
+      currentNick: "",
+      title: "",
+      talkUserCnt: 0,
+      leaderYn: "",
+
+      interval2: null,
+      interval3: null,
+      interval4: null,
+      boostModal: false,
+      openchatRank: 0,
+      openChatKey: "",
+      totalRoom: 0,
+      isBuffYn: "N",
+      useCnt: 0,
+      calTimeStr: "",
+      coupon: {},
+      useType: "HEART",
+
+      modalMessage: false,
+      locationList: "",
+      currentMsgHeightCalc: 0,
+      targetUserKey: "",
+      targetUserType: "",
+      toggleLocation: false,
+      alarmCheck: true,
+      emoticonList: [],
+      emojiCheck: false,
+
+      isEndScroll: false,
+      messageTalkModal: false,
+      chatRoomLeaderYn: "N",
+      leaderCanOutYn: "N",
+      isChatBlock: false
+    };
+  },
+  ionViewWillEnter() {
+    this.selectType = "first";
+    this.nextNo = 0;
+    this.isEndScroll = false;
+    this.chatRoomLeaderYn = "N";
+    this.leaderCanOutYn = "N";
+    // 진입할 때 호출
+    this.chatroomId = messageTalkMap.chatroomId;
+    this.messageType = messageTalkMap.type;
+    // this.chatroomType = messageTalkMap.chatroomType;
+    if (this.$store.state.currentChatroomId != messageTalkMap.chatroomId) {
+      this.$store.state.currentChatroomId = messageTalkMap.chatroomId;
+      this.$store.state.messageList = [];
+    }
+    //소켓연결
+    /*this.$nextTick(() => {
+      this.connect();
+      this.isFirst = false;
+    });*/
+
+    //접속상태를 감시해서 연결이 끊어질경우 재접속한다 (1초반복)
+    /*this.interval = setInterval(() => {
+      if (!this.isFirst && !this.connected) {
+        this.connect();
+      }
+    }, 500);*/
+
+    this.getChatRoomType();
+
+    this.chatBlock();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+    /*clearInterval(this.interval);*/
+    clearInterval(this.interval2);
+    clearInterval(this.interval3);
+    clearInterval(this.interval4);
+    //this.stompClient.disconnect(function () {});
+    this.isFirst = true;
+  },
+  mounted() {
+  },
+  methods: {
+    chatRoomOut() {
+
+      if (this.chatroomType == "openchat") {
+        if (this.chatRoomLeaderYn == "Y") {
+          if (this.userRoomList.length <= 1) {
+            this.leaderCanOutYn = "Y";
+          } else {
+            this.leaderCanOutYn = "N";
+          }
+        }
+      } else {
+        this.leaderCanOutYn = "Y";
+      }
+
+      this.messageTalkModal = true;
+    },
+
+    roomLeaderExit() {
+      getData({
+        url: "/messageMain/setDropOutLeader",
+        param: {
+          chatroomId: this.chatroomId
+        },
+        then: (data) => {
+          // this.$router.push("message");
+          this.messageTalkModal = false;
+          this.$router.go(-1);
+        }
+      });
+    },
+    handleEmoji() {
+      this.$refs.msgContainer.$el.scrollToBottom(0);
+    },
+    getChatRoomType() {
+      getData({
+        url: "/messageMain/getChatRoomType",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.chatroomType = data.chatroomType;
+
+          this.updateMessageRecept();
+          this.getMessageList();
+
+          this.getLocationListCheck();
+
+          this.initSqlite();
+          this.getEmoticonList();
+
+          this.getChatroomTitle();
+          this.getLocationYn();
+
+
+        }
+      });
+    },
+    emoticonClick(item) {
+      this.content = item.emoticonNm;
+      this.imgFileId = item.fileId;
+
+      this.send("emoticon");
+    },
+    chatBlock() {
+      getData({
+        url: "/messageMain/chatBlock",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.isChatBlock = data.isBlock == "Y" ? true : false;
+        }
+      });
+    },
+    /** 이모티콘 **/
+    getEmoticonList() {
+      getData({
+        url: "/messageMain/getEmoticonList",
+        param: {},
+        then: (data) => {
+          this.emoticonList = data;
+        }
+      });
+    },
+    /** 알람 on/off **/
+    alarmCheckBtn() {
+      getData({
+        url: "/messageMain/getChatRoomAlarm",
+        param: { alarmCheck: this.alarmCheck, chatroomId: this.chatroomId },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.getChatRoomAlarmList();
+          }
+        }
+      });
+    },
+    /** 알람상태 체크 **/
+    getChatRoomAlarmList() {
+      getData({
+        url: "/messageMain/getChatRoomAlarmList",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.alarmCheck = data.val === "Y" ? true : false;
+        }
+      });
+    },
+    menuBtn() {
+      this.getUserList();
+      this.getAttendList();
+      this.getChatroomTitle();
+      this.getChatRoomAlarmList();
+    },
+
+    handleScroll(ev) {
+      console.log("scroll" + ev.detail);
+    },
+    async initSqlite() {
+      const sqlite = new SQLiteConnection(CapacitorSQLite);
+      if (Capacitor.getPlatform() === "web") {
+        const jeepSqlite = document.createElement("jeep-sqlite");
+        document.body.appendChild(jeepSqlite);
+        await customElements.whenDefined("jeep-sqlite");
+        await sqlite.initWebStore();
+      }
+      let db;
+      const ret = await sqlite.checkConnectionsConsistency();
+      const isConn = (await sqlite.isConnection("navy")).result;
+      if (ret.result && isConn) {
+        db = await sqlite.retrieveConnection("navy");
+      } else {
+        db = await sqlite.createConnection("navy", false, "no-encryption", 1);
+      }
+      await db.open();
+      const res3 = await db.query("SELECT * FROM test");
+      //console.log(res3.values);
+
+      await sqlite.closeConnection("navy");
+    },
+    modalBtn(type) {
+      if (type === "save") {
+        this.getKickUser();
+      } else {
+        this.modalMessage = false;
+      }
+    },
+
+    openProfile(userId, userNick) {
+      this.currentNick = userNick;
+      this.showProfileOptions = true;
+    },
+    roomExit() {
+      if (this.chatRoomLeader == "Y" && this.leaderCanOutYn == "Y") {
+        this.roomLeaderExit();
+      } else if (this.chatRoomLeader == "Y" && this.leaderCanOutYn == "N") {
+        // 해당 경우는 없어야 정상
+        this.warningAlert("오픈채팅에서 방장은 혼자 남은 경우에만 나갈 수 있습니다.");
+      } else {
+        this.targetUserKey = this.SS_USER_KEY;
+        this.targetUserType = "self";
+        this.getKickUser();
+      }
+
+    },
+    getKickUser() {
+      getData({
+        url: "/messageMain/setDropOutUser",
+        param: {
+          chatroomId: this.chatroomId,
+          userKey: this.targetUserKey,
+          type: this.targetUserType
+        },
+        then: (data) => {
+          if (data.successYn === "Y") {
+            if (this.targetUserType === "kick") {
+              this.userRoomList = data.roomUserList;
+
+              this.getUserList();
+              this.getAttendList();
+              this.updateMessageRecept();
+              this.modalMessage = false;
+            } else if (this.targetUserType === "self") {
+              // this.$router.push("message");
+              this.messageTalkModal = false;
+              this.$router.go(-1);
+            }
+          } else {
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+    /*connect() {
+      const serverURL = API_BASE_URL + '/commonSocket';
+      let socket = new SockJS(serverURL);
+      this.stompClient = Stomp.over(socket);
+      console.log("소켓 연결을 시도합니다. 서버 주소: " + serverURL);
+      this.stompClient.connect(
+        {},
+        (frame) => {
+          // 소켓 연결 성공
+          this.connected = true;
+          console.log("소켓 연결 성공", frame);
+          // 서버의 메시지 전송 endpoint를 구독합니다.
+          // 이런형태를 pub sub 구조라고 합니다.
+          this.stompClient.subscribe("/channel/" + this.chatroomId, (res) => {
+            // 받은 데이터를 json으로 파싱하고 리스트에 넣어줍니다
+            this.messageTalkList.push(JSON.parse(res.body));
+            this.scrollToBottom();
+          });
+          //소켓연결이 완료된 이후 데이터를 조회한다.
+          //메세지 읽음 처리
+          this.updateMessageRecept();
+          //메세지 조회
+          this.getMessageList();
+        },
+        (error) => {
+          // 소켓 연결 실패
+          console.log("소켓 연결 실패", error);
+          this.connected = false;
+        }
+      );
+    },*/
+    /* 스크롤 맨 아래로 */
+    scrollToBottom(item) {
+      if (item !== undefined && item !== null) {
+        item.isLoaded = true;
+      }
+
+      setTimeout(() => {
+        this.$refs.msgContainer.$el.scrollToBottom(0);
+      }, 100);
+    },
+    getMessageList() {
+      let self = this;
+
+      this.talkUserCnt = 0;
+      if (this.selectType !== "first" && this.nextNo === "0") {
+        alert("시스템오류 관리자에게 문의하세요.");
+        return;
+      }
+
+      clearInterval(this.interval4);
+
+      getData({
+        url: "/messageMain/getMessageList",
+        param: {
+          chatroomId: this.chatroomId,
+          type: this.selectType,
+          nextNo: this.nextNo
+        },
+        then: (data) => {
+          this.$store.state.messageList = data;
+          if (data.length > 0) {
+            this.selectType = "second";
+            this.nextNo = data[0]["messageId"];
+          }
+          this.$nextTick(() => {
+            //this.scrollToBottom();
+
+            self.interval4 = setInterval(async () => {
+              const elem = self.$refs.msgContainer.$el;
+              const scrollElement = await elem.getScrollElement();
+              let maxHeight = scrollElement.scrollHeight;
+              let currentHeight = scrollElement.scrollTop + 736;
+              let heightPx = maxHeight - currentHeight;
+
+              self.$store.state.currentMsgHeightCalc = heightPx;
+              self.currentMsgHeightCalc = heightPx;
+            }, 2000);
+
+            self.replaceURL();
+          });
+        }
+      });
+    },
+    updateMessageRecept() {
+      //메시지 읽음처리
+      getData({
+        url: "/messageMain/updateMessageRecept",
+        param: { chatroomId: this.chatroomId },
+        then: () => {
+        }
+      });
+    },
+
+    /** 챗방 유저리스트 **/
+    getUserList() {
+      getData({
+        url: "/messageMain/getRoomUserList",
+        param: {
+          chatroomId: this.chatroomId
+        },
+        then: (data) => {
+          this.userRoomList = data;
+          this.talkUserCnt = data.length;
+
+          this.$nextTick(() => {
+            this.getAttendList();
+          });
+        }
+      });
+    },
+    getLocationListCheck() {
+      getData({
+        url: "/messageMain/getLocationListCheck",
+        param: {
+          chatroomId: this.chatroomId
+        },
+        then: (data) => {
+          this.locationList = data;
+        }
+      });
+    },
+    getLocationYn() {
+      getData({
+        url: "/messageMain/getLocationYn",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.toggleLocation = data.locationYn == "Y" ? true : false;
+          }
+        }
+      });
+    },
+    setLocationYn() {
+      getData({
+        url: "/messageMain/setLocationYn",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.toggleLocation = data.updatedValue === "Y" ? true : false;
+          }
+          this.getUserList();
+        }
+      });
+    },
+    /** 챗방 신청유저리스트 **/
+    getAttendList() {
+      getData({
+        url: "/messageMain/getAttendList",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.attendList = data;
+
+          // this.$nextTick(() => {
+          //   if (messageTalkMap.type != "message"
+          //     || (messageTalkMap.type == "message" && messageTalkMap.chatroomType == "openchat")) {
+          //     this.getChatroomTitle();
+          //   }
+          // });
+        }
+      });
+    },
+
+    getChatroomTitle() {
+      getData({
+        url: "/messageMain/getChatroomTitle",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.title = data.title ? data.title : "대화상대가 없습니다.";
+          this.leaderYn = data.leaderYn;
+          this.openchatRank = data.openchatRank;
+          this.openChatKey = data.openChatKey;
+          this.chatRoomLeaderYn = data.leaderYn;
+        }
+      });
+    },
+
+    /* 빈 문자열인지 아닌지 먼저 체크하기 */
+    checkContent(e) {
+      /*if (this.content === null || this.content === '') {
+        /!* 빈 문자열이 들어오면 alert창 띄우기. *!/
+        return;
+      } else {
+        /!* 빈문자열이 아니면 내용 보내기 *!/
+        this.send('chat');
+      }*/
+    },
+
+    /* 메세지 전송 */
+    send(type) {
+      //if (this.stompClient && this.stompClient.connected) {
+      //const msg = { name: this.send_message };
+      //this.stompClient.send("/app/hello", JSON.stringify(msg), {});
+      if (this.isChatBlock) {
+        this.warningAlert("삭제된 오픈챗입니다.<br />삭제된 글에는 더 이상 채팅을 할 수 없습니다.");
+        return;
+      }
+
+      if (type !== "emoticon" && type !== "image" && (this.content === null || this.content === "")) {
+        this.warningAlert("보낼 메세지를 작성해 주세요");
+        return;
+      }
+
+      if (type !== "image" && type !== "emoticon") {
+        this.imgFileId = "";
+        this.imgCdnNm = "";
+      }
+      getData({
+        url: "/messageMain/sendMessageSingle",
+        param: {
+          chatroomId: this.chatroomId,
+          message: this.content,
+          type: type,
+          fileId: this.imgFileId
+        },
+        then: (res) => {
+          if (res.successYn == "N") {
+            this.warningAlert(res.message);
+          } else {
+            this.imgFileId = "";
+            this.imgCdnNm = "";
+            this.messageTalkList.push(res);
+            this.scrollToBottom();
+          }
+
+          this.$nextTick(() => {
+            this.replaceURL();
+          });
+        }
+      });
+      //}
+
+      //input창 리셋
+      this.content = "";
+    },
+
+    replaceURL() {
+
+      //차단된 사용자 메시지 제거
+      /*let localStorageBlockList = JSON.parse(
+        localStorage.getItem(this.openChatKey)
+      );*/
+
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      Array.from(this.messageTalkList).forEach((message, index) => {
+        let _match = message.message.match(regexp);
+        let match = [...new Set(_match)];
+        this.messageTalkList[index]["replaceMessage"] = message.message;
+        Array.from(match).forEach((item) => {
+          if (!item.includes("http")) {
+            this.messageTalkList[index]["replaceMessage"] = this.messageTalkList[index]["replaceMessage"].replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+          } else {
+            this.messageTalkList[index]["replaceMessage"] = this.messageTalkList[index]["replaceMessage"].replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+          }
+        });
+      });
+    },
+
+    addPhoto() {
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then(r => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile();
+        });
+
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+      // this.$refs.photo.click();
+    },
+    onFileChange: function onFileChange(e) {
+      // TODO : 첨부 파일 개수 제한
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(e);
+      });
+    },
+    //사진 저장
+    insertFile() {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          this.imgFileId = data.fileId;
+          this.imgCdnNm = data.cdnNm;
+
+          this.loading.dismiss();
+          this.$nextTick(() => {
+            this.send("image");
+          });
+        }
+      });
+    },
+
+    agreeYn(type, item) {
+      this.showLoading();
+      /** 수락/거절 이벤트
+       * param으로 참여신청자ID, 오픈챗ID, 타입 **/
+
+      getData({
+        url: "/updateOpenChatAttendYn",
+        param: {
+          openChatKey: item.openChatKey,
+          userKey: item.userKey,
+          type: type,
+          fileId: 0
+        },
+        then: (data) => {
+          if (data.successYn === "Y") {
+            if (data.confirmYn === "Y") {
+              this.warningAlert("수락 처리 되었습니다");
+            } else {
+              this.warningAlert("거절 처리 되었습니다");
+            }
+            this.getUserList();
+            this.getAttendList();
+            this.updateMessageRecept();
+          } else {
+            this.warningAlert(data.message);
+          }
+          this.loading.dismiss();
+        }
+      });
+    },
+    /** 이미지 확대, 이동**/
+    openZoomedImage(data) {
+      if (!this.isZoomed) {
+        const imageUrl = "https://" + data;
+        const modal = document.createElement("div");
+        const modalImage = document.createElement("img");
+
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.zIndex = "1000";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+
+        modalImage.src = imageUrl;
+        modalImage.style.width = "90%";
+        modalImage.style.height = "auto";
+        modalImage.style.objectFit = "contain";
+        modalImage.style.transformOrigin = "center";
+        modalImage.style.pointerEvents = "auto";
+
+        modal.appendChild(modalImage);
+        document.body.appendChild(modal);
+
+        const hammer = new Hammer(modalImage);
+
+        let currentScale = 1;
+        let posX = 0;
+        let posY = 0;
+        let lastPosX = 0;
+        let lastPosY = 0;
+
+        hammer.get("pinch").set({ enable: true });
+        hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+        hammer.on("pinchin pinchout", (event) => {
+          if (event.type === "pinchin") {
+            currentScale -= 0.02;
+          } else if (event.type === "pinchout") {
+            currentScale += 0.02;
+          }
+
+          currentScale = Math.min(Math.max(currentScale, 0.5), 3);
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panmove", (event) => {
+          posX = lastPosX + event.deltaX;
+          posY = lastPosY + event.deltaY;
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panend", () => {
+          lastPosX = posX;
+          lastPosY = posY;
+        });
+
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+        this.isZoomed = true;
+      } else {
+        this.isZoomed = false;
+      }
+    },
+    /** 종북체크 **/
+
+    boostModalClose() {
+      clearInterval(this.interval3);
+      this.boostModal = false;
+    },
+
+    useOpenChatBoost() {
+      getData({
+        url: "/messageMain/getChatRoomPrivateCheck",
+        param: {
+          openchatKey: this.openChatKey
+        },
+        then: (data) => {
+          if (data.privateYn == "N") {
+            this.warningAlert("비활성 상태인 모임에는 모임부스터를 <br />사용할 수 없습니다.");
+            return;
+          } else {
+            let meg = "사용하시겠습니까?";
+            if (this.coupon.quantity === 0) {
+              meg = "구매 후 사용하시겠습니까?";
+            }
+
+            if (confirm(meg)) {
+              getData({
+                url: "/useOpenChatBoost",
+                param: {
+                  couponCd: "CU008",
+                  useType: this.useType, // 'COUPON', 'HEART'
+                  itemCd: this.useType === "HEART" ? "IT008_01" : "", // useType
+                  pointCd: this.useType === "HEART" ? "BUY" : "", // useType
+                  openChatKey: this.openChatKey
+                },
+                then: (data) => {
+                  if (
+                    data.successYn === "N" ||
+                    data.successYn === "NH" ||
+                    data.successYn === "NE"
+                  ) {
+                    this.warningAlert(data.message);
+                  } else {
+                    this.warningAlert(data.message);
+
+                    this.getBuffUsingInfo();
+                    this.getUserCouponDataOne();
+
+                    clearInterval(this.interval3);
+                    this.interval3 = setInterval(() => {
+                      this.getBuffUsingInfo();
+                      this.getUserCouponDataOne();
+                    }, 10000);
+                  }
+                }
+              });
+            }
+          }
+        }
+      });
+    },
+    /** 보유현황 **/
+    getUserCouponDataOne() {
+      let couponCd = "CU008";
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: couponCd },
+        then: (data) => {
+          this.coupon = data;
+
+          if (this.coupon.quantity > 0) {
+            this.useType = "COUPON";
+          } else {
+            this.useType = "HEART";
+          }
+        }
+      });
+    },
+    openUseOpenChatModal() {
+      this.getBuffUsingInfo();
+      this.getUserCouponDataOne();
+      clearInterval(this.interval3);
+      this.interval3 = setInterval(() => {
+        this.getBuffUsingInfo();
+        this.getUserCouponDataOne();
+      }, 10000);
+      this.boostModal = true;
+    },
+    getBuffUsingInfo() {
+      getData({
+        url: "/getBuffUsingInfo",
+        param: {
+          couponCd: "CU008",
+          openChatKey: this.openChatKey
+        },
+        then: (data) => {
+          this.isBuffYn = data.isBuffYn;
+          this.remainingTime = data.remainingTime;
+          this.remainingTimeStr = data.remainingTimeStr;
+          this.useCnt = data.useCnt;
+          this.openchatRank = data.openchatRank;
+          this.totalRoom = data.totalRoom;
+
+          this.$nextTick(() => {
+            clearInterval(this.interval2);
+            this.timeCal();
+            this.interval2 = setInterval(() => {
+              if (this.isBuffYn === "Y") {
+                this.timeCal();
+              }
+            }, 1000);
+          });
+        }
+      });
+    },
+
+    /** 무한스크롤 이벤트 **/
+    ionInfinite(event) {
+      let self = this;
+
+      if (self.selectType == "first") {
+        self.isEndScroll = true;
+        event.target.complete();
+        return;
+      }
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        getData({
+          url: "/messageMain/getMessageList",
+          param: {
+            chatroomId: self.chatroomId,
+            type: self.selectType,
+            nextNo: self.nextNo
+          },
+          then: (data) => {
+            self.$nextTick(() => {
+              // for (let idx in data) {
+              //   self.$store.state.messageList.unshift(data[idx]);
+              // }
+              if (self.selectType != "first") {
+                self.$store.state.messageList.unshift(...data);
+              } else {
+                self.$store.state.messageList = data;
+              }
+              self.selectType = "second";
+              if (data.length > 0) {
+                self.nextNo = data[0]["messageId"];
+              }
+              self.isEndScroll = true;
+              event.target.complete();
+
+              self.replaceURL();
+            });
+
+            if (self.interval4 == null) {
+              self.interval4 = setInterval(async () => {
+                const elem = self.$refs.msgContainer.$el;
+                const scrollElement = await elem.getScrollElement();
+                let maxHeight = scrollElement.scrollHeight;
+                let currentHeight = scrollElement.scrollTop + 736;
+                let heightPx = maxHeight - currentHeight;
+
+                self.$store.state.currentMsgHeightCalc = heightPx;
+                self.currentMsgHeightCalc = heightPx;
+              }, 2000);
+            }
+
+          }
+        });
+      }, 1000);
+    },
+    timeCal() {
+      let hour, min, sec;
+
+      hour = parseInt(this.remainingTime / 3600);
+      min = parseInt((this.remainingTime % 3600) / 60);
+      sec = this.remainingTime % 60;
+
+      if (hour.toString().length === 1) hour = "0" + hour;
+      if (min.toString().length === 1) min = "0" + min;
+      if (sec.toString().length === 1) sec = "0" + sec;
+
+      if (this.remainingTime > 0) {
+        this.remainingTime = this.remainingTime - 1;
+      } else {
+        this.remainingTime = 0;
+        clearInterval(this.interval2);
+        this.isBuffYn = "N";
+      }
+      this.calTimeStr = hour + ":" + min + ":" + sec;
+    },
+    goRouter(type, item) {
+      if (type === "profile") {
+        dailyCardInfoMapFn({ userKey: item.userKey, type: "messageTalk" });
+        this.$router.push("/dailyCardInfo");
+      } else if (type === "police") {
+        policeMapFn({
+          type: "message",
+          targetKey: item.userKey,
+          targetId: item.chatroomId
+        });
+        this.$router.push("/police");
+      } else if (type === "kick") {
+        this.targetUserKey = item.userKey;
+        this.targetUserType = "kick";
+        this.modalMessage = true;
+      } else if (type === "back") {
+        if (messageTalkMap.type === "police") {
+          this.$router.push("/messageMain");
+        } else {
+          this.$router.go(-1);
+        }
+      } else if (type === "map") {
+        messageTalkMapFn({ chatroomId: item, title: this.title });
+        this.$router.push("/messageMap");
+      } else if (type == "partnersMap") {
+        this.$router.push("/partnersMap");
+      } else if (type === "change") {
+        // 방장위임
+        //console.log("방장위임");
+        // return;
+        this.confirmBtn(item);
+
+      }
+    },
+    setBlock(item) {
+      this.presentAlertConfirm(item);
+      // //이미 차단되어 있는지확인
+      // let localStorageNoticeList = JSON.parse(
+      //   localStorage.getItem(this.openChatKey)
+      // );
+      //
+      // let isExist = false;
+      // for(let idx in localStorageNoticeList){
+      //   if(localStorageNoticeList[idx]['userId'] == item.userId){
+      //     isExist = true;
+      //   }
+      // }
+      //
+      // if(isExist){
+      //   //차단해제
+      //   this.blockCancelConfirmBtn(item);
+      // } else {
+      //   //차단
+      //   this.blockConfirmBtn(item);
+      // }
+
+    },
+    async blockCancelConfirmBtn(item) {
+
+      const alert = await alertController
+        .create({
+          //cssClass: 'my-custom-class',
+          header: "",
+          message: "이미 차단되어 있습니다. 차단을 해제 하시겠습니까?",
+          buttons: [
+            {
+              text: "취소",
+              role: "cancel",
+              cssClass: "secondary",
+              handler: () => {
+
+              }
+            },
+            {
+              text: "해제",
+              cssClass: "alert-button-block",
+              handler: () => {
+
+                //해당사용자 세션에 추가하여 메시지 걸러냄
+                let localStorageBlockList = JSON.parse(
+                  localStorage.getItem(this.openChatKey)
+                );
+
+                console.log(localStorageBlockList);
+
+                for (let i in localStorageBlockList) {
+                  if (localStorageBlockList[i]["userId"] == item.userId) {
+                    localStorageBlockList.splice(i, 1);
+                  }
+                }
+
+                //체크된
+                if (
+                  localStorageBlockList == null &&
+                  typeof localStorageBlockList !== "array"
+                ) {
+                  localStorageBlockList = [];
+                }
+
+                //최종 결과물 저장
+                localStorage.setItem(
+                  this.openChatKey,
+                  JSON.stringify(localStorageBlockList)
+                );
+
+
+              }
+            }
+          ]
+        });
+      return alert.present();
+    },
+    async blockConfirmBtn(item) {
+
+      const alert = await alertController
+        .create({
+          //cssClass: 'my-custom-class',
+          header: "",
+          message: "이 사용자의 메시지를 오픈챗에서 더 이상 보지 않습니다. 계속 하시겠습니까?",
+          buttons: [
+            {
+              text: "취소",
+              role: "cancel",
+              cssClass: "secondary",
+              handler: () => {
+
+              }
+            },
+            {
+              text: "차단",
+              cssClass: "alert-button-block",
+              handler: () => {
+
+                //해당사용자 세션에 추가하여 메시지 걸러냄
+                let localStorageBlockList = JSON.parse(
+                  localStorage.getItem(this.openChatKey)
+                );
+
+                //체크된
+                if (
+                  localStorageBlockList == null &&
+                  typeof localStorageBlockList !== "array"
+                ) {
+                  localStorageBlockList = [];
+                }
+                localStorageBlockList.push({ userId: item.userId });
+
+                //최종 결과물 저장
+                localStorage.setItem(
+                  this.openChatKey,
+                  JSON.stringify(localStorageBlockList)
+                );
+
+
+                this.blockFinishBtn();
+
+              }
+            }
+          ]
+        });
+      return alert.present();
+    },
+
+    async blockFinishBtn(item) {
+
+      const alert = await alertController
+        .create({
+          //cssClass: 'my-custom-class',
+          header: "",
+          message: "사용자가 차단되어 메시지를 받지 않게됩니다.",
+          buttons: [
+            {
+              text: "확인",
+              role: "cancel",
+              handler: () => {
+
+              }
+            }
+          ]
+        });
+      return alert.present();
+    },
+    async confirmBtn(item) {
+
+      const alert = await alertController
+        .create({
+          //cssClass: 'my-custom-class',
+          header: "",
+          message: "정말 방장을 위임 하시겠습니까? 되돌릴 수 없습니다.",
+          buttons: [
+            {
+              text: "취소",
+              role: "cancel",
+              cssClass: "secondary",
+              handler: () => {
+
+              }
+            },
+            {
+              text: "위임",
+              handler: () => {
+
+                getData({
+                  url: "/messageMain/setRoomMasterChange",
+                  param: {
+                    chatroomId: item.chatroomId,
+                    targetUserId: item.userId
+                  },
+                  then: (data) => {
+                    this.warningAlert(data.message);
+
+                    this.getUserList();
+                  }
+                });
+
+              }
+            }
+          ]
+        });
+      return alert.present();
+    },
+    /** 로딩창 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+
+      await this.loading.present();
+    },
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    async presentAlertConfirm(item) {
+      const alert = await this.alertController.create({
+        // cssClass: 'my-custom-class',
+        header: "( " + item.nick + " ) 님을 차단하시겠습니까?",
+        message: "이 사용자의 메시지를 오픈챗에서 더 이상 보지 않습니다. 계속 하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "차단",
+            handler: () => {
+              /** 차단하기 **/
+              getData({
+                url: "/blockByUserInfo",
+                param: { targetUserKey: item.userKey },
+                then: (data) => {
+                  this.warningAlert(data.message);
+                  // 기존 메세지 중 차단사용자의 메세지 splice처리
+                  for (let i = 0; this.$store.state.messageList.length > i; i++) {
+                    if (this.$store.state.messageList[i].regUserKey == item.userKey) {
+                      this.$store.state.messageList.splice(i + 1, 1);
+                    }
+                  }
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    goOpenChatMeet() {
+      openChatMeetMapFn({
+        openChatKey: this.openChatKey
+      });
+      this.$router.push("/openChatMeet");
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+* {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.important-height {
+  height: 2000px;
+}
+
+.message-talk-info {
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+
+    ion-label {
+      margin-right: 10px;
+    }
+
+    ion-toggle {
+      padding-left: 0;
+    }
+  }
+}
+
+.custom-fixed {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  top: 65px;
+  right: 15px;
+  z-index: 1000;
+  padding: 3px 15px 3px 3px;
+  background: rgba(0, 0, 0, 0.90);
+  border-radius: 25px;
+
+}
+
+.alert-button-block {
+  color: red !important;
+}
+</style>

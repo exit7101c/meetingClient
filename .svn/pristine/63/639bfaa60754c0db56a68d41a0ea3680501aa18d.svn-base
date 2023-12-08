@@ -1,0 +1,610 @@
+<template>
+  <ion-page>
+    <custom-header page-name="Setting"></custom-header>
+    <ion-content class="ion-padding">
+      <!-- 프로필 카드 -->
+      <MyPageProfile
+        :thumbnail="cdnThumbNm"
+        :user="user"
+        :nickState="nickState"
+        :customFormatter="customFormatter"
+        :isNicknameValid="isNicknameValid"
+        @validateNickname="validateNickname"
+        @updateNickname="nickUpdateClick"
+        @saveNickname="nickSaveClick"
+        @cancelNickname="nickCancelClick"
+        @validateNickFalse="nickSaveFalse"
+        v-model:value="afterNick"
+        @dailyCardInfo="goDailyCardInfo"
+      />
+      <NickChangeModal
+        :is-open="nickChangeModal"
+        :title="'닉네임 변경'"
+        :userNick="userNick"
+        @ionModalDidDismiss="nickChangeModal = false"
+        @userChangeNick="userChangeNick"
+      />
+      <div class="row-box">
+        <CardBox padding="none" class="my-point-info">
+          <ion-list lines="none">
+            <ion-item>
+              <ion-icon
+                slot="start"
+                :icon="heartIcon"
+                color="light"
+                size="large"
+              ></ion-icon>
+              <ion-text class="text-md" color="light" @click="setUserEncoding"
+              >내 하트 <strong class="text-bold">{{ heart }}</strong
+              >개
+              </ion-text>
+
+              <ion-text
+                slot="end"
+                color="light"
+                class="text-md text-bold text-link"
+                @click="couponModal = true"
+              >쿠폰보관함
+              </ion-text>
+            </ion-item>
+            <ion-item>
+              <ion-icon
+                slot="start"
+                :icon="pointIcon"
+                color="light"
+                size="large"
+              ></ion-icon>
+              <ion-text class="text-md" color="light">
+                내 포인트 <strong class="text-bold">{{ point }}</strong> P
+              </ion-text>
+              <ion-text
+                slot="end"
+                color="light"
+                class="text-md text-bold text-link"
+                @click="$router.push('/usePointDetails')"
+              >자세히보기
+              </ion-text>
+            </ion-item>
+            <ion-item v-if="isPartner == 'Y'">
+              <ion-icon
+                slot="start"
+                :icon="pointIcon"
+                color="light"
+                size="large"
+              ></ion-icon>
+              <ion-text class="text-md" color="light">
+                파트너 포인트 <strong class="text-bold">{{ currentPoint }}</strong>
+                P
+              </ion-text>
+              <ion-text
+                slot="end"
+                color="light"
+                class="text-md text-bold text-link"
+                @click="partners"
+              >자세히보기
+              </ion-text>
+            </ion-item>
+          </ion-list>
+        </CardBox>
+      </div>
+      <!-- 플래티넘 패스 구독 -->
+      <div class="row-box">
+        <MyPlatinumBanner
+          :subscribeInfo="subscribeInfo"
+          :myLikeCnt="myLikeCnt"
+          @goBuySubscribe="goBuySubscribe"
+          @goMyLike="goMyLike"
+          @cancelSubscribe="cancelSubscribe"
+        />
+      </div>
+      <div class="row-box">
+        <AskMeLink
+          :askMeInfo="askMeInfo"
+          :askMeUrl="askMeUrl"
+          @setAskMeCode="setAskMeCode"
+          @setClipBoard="setClipBoard"
+          detail
+        />
+      </div>
+      <!-- 이동 메뉴 -->
+      <div class="row-box" v-if="isPartner == 'Y'">
+        <ion-list lines="none">
+          <MyPageNavButtonItem
+            title="파트너스 관리자"
+            @click="partners"
+          />
+          <!--          <MyPageNavButtonItem-->
+          <!--            title="받은 쪽지 확인"-->
+          <!--            @click="$router.push('/letter')"-->
+          <!--          />-->
+        </ion-list>
+      </div>
+      <div class="row-box">
+        <MyPageNavList @profileModalBtn="profileModalBtn('openModal')" :isPartner="isPartner" />
+      </div>
+
+      <StoreCouponModal
+        :is-open="couponModal"
+        @dismissedModal="couponModal = false"
+      />
+      <!-- 모달창 시작 -->
+      <ProfileAdModal
+        :is-open="modalMypage"
+        :quantity="coupon.quantity"
+        @ionModalDidDismiss="modalMypage = false"
+        @ok="profileModalBtn('save')"
+        @cancel="profileModalBtn('cancel')"
+      />
+      <AlertMessageModal
+        :is-open="alertMessage"
+        :title="'NAVY'"
+        :message="'아이템 수량이 부족합니다.'"
+        :subMessage="'아이템을 구매하기위해 상점으로 이동하시겠습니까?'"
+        :btnName="'이동'"
+        :height="210"
+        :disabledCheck="false"
+        @ionModalDidDismiss="alertMessage = false"
+        @handleClickBtn="goRouter()"
+      />
+      <!-- 모달창 끝  -->
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import MyPageProfile from "@/components/MyPage/MyPageProfile.vue";
+import MyPageNavList from "@/components/MyPage/MyPageNavList.vue";
+import MyPageNavButtonItem from "@/components/MyPage/MyPageNavButtonItem.vue";
+import MyPlatinumBanner from "@/components/MyPage/MyPlatinumBanner.vue";
+import CardBox from "@/components/CardBox.vue";
+import ProfileAdModal from "@/components/Modal/ProfileAdModal.vue";
+import NickChangeModal from "@/components/Modal/NickChangeModal.vue";
+import AskMeLink from "@/components/AskMe/AskMeLink.vue";
+
+import IconMyHeart from "@/assets/img/icon/icon_my_heart.svg";
+import IconMyPoint from "@/assets/img/icon/icon_my_point.svg";
+
+import StoreCouponModal from "@/components/Store/StoreCouponModal.vue";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal.vue";
+
+import { getData, dailyCardInfoMapFn, storeMapFn } from "@/assets/js/common";
+
+import { copyOutline } from "ionicons/icons";
+import { Clipboard } from "@capacitor/clipboard";
+import { toastController } from "@ionic/vue";
+
+export default {
+  inject: ["alertController"],
+  name: "MyPage",
+  components: {
+    NickChangeModal,
+    StoreCouponModal,
+    MyPageProfile,
+    MyPageNavList,
+    MyPageNavButtonItem,
+    MyPlatinumBanner,
+    ProfileAdModal,
+    CardBox,
+    AlertMessageModal,
+    AskMeLink
+  },
+  data() {
+    return {
+      copyOutline,
+
+      heartIcon: IconMyHeart,
+      pointIcon: IconMyPoint,
+
+      user: {},
+      userNick: "",
+      cdnThumbNm: "",
+
+      nickState: "",
+      afterNick: "",
+      heart: 0,
+      point: 0,
+      isNicknameValid: true,
+
+      modalMypage: false,
+      coupon: "",
+      // 아이템 수량(임시)
+      profileADitem: 1,
+
+      subscribeInfo: {
+        subscribeCd: "",
+        subscribeNm: "",
+        startDate: "yyyy.mm.dd",
+        endDate: "yyyy.nn.dd"
+      },
+
+      couponModal: false,
+      nickChangeModal: false,
+
+      myLikeCnt: 0,
+      alertMessage: false,
+
+      askMeInfo: {},
+      //baseUrl: 'http://localhost:8100/askMe/',
+      // baseUrl: 'http://110.10.189.102:8031/askMe/',
+      baseUrl: "http://navy-ask.me/askMe/",
+      askMeUrl: "",
+
+      isPartner: "non-checked",
+      currentPoint: 0,
+      updDate: ""
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.getUserSubscribeInfo();
+    this.getUser();
+    this.nickState = "";
+    this.afterNick = "";
+
+    // ASKME
+    this.getUserByAskMeCode();
+
+    //partnersCheck
+    this.partnersCheck();
+  },
+  ionViewDidLeave() {
+    //초기화
+  },
+  mounted() {
+  },
+
+  methods: {
+    /*setComma(arg) {
+      return arg.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+    },*/
+    // 파트너 계정인지 체크
+    partnersCheck() {
+      let self = this;
+      getData({
+        url: "/partnersCheck",
+        param: {},
+        then: (data) => {
+          if (data.isPartner == "Y") {
+            if (Object.keys(data.partnersCode).length > 0) {
+              getData({
+                url: "/partnersInfo",
+                param: {
+                  partnersCode: data.partnersCode
+                },
+                then: (info) => {
+                  if (info.successYn == "Y") {
+                    self.isPartner = "Y";
+                    self.currentPoint = info.result.currentPoint;
+                    self.updDate = info.result.updDate;
+                    self.$store.state.partnerInfoMap["partnersCode"] = info.result.partnersCode;
+                  }
+                }
+              });
+            }
+          } else {
+            self.isPartner = "N";
+          }
+        }
+      });
+    },
+
+    getUserSubscribeInfo() {
+      getData({
+        url: "/getUserSubscribeInfo",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.subscribeInfo = data;
+        }
+      });
+    },
+    userChangeNick() {
+      this.nickChangeModal = false;
+      this.getUser();
+    },
+    goBuySubscribe() {
+      // this.$router.push("/subscription_Shop");
+      storeMapFn({ subscribeYn: "Y" });
+      this.$router.push("/store");
+    },
+    goMyLike() {
+      this.$router.push("/myLike");
+    },
+    cancelSubscribe() {
+      getData({
+        url: "/cancelSubscribe",
+        param: {},
+        target: this,
+        then: () => {
+          this.$nextTick(() => {
+            this.getUserSubscribeInfo();
+          });
+        }
+      });
+    },
+    getResult() {
+      var resultObj = {};
+
+      return resultObj;
+    },
+    /** 마이페이지 유저정보 **/
+    getUser() {
+      getData({
+        url: "/getSettingMainUserInfo",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.user = data;
+          this.userNick = this.user.nick;
+          this.cdnThumbNm = data.cdnThumbNm;
+          this.heart = data.lastPoint;
+          this.point = data.invitePoint ? data.invitePoint : 0;
+          this.myLikeCnt = data.myLikeCnt ? data.myLikeCnt : 0;
+        }
+      });
+    },
+    nickUpdateClick() {
+      this.afterNick = this.user.nick;
+      this.nickState = "update";
+      this.nickChangeModal = true;
+    },
+    nickSaveClick() {
+      if (!this.isNicknameValid || this.afterNick === "") {
+        return;
+      } else {
+        this.btnHandler();
+      }
+    },
+    nickCancelClick() {
+      this.nickState = "";
+      this.isNicknameValid = true;
+    },
+    nickSaveFalse() {
+      this.nickState = "";
+      this.isNicknameValid = true;
+      this.warningAlert("중복된 닉네임으로 변경할수 없습니다.");
+    },
+    /** 모달창내 내용 들어갈예정 **/
+    profileModalBtn(type) {
+      if (type === "openModal") {
+        this.getUserCouponDataOne();
+      } else if (type === "save") {
+        this.useProfileAd();
+      } else {
+        this.modalMypage = false;
+      }
+    },
+    /** useProfileAd 보유현황 **/
+    getUserCouponDataOne() {
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: "CU010" },
+        then: (data) => {
+          this.coupon = data;
+          this.$nextTick(() => {
+            this.modalMypage = true;
+          });
+        }
+      });
+    },
+    /** 파트너스 관리자 **/
+    partners() {
+      // this.warningAlert(
+      //   '오픈 예정입니다 !<br />조금만 기다려 주세요 😥<br />[ 23.09월 중 ]'
+      // );
+      if (!this.updDate) {
+        this.partnersRouteAlert();
+      } else {
+        this.$router.push("/partnersAdmin");
+      }
+    },
+    /** useProfileAd 사용 로직 **/
+    useProfileAd() {
+      getData({
+        url: "/useProfileAd",
+        param: {
+          couponCd: "CU010",
+          useType: "COUPON", // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          itemCd: "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT002_01
+          pointCd: "" // useType 'HEART' 일 시 BUY
+        },
+        then: (data) => {
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NH" ||
+            data.successYn === "NE"
+          ) {
+            // this.warningAlert(data.message);
+            // this.modalMypage = false;
+            this.alertMessage = true;
+          } else {
+            this.modalMypage = false;
+          }
+        }
+      });
+    },
+    goRouter() {
+      this.modalMypage = false;
+      this.alertMessage = false;
+      storeMapFn({ categoryType: "item" });
+      this.$router.push("/store");
+    },
+
+    goDailyCardInfo() {
+      dailyCardInfoMapFn({ userKey: this.user.userKey, type: "mypage" });
+      this.$router.push("/dailyCardInfo");
+    },
+    /** 글자수 체크 **/
+    customFormatter(inputLength, maxLength) {
+      if (inputLength > maxLength) {
+        return "더이상 입력할수 없습니다.";
+      } else if (inputLength < 1) {
+        return `최소 ${1 - inputLength}자 / 최대 8자`;
+      } else {
+        return `최소 글자수 완료 / 최대 ${maxLength - inputLength}자`;
+      }
+    },
+    /** 특수문자 및 띄어쓰기, 자음+모음 체크 정규식 **/
+    validateNickname(e) {
+      // 정규식을 사용하여 특수문자 및 자음/모음만 있는지 확인합니다.
+      const regex = /[{}[\]/?.,;:|)*~`!^\-_+<>@#$%&\\=('"]/g;
+      const regex2 = /\s/g;
+      // const regex3 = /([^가-힣a-z\x20])/i;
+      const regex3 = /[^가-힣a-zA-Z0-9_\s]/g;
+
+      this.isNicknameValid =
+        !regex.test(e.target.value) &&
+        !regex2.test(e.target.value) &&
+        !regex3.test(e.target.value);
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 저장 **/
+    async btnHandler() {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message:
+          `'` +
+          this.afterNick +
+          `'(님) 으로 변경하시겠습니까? <br />*변경 후 30일동안 변경이 불가능합니다.`,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+              this.nickState = "";
+              this.isNicknameValid = true;
+            }
+          },
+          {
+            text: "완료",
+            handler: () => {
+              getData({
+                url: "/changeUserNick",
+                param: {
+                  beforeNick: this.user.nick,
+                  afterNick: this.afterNick
+                },
+                then: (data) => {
+                  if (data.successYn === "N") {
+                    this.nickState = "";
+                    this.warningAlert(data.message);
+                  } else {
+                    this.nickState = "";
+                    this.user.nick = this.afterNick;
+                    this.warningAlert("변경완료");
+                  }
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    async partnersRouteAlert() {
+      let self = this;
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "파트너스 정보가 등록되지 않았습니다.<br />지금 등록하시겠습니까?",
+        buttons: [
+          {
+            text: "아니요",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              self.$router.push("/partnersSetting");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    getUserByAskMeCode() {
+      getData({
+        url: "/askMe/getUserAskMe",
+        param: {
+          pageNo: 1,
+          pageSize: 1
+        },
+        then: (data) => {
+          this.askMeInfo = data.askMeInfo;
+          // this.askMeList = data.askMeList.result;
+          // this.nick = data.askMeInfo.nick;
+          if (data.askMeInfo.askMeCode != null) {
+            this.askMeUrl = this.baseUrl + data.askMeInfo.askMeCode;
+          }
+        }
+      });
+    },
+    setAskMeCode() {
+      getData({
+        url: "/askMe/setAskMeCode",
+        param: {},
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.askMeInfo = data.askMeInfo;
+            if (data.askMeInfo.askMeCode != null) {
+              this.askMeUrl = this.baseUrl + data.askMeInfo.askMeCode;
+            }
+          }
+        }
+      });
+    },
+    async setClipBoard() {
+      await Clipboard.write({
+        url: this.askMeUrl
+      });
+      await this.presentToast("복사되었습니다.");
+    },
+    /** 토스트팝업 **/
+    async presentToast(message) {
+      const toast = await toastController.create({
+        message: message,
+        duration: 1000,
+        position: "middle" // top, middle, bottom
+      });
+      await toast.present();
+    },
+
+    setUserEncoding() {
+      return;
+      // getData({
+      //   url: '/setUserEncoding',
+      //   param: {},
+      //   then: (data) => {}
+      // });
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.my-point-info {
+  ion-item {
+    + ion-item {
+      margin-top: -14px;
+    }
+  }
+}
+</style>

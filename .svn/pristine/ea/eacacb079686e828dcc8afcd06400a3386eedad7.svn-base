@@ -1,0 +1,36 @@
+<template>
+  <ion-item>
+    <div slot="start" class="avatar-area">
+      <slot name="avatar"></slot>
+    </div>
+    <ion-label class="content-area">
+      <slot name="content"></slot>
+      <slot></slot>
+    </ion-label>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: 'CommentItem'
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --padding-start: 10px;
+  align-items: start;
+  ion-label {
+    white-space: pre-wrap !important;
+  }
+  .avatar-area {
+    width: 40px;
+    margin-right: 10px;
+  }
+
+  .content-area {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+</style>

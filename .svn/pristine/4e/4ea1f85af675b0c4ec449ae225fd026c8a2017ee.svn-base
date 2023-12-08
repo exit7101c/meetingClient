@@ -1,0 +1,38 @@
+<template>
+  <ion-item lines="none">
+    <div>
+      <ion-text color="light">
+        <span style="font-size: 12px; color: #336dff;" v-if="privateYn == true"> 오픈채팅 활성화 상태 </span>
+        <span style="font-size: 12px; color: #f63d3d;" v-else> 오픈채팅 비활성화 상태 </span>
+      </ion-text>
+    </div>
+    <ion-toggle
+      slot="end"
+      mode="ios"
+      :checked="privateYn"
+      @click="openChatPrivate"
+    ></ion-toggle>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: "OpenChatPrivate",
+  props: {
+    privateYn: {
+      type: Boolean
+    }
+  },
+  methods: {
+    openChatPrivate() {
+      this.$emit("toggle");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+}
+</style>

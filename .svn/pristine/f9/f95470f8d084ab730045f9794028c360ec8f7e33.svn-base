@@ -1,0 +1,57 @@
+<template>
+  <ion-item lines="none">
+    <ion-avatar slot="start" @click="handleClick">
+      <img
+        :src="'https://' + user.cdnThumbNm"
+        @ionError="
+          $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+        "
+        alt=""
+      />
+    </ion-avatar>
+    <ion-label @click="handleClick">
+      <ion-row>
+        <ion-text color="light" class="text-lg">{{ user.nick }}</ion-text>
+        <ion-chip class="chip-sm chip-secondary">프로필 보기</ion-chip>
+      </ion-row>
+    </ion-label>
+    <ion-text color="light" class="text-xs"
+    >{{ user.regDateStr }} · 읽음 {{ user.viewCnt }}
+    </ion-text
+    >
+  </ion-item>
+</template>
+<script>
+import IconMenu from "@/assets/img/icon/icon_menu.svg";
+
+export default {
+  name: "OpenChatViewUserInfo",
+  props: {
+    user: {
+      type: Object
+    },
+    regDate: {
+      type: String
+    }
+  },
+  methods: {
+    handleClick() {
+      this.$emit("event");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  padding: 10px 0;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  ion-label {
+    ion-row {
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+</style>

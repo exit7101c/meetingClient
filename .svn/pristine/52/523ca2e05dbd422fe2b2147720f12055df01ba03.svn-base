@@ -1,0 +1,258 @@
+<template>
+  <ion-modal
+    class="location-modal"
+    :is-open="isOpen"
+    @ionModalDidDismiss="ionModalDidDismiss"
+    @ionModalDidPresent="mapOpen"
+    :initial-breakpoint="1"
+    :breakpoints="[0, 1]"
+  >
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button @click="ionModalDidDismiss">
+            <BackButton />
+          </ion-button>
+        </ion-buttons>
+        <ion-title>지도에서 위치 확인</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <div id="locationModalMap" style="width: 100%; height: 80%" />
+    </ion-content>
+    <ion-footer
+      class="location-modal-footer"
+      style="height: 110px; background-color: #191a39; padding: 10px"
+    >
+      <div class="layout-container">
+        <ion-grid style="padding: 0 10px 0 10px;">
+          <ion-row class="ion-align-items-end ion-justify-content-between">
+            <ion-text color="light">
+              {{ locationView }}
+            </ion-text>
+            <ion-text color="light" @click="jibunGuCheck">
+              <ion-icon
+                :icon="swapHorizontalOutline"
+                class="v-middle"
+              ></ion-icon>
+              <span class="v-middle">{{ checkBtnText }}</span>
+            </ion-text>
+          </ion-row>
+        </ion-grid>
+        <div class="btn-group">
+          <ion-button
+            color="primary"
+            size="large"
+            expand="block"
+            shape="round"
+            @click="ionModalDidDismiss"
+          >
+            <ion-ripple-effect></ion-ripple-effect>
+            이 위치로 주소 설정
+          </ion-button>
+        </div>
+      </div>
+    </ion-footer>
+  </ion-modal>
+</template>
+<script>
+
+
+export default {
+  name: 'LocationModal',
+  components: {
+
+  },
+  props: {
+    isOpen: {
+      type: Boolean
+    },
+  },
+  data(){
+    return{
+      mapOpen: false
+    }
+  },
+  methods: {
+    ionModalDidDismiss() {
+      this.$emit('ionModalDidDismiss');
+    },
+
+    mapOpen() {
+      this.lodingCheck = true;
+      this.$nextTick(() => {
+        this.naverMap(this.currLat, this.currLon);
+      });
+    },
+    /** naver map **/
+    naverMap(lat, lng) {
+      const mapEl = document.getElementById('locationModalMap');
+      if (mapEl == null) {
+        this.lodingCheck = false;
+        return;
+      }
+      if (Object.keys(lat).length == 0 || Object.keys(lng) == 0) {
+        lat = this.selectedLat;
+        lng = this.selectedLng;
+      }
+      let self = this;
+      this.lodingCheck = false;
+      const navermaps = window.naver.maps;
+      const reverseGeocodes = (latlng) => {
+        // 클릭한 위치의 주소 가져오기
+        navermaps.Service.reverseGeocode(
+          {
+            coords: latlng,
+            orders: [
+              navermaps.Service.OrderType.ADDR,
+              navermaps.Service.OrderType.ROAD_ADDR
+            ].join(",")
+          },
+          function(status, response) {
+            if (status == navermaps.Service.Status.ERROR) {
+              return alert("Something Wrong!");
+            }
+
+            let idx = response.v2.results.length > 1 ? 1 : 0;
+
+            // 지번 주소 구까지
+            self.selectedAddressGu =
+              response.v2.results[idx].region.area1.name +
+              " " +
+              response.v2.results[idx].region.area2.name;
+
+            // 지번 주소 동까지
+            self.selectedjibunAddressDong =
+              response.v2.results[idx].region.area1.name +
+              " " +
+              response.v2.results[idx].region.area2.name +
+              " " +
+              response.v2.results[idx].region.area3.name;
+
+            // 도로명 주소
+            self.selectedroadAddressDong =
+              response.v2.results[idx].region.area1.name +
+              " " +
+              response.v2.results[idx].region.area2.name +
+              " " +
+              response.v2.results[idx].land.name;
+
+            if (self.checkBtn == "dong") {
+              self.locationView = self.selectedjibunAddressDong;
+            } else {
+              self.locationView = self.selectedAddressGu;
+            }
+          }
+        );
+      };
+
+      /** 맵 초기 설정 **/
+      let mapOptions = {
+        center: new navermaps.LatLng(lat, lng),
+        zoom: 17,
+        /** 줌 컨트롤러 **/
+        zoomControl: true,
+        zoomControlOptions: {
+          style: navermaps.ZoomControlStyle.LARGE,
+          position: navermaps.Position.TOP_RIGHT
+        }
+      };
+
+      /** 맵 생성 **/
+      const NAVER_MAP = new navermaps.Map(mapEl, mapOptions);
+      reverseGeocodes(mapOptions.center);
+
+      // 마커 객체 생성
+      const marker = new navermaps.Marker({
+        position: NAVER_MAP.getCenter(), // 중심 좌표에 마커 설정
+        map: NAVER_MAP, // 지도에 마커 추가
+        icon: {
+          url: "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png", // 마커의 이미지 URL
+          size: new navermaps.Size(24, 37), // 이미지의 원래 크기
+          scaledSize: new navermaps.Size(24, 37), // 화면에 표시될 이미지 크기
+          origin: new navermaps.Point(0, 0), // 이미지의 시작점
+          anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+        }
+      });
+
+      navermaps.Event.addListener(NAVER_MAP, "drag", () => {
+        marker.setPosition(NAVER_MAP.getCenter()); // 마커 위치 변경
+      });
+
+      // 지도 초기화 후 커스텀 컨트롤 생성
+      navermaps.Event.once(NAVER_MAP, "init", () => {
+        /** 현재위치로 이동 버튼 **/
+        let locationBtnHtml = `<a style="
+                z-index: 100;
+                overflow: hidden;
+                display: inline-block;
+                position: absolute;
+                top: 7px;
+                left: 5px;
+                width: 34px;
+                height: 34px;
+                border: 1px solid rgba(58,70,88,.45);
+                border-radius: 2px;
+                background: #fcfcfd;
+                  background-clip: border-box;
+                text-align: center;
+                -webkit-background-clip: padding;
+                background-clip: padding-box;
+              "
+            >
+            <span style="
+                overflow: hidden;
+                display: inline-block;
+                color: transparent !important;
+                vertical-align: top;
+                background: url(https://ssl.pstatic.net/static/maps/m/spr_trff_v6.png) 0 0;
+                background-position-x: 0px;
+                background-position-y: 0px;
+                background-size: auto;
+                background-size: 200px 200px;
+                -webkit-background-size: 200px 200px;
+                width: 20px;
+                height: 20px;
+                margin: 7px 0 0 0;
+                background-position: -153px -31px;
+              ">중심위치</span>
+           </a>`;
+        let customControl = new navermaps.CustomControl(locationBtnHtml, {
+          position: window.naver.maps.Position.TOP_LEFT // 버튼의 위치 설정
+        });
+
+        customControl.setMap(NAVER_MAP); // 버튼을 지도에 추가
+        /** 현재위치로 이동 버튼 **/
+
+        window.naver.maps.Event.addDOMListener(
+          customControl.getElement(),
+          "click",
+          () => {
+            NAVER_MAP.setCenter(new navermaps.LatLng(lat, lng)); // 버튼 클릭 시 지도 중심 변경
+            marker.setPosition(NAVER_MAP.getCenter());
+          }
+        );
+      });
+
+      // 클릭 이벤트 핸들러 설정
+      navermaps.Event.addListener(NAVER_MAP, "dragend", (e) => {
+        // 클릭한 위치의 좌표 저장
+        this.selectedLat = e.coord.y; // e.coord.lat();
+        this.selectedLng = e.coord.x; //e.coord.lng();
+
+        let latlng = new window.naver.maps.LatLng(e.coord.y, e.coord.x);
+        reverseGeocodes(latlng);
+      });
+    },
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-modal {
+  --height: 450px;
+  --width: 95%;
+  --border-radius: 15px;
+  --box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+</style>

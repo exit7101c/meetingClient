@@ -1,0 +1,166 @@
+<template>
+  <ion-modal
+    :is-open="isOpen"
+    @ionModalDidDismiss="ionModalDidDismiss"
+  >
+    <ion-toolbar>
+      회원탈퇴
+    </ion-toolbar>
+    <ion-content>
+      <ion-content>
+        <div class="message">
+          <p>
+            ※ 회원탈퇴 시 개인정보 및 NAVY에서 만들어진 모든 데이터는 삭제됩니다.<br /><br />
+
+            1. 회원은 언제든지 회원탈퇴(계정삭제)를 할 수 있습니다.<br />
+            2. 회원탈퇴 시, 계정정보는 복구되지 않으며 회원의 모든 정보는 즉시 파기됩니다.<br />
+            3. 회원탈퇴 시 회원이 작성한 게시물은 삭제되지 아니하며, 당사의 관리 목적으로 보관됩니다.<br />
+            4. 당사는 회원이 신고처리규정 5단계(영구정지)에 준하는 행위를 하였을 경우 사전통지 없이 이용권한을 제한할 수 있습니다.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <ion-item lines="none" class="custom-checkBox">
+            <ion-checkbox
+              mode="ios"
+              slot="start"
+              v-model="userSecess"
+            >
+            </ion-checkbox>
+            <ion-label style="margin: 0;">
+              해당 내용을 모두 확인했으며, 회원탈퇴에 동의합니다.
+            </ion-label>
+          </ion-item>
+          <ion-row>
+            <ion-col style="margin: 0 auto; align-items: center;">
+              <custom-button
+                shape="round"
+                fill="outline"
+                color="light"
+                @click="ionModalDidDismiss"
+              >취소
+              </custom-button>
+              <custom-button
+                shape="round"
+                @click="handleUserSecession"
+              >
+                탈퇴하기
+              </custom-button>
+            </ion-col>
+          </ion-row>
+        </div>
+      </ion-content>
+    </ion-content>
+  </ion-modal>
+</template>
+<script>
+export default {
+  inject: ["alertController"],
+  name: "UserSecessionModal",
+  props: {
+    isOpen: {
+      type: Boolean
+    }
+  },
+  data() {
+    return {
+      userSecess: false
+    };
+  },
+  methods: {
+    ionModalDidDismiss() {
+      this.$emit("ionModalDidDismiss");
+    },
+    handleUserSecession() {
+      if (this.userSecess == true) {
+        this.$emit("userSecession");
+        this.userSecess = false;
+      } else {
+        this.warningAlert("회원탈퇴에 동의하지 않았습니다.");
+      }
+    },
+    /** 경고 alert창 **/
+    async warningAlert(title, message) {
+      const alert = await this.alertController.create({
+        header: title,
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-modal {
+  --max-width: 345px;
+  --max-height: 460px;
+  padding: 0 18px;
+
+  &::part(content) {
+    border: 1px solid rgba(112, 106, 247, 0.5);
+    border-radius: var(--ion-border-radius-lg);
+    box-shadow: 0 0 10px rgba(112, 106, 247, 0.5);
+  }
+
+  ion-content {
+    &::part(scroll) {
+      overflow: hidden;
+    }
+  }
+
+  ion-toolbar {
+    //background: var(--ion-custom-modal-color);
+    background: transparent;
+    text-align: center;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --min-height: 40px;
+
+    ion-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+  }
+
+  ion-content {
+    border-radius: var(--ion-border-radius);
+    border-width: 1px solid var(--ion-color-primary);
+
+    .message {
+      margin: 0 6px 6px 6px;
+      //border: 1px solid white;
+      //border: 1px solid #706af7;
+      //border-radius: var(--ion-border-radius-lg);
+      //box-shadow: 0 0 3px rgba(112, 106, 247);
+      padding: 10px;
+      min-height: 100px;
+      max-height: 400px;
+      overflow-y: auto;
+
+      p {
+        color: white;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 3px;
+      }
+    }
+  }
+
+  .modal-footer {
+    position: absolute;
+    bottom: 40px;
+    padding: 10px 0px;
+  }
+}
+
+ion-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.custom-checkBox {
+  font-size: 12px;
+}
+</style>

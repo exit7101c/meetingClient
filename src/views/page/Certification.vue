@@ -1,0 +1,204 @@
+<template>
+  <ion-page>
+    <ion-hedaer>
+      <ion-toolbar class="join-toolbar">
+        <ion-buttons slot="start">
+          <BackButton @evnet="this.$router.push('/mypage')" />
+        </ion-buttons>
+        <ion-title>인증뱃지</ion-title>
+      </ion-toolbar>
+    </ion-hedaer>
+    <ion-content class="ion-padding">
+      <div class="row-box">
+        <h3>
+          <ion-text color="light" class="text-xxl text-bold"
+          >나의 능력을 인증해보세요!
+          </ion-text>
+        </h3>
+        <p>
+          <ion-text color="secondary">
+            인증이 필요한 모든 뱃지는 <br />
+            기본적으로 서류로 인증이 진행되며 <br />
+            심사 소요시간은
+            <ion-text color="primary">최대 3일</ion-text>
+            입니다.
+            <br />
+            심사가 완료되면 앱 알림을 통해<br />
+            알려드릴게요!
+          </ion-text>
+        </p>
+      </div>
+      <div class="row-box">
+        <ion-list>
+          <ion-card>
+            <BadgeCardTitle title="나의뱃지" />
+            <template v-if="myBadgeList.length > 0">
+              <BadgeCardItem
+                v-for="(item, index) in myBadgeList"
+                :item="item"
+                :key="index"
+                :edit="false"
+                @click="() => {}"
+              />
+            </template>
+            <template v-else>
+              <ion-item lines="none" class="empty-item">
+                <ion-icon
+                  slot="start"
+                  :icon="helpCircleOutline"
+                  color="secondary"
+                  size="large"
+                ></ion-icon>
+                <ion-label>
+                  <ion-text color="secondary">
+                    보유중인 뱃지가 없습니다
+                  </ion-text>
+                </ion-label>
+              </ion-item>
+            </template>
+          </ion-card>
+        </ion-list>
+      </div>
+      <div class="row-box" v-if="personalAssetList.length > 0">
+        <ion-list>
+          <ion-card>
+            <CertificationCardTitle title="개인자산" />
+            <CertificationCardItem
+              v-for="(item, index) in personalAssetList"
+              :item="item"
+              :key="index"
+              :state="item.state"
+              @click="goRouter(item)"
+            />
+          </ion-card>
+        </ion-list>
+      </div>
+      <div class="row-box" v-if="jobList.length > 0">
+        <ion-list>
+          <ion-card>
+            <CertificationCardTitle title="직업" />
+            <CertificationCardItem
+              v-for="(item, index) in jobList"
+              :item="item"
+              :key="index"
+              :state="item.state"
+              @click="goRouter(item)"
+            />
+          </ion-card>
+        </ion-list>
+      </div>
+      <div class="row-box" v-if="fameList.length > 0">
+        <ion-list>
+          <ion-card>
+            <CertificationCardTitle title="명성" />
+            <CertificationCardItem
+              v-for="(item, index) in fameList"
+              :item="item"
+              :key="index"
+              :state="item.state"
+              @click="goRouter(item)"
+            />
+          </ion-card>
+        </ion-list>
+      </div>
+      <div class="row-box" v-if="educationList.length > 0">
+        <ion-list>
+          <ion-card>
+            <CertificationCardTitle title="학력" />
+            <CertificationCardItem
+              v-for="(item, index) in educationList"
+              :item="item"
+              :key="index"
+              :state="item.state"
+              @click="goRouter(item)"
+            />
+          </ion-card>
+        </ion-list>
+      </div>
+    </ion-content>
+  </ion-page>
+</template>
+<script>
+import { diamondOutline, helpCircleOutline } from "ionicons/icons";
+import CertificationCardItem from "@/components/Certification/CertificationCardItem.vue";
+import CertificationCardTitle from "@/components/Certification/CertificationCardTitle.vue";
+import BadgeCardTitle from "@/components/Badge/BadgeCardTitle";
+import BadgeCardItem from "@/components/Badge/BadgeCardItem";
+import { badgeCertiMapFn, getData } from "@/assets/js/common";
+
+export default {
+  name: "Certification",
+  components: {
+    CertificationCardTitle,
+    CertificationCardItem,
+    BadgeCardTitle,
+    BadgeCardItem
+  },
+  data() {
+    return {
+      diamondOutline,
+      helpCircleOutline,
+      personalAssetList: [],
+      jobList: [],
+      fameList: [],
+      educationList: [],
+      myBadgeList: []
+    };
+  },
+  ionViewWillEnter() {
+    this.getBadgeList();
+    this.getMyBadgeList();
+  },
+  methods: {
+    goRouter(item) {
+      if (item.state == "none" || item.state == "reject") {
+        badgeCertiMapFn({ item: item, edit: false });
+        this.$router.push("CertificationRegister_" + item.badgeCd);
+      }
+    },
+    getBadgeList() {
+      getData({
+        url: "/getBadgeList",
+        param: {},
+        then: (data) => {
+          this.personalAssetList = data.personalAsset ? data.personalAsset : [];
+          this.jobList = data.job ? data.job : [];
+          this.fameList = data.famous ? data.famous : [];
+          this.educationList = data.education ? data.education : [];
+        }
+      });
+    },
+    getMyBadgeList() {
+      getData({
+        url: "/getMyBadgeList",
+        param: {},
+        then: (data) => {
+          this.myBadgeList = data;
+        }
+      });
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-card {
+  margin: 5px;
+  border-radius: var(--ion-border-radius);
+  border: 1px solid var(--ion-border-color);
+  box-shadow: none;
+  padding: 0px 10px 10px 10px;
+
+  .empty-item {
+    ion-icon {
+      margin-right: 0.5rem;
+      width: 60px;
+      height: 60px;
+    }
+
+    --background: var(--ion-color-medium);
+    border-radius: var(--ion-border-radius);
+    --padding-top: 0.5rem;
+    --padding-bottom: 0.5rem;
+  }
+}
+</style>

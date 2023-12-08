@@ -1,0 +1,1150 @@
+<template>
+  <ion-page>
+    <custom-header page-name="라운지"></custom-header>
+    <ion-content v-if="homeLodingCheck === true">
+      <!--<ContestCountDown style="margin-top: 20px" />-->
+      <!-- Refresh -->
+      <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+        <ion-refresher-content
+          refreshing-spinner="circles"
+          :pulling-icon="chevronDownCircleOutline"
+        ></ion-refresher-content>
+      </ion-refresher>
+      <!-- /Refresh -->
+      <!-- 메인 배너 -->
+      <div class="ion-padding main-content">
+        <MainBanner :bannerList="bannerList" v-if="bannerList.length > 0" />
+        <!-- 메인 CONTEST 랭킹 TOP 10 -->
+        <MainSection v-if="contestState != 'END'">
+          <template #title>
+            <MainSectionTitle
+              title="BODY CONTEST"
+              subTitle="참가자 후보 목록 - 최신참여순"
+              color="#ffffff"
+              :icon="trophyIcon"
+            >
+              <ion-text
+                v-if="contestState == 'SUPPORT'"
+                color="light"
+                class="text-sm"
+                @click="$router.push('/contestHot')"
+              >참여신청하기
+              </ion-text>
+            </MainSectionTitle>
+          </template>
+          <template #content>
+            <MainContestSlider
+              v-if="contestUserList.length > 0"
+              :item-list="contestUserList"
+              :loaded="!false"
+              :contestState="contestState"
+              @contestList="ContestSlider"
+            />
+            <div class="row-box" v-else>
+              <CardBox>
+                <div class="text-center">
+                  <ion-text color="light" class="text-sm text-bold"
+                            @click="$router.push('/contestHot')"
+                  >
+                    아직은 참여신청자가 없으니 지금 당장 참여해서<br />
+                    컨테스트의 주인공이 되어보세요 :&#41;
+                  </ion-text>
+                </div>
+              </CardBox>
+            </div>
+          </template>
+        </MainSection>
+        <MainSection>
+          <!--        <MainSection v-if="hotPeopleList.length > 0">-->
+          <template #title>
+            <MainSectionTitle
+              title="HOT PEOPLE"
+              subTitle="지금, 가장 핫한 사람들!!"
+              color="#ffffff"
+              :icon="hotPeopleIcon"
+            >
+            </MainSectionTitle>
+          </template>
+          <template #content>
+            <!-- TODO: 핫피플 카테고리 -->
+            <ion-segment
+              v-model="hotpeopleStateCd"
+              mode="ios"
+              :scrollable="true"
+              class="segment-chip auto-width pt-0 pb-0 pl-0"
+            >
+              <ion-segment-button
+                v-for=" season in hotPeopleStateList"
+                :value="season.stateCd"
+                :key="season.stateCd"
+                class="shape-round"
+                @click="categoryBtn(season, 'season')"
+              >{{ season.stateNm }}
+              </ion-segment-button>
+              <ion-segment-button
+                v-for=" cate in hotpeopleCateList"
+                :value="cate.cateCd"
+                :key="cate.cateCd"
+                class="shape-round"
+                @click="categoryBtn(cate, 'hot')"
+              >{{ cate.label }}
+              </ion-segment-button>
+            </ion-segment>
+            <div class="row-box" v-if="hotPeopleList.length > 0">
+              <MainHotPeopleSlider
+                :item-list="hotPeopleList"
+                :loaded="!false"
+              />
+            </div>
+          </template>
+        </MainSection>
+        <!-- 메인 HOT PLACE  -->
+        <MainSection>
+          <!--        <MainSection v-if="openChatList.length > 0">-->
+          <template #title>
+            <MainSectionTitle
+              title="HOT 소모임"
+              subTitle="지금, 가장 뜨거운곳은 여기!!"
+              color="#ffffff"
+              :icon="hotPlaceIcon"
+            >
+            </MainSectionTitle>
+          </template>
+          <template #content>
+            <!-- TODO: 소모임 카테고리 -->
+            <ion-segment
+              v-model="openChatCateCd"
+              mode="ios"
+              :scrollable="true"
+              class="segment-chip auto-width pt-0 pb-0 pl-0"
+            >
+              <ion-segment-button
+                v-for=" cate in openChatCateList"
+                :value="cate.cateCd"
+                :key="cate.cateCd"
+                class="shape-round"
+                @click="categoryBtn(cate, 'openChat')"
+              ># {{ cate.label }}
+              </ion-segment-button>
+            </ion-segment>
+            <div class="row-box" v-if="openChatList.length > 0">
+              <MainHotPlaceSlider
+                :item-list="openChatList"
+                :loaded="!false"
+              />
+            </div>
+          </template>
+        </MainSection>
+
+        <!-- 메인 HOT ASK ME  -->
+        <MainSection>
+          <template #title>
+            <MainSectionTitle
+              title="ASK ME"
+              subTitle="오늘 가장 많이 평가를 받은사람은 누구?"
+              color="#ffffff"
+              :icon="askMeIcon"
+            >
+            </MainSectionTitle>
+          </template>
+          <template #content>
+            <div class="row-box" v-if="hotAskMeList.length > 0">
+              <MainHotPeopleSlider
+                :item-list="hotAskMeList"
+                :loaded="!false"
+              />
+            </div>
+            <div class="row-box" v-else>
+              <div
+                class="main-section-title"
+                style="padding: 0; margin-bottom: 20px; color: white"
+              >
+                <div class="layout-container">
+                  <ion-row
+                    class="ion-align-items-end ion-justify-content-between"
+                  >
+                    <ion-row
+                      class="ion-align-items-center ion-justify-content-center"
+                    >
+                      <div>
+                        <!--                      <h2>-->
+                        <!--                        앗! 지금은 열심히 집계중입니다!-->
+                        <!--                      </h2>-->
+                        <p
+                          style="
+                            font-size: 14px;
+                            line-height: 1;
+                            margin-top: 8px;
+                            margin-bottom: 0;
+                            margin-left: 40px;
+                            font-weight: bold;
+                          "
+                        >
+                          앗! 지금은 열심히 집계중입니다!
+                        </p>
+                      </div>
+                    </ion-row>
+                    <!-- 타이틀 우측 영역 -->
+                    <slot></slot>
+                  </ion-row>
+                </div>
+              </div>
+            </div>
+          </template>
+        </MainSection>
+
+        <!-- 메인 PROFILE AD  -->
+        <MainSection v-if="userNewList.length > 0">
+          <template #title>
+            <MainSectionTitle
+              title="PROFILE AD"
+              subTitle=""
+              color="#ffffff"
+              center
+              :icon="profileAdIcon"
+            >
+              <ion-text
+                color="light"
+                class="text-sm"
+                @click.stop="homeModalBtn('openModal')"
+              >내 프로필 광고하기
+              </ion-text>
+            </MainSectionTitle>
+          </template>
+          <template #content>
+            <MainProfileAdSlider :item-list="userNewList" :loaded="!false" />
+          </template>
+        </MainSection>
+        <!-- 메인 BEST TOPIC  -->
+        <MainSection>
+          <!--        <MainSection v-if="boardList.length > 0">-->
+          <template #title>
+            <MainSectionTitle
+              title="BEST TOPIC"
+              color="#ffffff"
+              :icon="bestTophic"
+            >
+            </MainSectionTitle>
+          </template>
+          <template #content>
+            <!-- TODO: BEST TOPIC 카테고리 -->
+            <ion-segment
+              v-model="bestTopicCateCd"
+              mode="ios"
+              :scrollable="true"
+              class="segment-chip auto-width pt-0 pb-0 pl-0"
+            >
+              <ion-segment-button
+                v-for=" cate in bestTopicCateList"
+                :value="cate.cateCd"
+                :key="cate.cateCd"
+                class="shape-round"
+                @click="categoryBtn(cate, 'best')"
+              >{{ cate.label }}
+              </ion-segment-button>
+            </ion-segment>
+            <div class="row-box">
+              <MainBestTopic :item-list="boardList" :loaded="!false" />
+            </div>
+          </template>
+        </MainSection>
+        <!-- 메인 하단 배너 -->
+        <MainBottomBanner />
+      </div>
+
+      <!-- 모달창 시작 -->
+      <ProfileAdModal
+        :is-open="modalHome"
+        :quantity="coupon.quantity"
+        @ionModalDidDismiss="modalHome = false"
+        @ok="homeModalBtn('save')"
+        @cancel="modalHome = false"
+      />
+
+      <!-- 모달창 끝  -->
+
+      <AlertMessageModal
+        :is-open="alertMessage"
+        :title="'NAVY'"
+        :message="'아이템 수량이 부족합니다.'"
+        :subMessage="'아이템을 구매하기위해 상점으로 이동하시겠습니까?'"
+        :btnName="'이동'"
+        :height="210"
+        :disabledCheck="false"
+        @ionModalDidDismiss="alertMessage = false"
+        @handleClickBtn="goRouter()"
+      />
+      <custom-footer />
+    </ion-content>
+    <ion-content v-if="homeLodingCheck === false">
+      <PageLoadingCheck
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+          height: 100%;
+        "
+      />
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import { chevronDownCircleOutline } from "ionicons/icons";
+import {
+  getData,
+  messageTalkMapFn,
+  communityViewMapFn,
+  storeMapFn, openChatMeetMapFn, openChatMeetViewMapFn
+} from "@/assets/js/common";
+import MainBanner from "@/components/Home/MainBanner.vue";
+import MainSection from "@/components/Home/MainSection.vue";
+import MainSectionTitle from "@/components/Home/MainSectionTitle.vue";
+import MainContestSlider from "@/components/Home/MainContestSlider.vue";
+import MainHotPlaceSlider from "@/components/Home/MainHotPlaceSlider.vue";
+import MainProfileAdSlider from "@/components/Home/MainProfileAdSlider.vue";
+import MainHotPeopleSlider from "@/components/Home/MainHotPeopleSlider.vue";
+import MainBestTopic from "@/components/Home/MainBestTopic.vue";
+import MainBottomBanner from "@/components/Home/MainBottomBanner.vue";
+import IconTrophy from "@/assets/img/icon/icon_trophy.svg";
+import IconHotPlace from "@/assets/img/icon/icon_hot_place.svg";
+import IconHotPeople from "@/assets/img/icon/icon_hot_people.svg";
+import IconProfileAd from "@/assets/img/icon/icon_profile_ad.svg";
+import IconBestTopic from "@/assets/img/icon/icon_best_topic.svg";
+import IconAskMe from "@/assets/img/icon/icon_askme.svg";
+import PageLoadingCheck from "@/components/PageLoadingCheck.vue";
+import ProfileAdModal from "@/components/Modal/ProfileAdModal.vue";
+
+import { FreeMode, Autoplay, Pagination, Navigation } from "swiper/modules";
+import { IonRefresher, IonRefresherContent } from "@ionic/vue";
+import { paperPlane } from "ionicons/icons";
+
+//FCM
+import { FCM } from "@capacitor-community/fcm";
+import { PushNotifications } from "@capacitor/push-notifications";
+import { Capacitor } from "@capacitor/core";
+//GPS
+import { Geolocation } from "@capacitor/geolocation";
+//TOAST
+import { toastController } from "@ionic/vue";
+
+import appIcon from "@/assets/img/icon/appIcon.svg";
+// import { nextTick } from 'vue';
+
+// import { InAppPurchase2, IAPProduct } from '@ionic-native/in-app-purchase-2';
+import AlertMessageModal from "@/components/Modal/AlertMessageModal";
+
+export default {
+  name: "HomePage",
+  inject: ["alertController"],
+  components: {
+    IonRefresher,
+    IonRefresherContent,
+    MainBanner,
+    MainSection,
+    MainSectionTitle,
+    MainContestSlider,
+    MainHotPlaceSlider,
+    MainProfileAdSlider,
+    MainHotPeopleSlider,
+    MainBestTopic,
+    MainBottomBanner,
+    PageLoadingCheck,
+    ProfileAdModal,
+    AlertMessageModal
+  },
+  computed: {
+    chatroomId() {
+      return this.$store.state.currentChatroomId;
+    },
+    currentMsgHeightCalc() {
+      return this.$store.state.currentMsgHeightCalc;
+    },
+    meetMainTab() {
+      return this.$store.state.currentMeetMainTab;
+    }
+  },
+  data() {
+    return {
+      chevronDownCircleOutline,
+      trophyIcon: IconTrophy,
+      hotPlaceIcon: IconHotPlace,
+      hotPeopleIcon: IconHotPeople,
+      profileAdIcon: IconProfileAd,
+      bestTophic: IconBestTopic,
+      askMeIcon: IconAskMe,
+      toastIcon: appIcon,
+      openChatList: [],
+      userList: [],
+      //test
+      interval: null,
+      intervalLatLon: null,
+      requestCnt: 0,
+      responseCnt: 0,
+      inputMs: 3,
+      urlList: [
+        //테스트할 url
+        "/test1",
+        "/test2",
+        "/test3"
+      ],
+      boardList: [],
+      userNewList: [],
+      //로딩 이미지처리
+      loadedImgsLength: 0,
+      imgsLength: 0,
+      modalHome: false,
+      coupon: "",
+      useType: "COUPON",
+      // 아이템 수량(임시)
+      profileADitem: 1,
+      homeLodingCheck: false,
+
+      modules: [FreeMode, Autoplay, Pagination, Navigation],
+      modalContest: false,
+      paperPlane,
+      contestList: [],
+
+      contestUserList: [],
+      contestState: "",
+
+      /** 쿠폰 **/
+      useTypeHeart: "COUPON",
+      cupCheck: "",
+      bannerList: [],
+
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+      modalList: [],
+      sessionNoticeList: [],
+      hotPeopleList: [],
+      hotAskMeList: [],
+      openChatListMeeting: "",
+      openChatListMoim: "",
+      isOpenRef: false,
+      alertMessage: false,
+
+      // TODO : 카테고리 핫피플
+      hotPeopleStateList: [],
+      hotpeopleStateCd: "",
+      hotpeopleCateCd: "",
+      hotpeopleCateList: [
+        // {
+        //   cateCd: "season",
+        //   label: "시즌(10.12~10.31)"
+        // },
+        {
+          cateCd: "today",
+          label: "오늘"
+        },
+        {
+          cateCd: "weekly",
+          label: "이번주"
+        },
+        {
+          cateCd: "monthly",
+          label: "이번달"
+        }
+      ],
+      // TODO : 카테고리 소모임
+      openChatCateCd: "all",
+      openChatCateList: [
+        {
+          cateCd: "all",
+          label: "전체모임"
+        },
+        {
+          cateCd: "test5",
+          label: "술벙"
+        },
+        {
+          cateCd: "test6",
+          label: "취미"
+        },
+        {
+          cateCd: "test7",
+          label: "온라인"
+        }
+      ],
+      // TODO : 카테고리 BEST TOPIC
+      bestTopicCateCd: "today",
+      bestTopicCateList: [
+        // {
+        //   cateCd: "all",
+        //   label: "전체"
+        // },
+        {
+          cateCd: "today",
+          label: "오늘"
+        },
+        {
+          cateCd: "weekly",
+          label: "이번주"
+        }
+      ]
+    };
+  },
+  ionViewWillEnter() {
+    // this.hotpeopleCateCd = "season";
+    this.openChatCateCd = "all";
+    this.bestTopicCateCd = "today";
+    //외부에서 오면 새로운 메시지 목록을 가져와야함.
+    //this.getNotifications();
+    // 진입할 때 호출
+
+    this.getHotpeopleState();
+    // this.getHomeItemListAll();
+    this.getContestUserList();
+    this.getBannerList();
+    //this.getHomeNoticeList();
+
+    if (this.intervalLatLon == null) {
+      this.intervalLatLon = setInterval(() => {
+        //GPS 처리
+        this.getGps();
+      }, 15000);
+    }
+
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+    clearInterval(this.interval);
+    this.requestCnt = 0;
+    this.responseCnt = 0;
+  },
+  mounted() {
+    //GPS 처리(최초실행)
+    this.getGps();
+
+    //FCM Token 가져오기
+    this.getToken();
+
+    //메시지 가져오기 처리
+    //this.getNotifications();
+
+    //this.presentToast('top', '안녕하세요.');
+  },
+
+  methods: {
+    /** Refresh **/
+    doRefresh(event) {
+      this.getHomeItemListAll();
+      this.getContestUserList();
+
+      setTimeout(() => {
+        event.target.complete();
+      }, 500);
+    },
+    pushClickFn(type, body, dataMap) {
+      if (type === "message") {
+        let testObj = { pushType: type, chatroomId: dataMap["chatroomId"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "openChat") {
+        let testObj = { pushType: type, openChatKey: dataMap["openChatKey"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "openChatMessage") {
+        let testObj = { pushType: type, chatroomId: dataMap["chatroomId"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "openChatComment") {
+        let testObj = { pushType: type, chatroomId: dataMap["chatroomId"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "community") {
+        let testObj = { pushType: type, articleKey: dataMap["articleKey"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "contestDetail") {
+        let testObj = { pushType: type, articleKey: dataMap["articleKey"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "myLikeMatching") {
+        let testObj = { pushType: type, chatroomId: dataMap["chatroomId"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "communityChat") {
+        let testObj = { pushType: type, chatroomId: dataMap["chatroomId"] };
+        this.presentToast("top", body, testObj);
+      } else if (type === "myLike") {
+        let testObj = { pushType: type };
+        this.presentToast("top", body, testObj);
+      } else {
+        let testObj = { pushType: "else" };
+        this.presentToast("top", body, testObj);
+      }
+    },
+    categoryBtn(item, type) {
+      if (type == "hot") {
+        this.hotpeopleCateCd = item.cateCd;
+        this.hotpeopleCategory();
+      } else if (type == "season") {
+        this.hotpeopleCateCd = "season";
+        this.hotpeopleStateCd = item.stateCd;
+        this.hotpeopleCategory();
+      } else if (type == "openChat") {
+        this.openChatCateCd = item.cateCd;
+        this.openChatCategory();
+      } else if (type == "best") {
+        this.bestTopicCateCd = item.cateCd;
+        this.bestTopicCategory();
+      }
+    },
+    hotpeopleCategory() {
+      getData({
+        url: "/hotpeopleCategory",
+        param: {
+          category: this.hotpeopleCateCd,
+          stateCd: this.hotpeopleStateCd
+        },
+        then: (data) => {
+          this.hotPeopleList = data.hotPeopleList;
+        }
+      });
+    },
+
+    getHotpeopleState() {
+      getData({
+        url: "/getHotpeopleState",
+        param: {},
+        then: (data) => {
+          this.hotPeopleStateList = data;
+
+          if (this.hotPeopleStateList.length > 0) {
+            this.hotpeopleCateCd = data[0].stateCd;
+            this.hotpeopleStateCd = data[0].stateCd;
+          }
+
+          this.$nextTick(() => {
+            this.getHomeItemListAll();
+          });
+        }
+      });
+    },
+
+    openChatCategory() {
+      getData({
+        url: "/openChatCategory",
+        param: { category: this.openChatCateCd },
+        then: (data) => {
+          this.openChatList = data.openChatList;
+        }
+      });
+    },
+
+    bestTopicCategory() {
+      getData({
+        url: "/bestTopicCategory",
+        param: { category: this.bestTopicCateCd },
+        then: (data) => {
+          this.boardList = data.articleList;
+        }
+      });
+    },
+
+    ContestSlider() {
+      this.getContestUserList();
+    },
+    ionModalDidDismiss() {
+      this.$refs.modal.$el.dismiss();
+    },
+    async presentToast(position, message, item) {
+      const toast = await toastController.create({
+        message: message,
+        duration: 3500,
+        position: position,
+        icon: appIcon,
+        header: "네이비",
+        cssClass: "custom-toast",
+        buttons: [
+          {
+            text: "test",
+            role: "info",
+            handler: () => {
+              this.routeChange(item);
+            }
+          }
+        ]
+      });
+
+      await toast.present();
+    },
+    routeChange(item) {
+      if (
+        item.pushType == "message" ||
+        item.pushType == "myLikeMatching" ||
+        item.pushType == "communityChat"
+      ) {
+        messageTalkMapFn({
+          chatroomId: item.chatroomId,
+          type: item.pushType,
+          chatroomType: "first"
+        });
+        this.$router.push("/messageTalk");
+      } else if (item.pushType == "openChat") {
+        openChatMeetMapFn({ openChatKey: item.openChatKey, type: item.pushType });
+        this.$router.push("/openChatMeet");
+        // openChatViewMapFn({ openChatKey: item.openChatKey, type: item.pushType });
+        // this.$router.push('/openChatView');
+      } else if (item.pushType == "openChatMessage") {
+        getData({
+          url: "/getOpenChatKey",
+          param: {
+            chatroomId: item.chatroomId
+          },
+          then: (data) => {
+            openChatMeetMapFn({ openChatKey: data.openChatKey, type: item.pushType, chatroomId: item.chatroomId });
+            this.$router.push("/openChatMeet");
+          }
+        });
+      } else if (item.pushType == "openChatComment") {
+        getData({
+          url: "/getOpenChatKey",
+          param: {
+            chatroomId: item.chatroomId
+          },
+          then: (data) => {
+
+            getData({
+              url: "/openChatMeetInfo",
+              param: { meetKey: data.openChatKey },
+              then: (meetInfo) => {
+                openChatMeetViewMapFn({
+                  openChatId: meetInfo.openChatId,
+                  meetId: meetInfo.meetId,
+                  categoryCd: meetInfo.categoryCd,
+                  categoryNm: meetInfo.categoryNm,
+                  openChatKey: meetInfo.openChatKey,
+                  chatroomId: meetInfo.chatroomId
+                });
+                this.$router.push("/openChatMeetView");
+              }
+            });
+          }
+        });
+      } else if (item.pushType == "community") {
+        communityViewMapFn({ article: item.articleKey, type: item.pushType });
+        this.$router.push("/communityView");
+      } else if (item.pushType == "contestDetail") {
+        communityViewMapFn({ article: item.articleKey, type: item.pushType });
+        this.$router.push("/contestDetail");
+      } else if (item.pushType == "myLike") {
+        this.$router.push("/myLike");
+      } else if (item.pushType == "else") {
+        this.$router.push("/alarm");
+      }
+    },
+    async presentToastToBottom(position, message) {
+      const toast = await toastController.create({
+        message: message,
+        duration: 3500,
+        position: position,
+        icon: appIcon,
+        cssClass: "custom-toast",
+        buttons: [
+          {
+            text: "test",
+            role: "info",
+            handler: () => {
+              //console.log('fake click event !!');
+            }
+          }
+        ]
+      });
+
+      await toast.present();
+    },
+    async getGps() {
+      if (Capacitor.getPlatform() !== "web") {
+        await Geolocation.getCurrentPosition().then((position) => {
+          //console.log('capacitor : ' + position.coords.latitude);
+          getData({
+            url: "/setUserLatLon",
+            param: {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            },
+            then: () => {
+            }
+          });
+        });
+      } else {
+        console.log("[개발환경] web 에서 GPS는 활성화 되지 않습니다.");
+        clearInterval(this.intervalLatLon);
+      }
+    },
+    insertMessage(pushData) {
+    },
+    async getToken() {
+      if (Capacitor.getPlatform() !== "web") {
+        if (Capacitor.getPlatform() === "ios") {
+          await this.addListeners();
+          await this.registerNotifications();
+
+          FCM.getToken()
+            .then((result) => {
+              //console.log('token:::'+JSON.stringify(result));
+              // This is token for IOS
+              this.setUserToken(result.token, "ios");
+            })
+            .catch((err) => {
+              //토큰 가져오기 에러
+              //console.log(err);
+              //alert("토큰가져오기 에러");
+            });
+        } else if (Capacitor.getPlatform() === "android") {
+          await this.addListeners();
+          await this.registerNotifications();
+
+          FCM.getToken()
+            .then((result) => {
+              //console.log('token:::'+JSON.stringify(result));
+              // This is token for Android
+              this.setUserToken(result.token, "android");
+            })
+            .catch((err) => {
+              //토큰 가져오기 에러
+              //console.log(err);
+              //alert("토큰가져오기 에러");
+            });
+        }
+      } else {
+        console.log("[개발환경] web에서 Push는 활성화 되지 않습니다.");
+      }
+
+      if (Capacitor.getPlatform() === "android") {
+        Geolocation.requestPermissions();
+      }
+    },
+    async addListeners() {
+      await PushNotifications.removeAllListeners();
+
+      await PushNotifications.addListener("registration", (token) => {
+        //console.info('Registration token: ', token.value);
+        //this.setUserToken(token.value, "android");
+      });
+
+      await PushNotifications.addListener("registrationError", (err) => {
+        //alert('Registration error: ', err.error);
+        //console.error('Registration error: ', err.error);
+      });
+
+      await PushNotifications.addListener(
+        "pushNotificationReceived",
+        (notification) => {
+          //console.log('Push notification received: ', notification);
+
+          //alert('notification : ' + notification);
+          //console.log("gggggggg", notification);
+          //INSERT MESSAGE
+          this.insertMessage(notification.data);
+          if (notification.data.pushType == "message") {
+            this.getMessageMainMap();
+          }
+          //채팅창과 동일하다면
+          if (
+            this.$route.path === "/messageTalk" &&
+            this.chatroomId == notification.data.chatroomId // ==을 ===으로 변경하지 마세요.
+          ) {
+            let regexp = /(?:http(s?)?|www)\S+\w/g;
+            let _match = notification.data.message.match(regexp);
+            let match = [...new Set(_match)];
+            notification.data["replaceMessage"] = notification.data.message;
+            Array.from(match).forEach((item) => {
+              if (!item.includes("http")) {
+                notification.data["replaceMessage"] = notification.data[
+                  "replaceMessage"
+                  ].replaceAll(
+                  item,
+                  `<a href="http://${item}" target="_blank">${item}</a>`
+                );
+              } else {
+                notification.data["replaceMessage"] = notification.data[
+                  "replaceMessage"
+                  ].replaceAll(
+                  item,
+                  `<a href="${item}" target="_blank">${item}</a>`
+                );
+              }
+            });
+
+            //자신의 글이면 무시한다. (chat, image만)
+            //if((notification.data.messageType == "Y") || (localStoporage.getItem("SS_USER_TOKEN") != notification.data.regUserKey)){
+            this.$store.commit("addMessage", notification.data);
+
+            //현재 위치가 350px이상 차이가 난다면 토스트 호출
+            if (this.currentMsgHeightCalc >= 350) {
+              //토스트 호출 (하단)
+              this.presentToastToBottom("bottom", notification.data.message);
+            }
+          } else if (
+            this.$route.path === "/openChatMeet" &&
+            this.chatroomId == notification.data.chatroomId &&
+            this.meetMainTab == "message"
+          ) {
+            let regexp = /(?:http(s?)?|www)\S+\w/g;
+            let _match = notification.data.message.match(regexp);
+            let match = [...new Set(_match)];
+            notification.data["replaceMessage"] = notification.data.message;
+            Array.from(match).forEach((item) => {
+              if (!item.includes("http")) {
+                notification.data["replaceMessage"] = notification.data[
+                  "replaceMessage"
+                  ].replaceAll(
+                  item,
+                  `<a href="http://${item}" target="_blank">${item}</a>`
+                );
+              } else {
+                notification.data["replaceMessage"] = notification.data[
+                  "replaceMessage"
+                  ].replaceAll(
+                  item,
+                  `<a href="${item}" target="_blank">${item}</a>`
+                );
+              }
+            });
+
+            //자신의 글이면 무시한다. (chat, image만)
+            //if((notification.data.messageType == "Y") || (localStoporage.getItem("SS_USER_TOKEN") != notification.data.regUserKey)){
+            this.$store.commit("addMessage", notification.data);
+
+            //현재 위치가 350px이상 차이가 난다면 토스트 호출
+            if (this.currentMsgHeightCalc >= 350) {
+              //토스트 호출 (하단)
+              this.presentToastToBottom("bottom", notification.data.message);
+            }
+          } else {
+            //현재 위치가 채팅창이 아니라면
+            //토스트 호출 (상단)
+            this.pushClickFn(
+              notification.data.pushType,
+              notification.body,
+              notification.data
+            );
+          }
+        }
+      );
+
+      await PushNotifications.addListener(
+        "pushNotificationActionPerformed",
+        (notification) => {
+          //alert('notification(push) : ' + notification);
+          // alert("notification (외부) :: " + JSON.stringify(notification))
+          this.routeChange(notification.notification.data);
+
+          //console.log('Push notification action performed', notification.actionId, notification.inputValue);
+        }
+      );
+    },
+    async registerNotifications() {
+      let permStatus = await PushNotifications.checkPermissions();
+
+      if (permStatus.receive === "prompt") {
+        permStatus = await PushNotifications.requestPermissions();
+      }
+
+      //alert(JSON.stringify(permStatus));
+      if (permStatus.receive !== "granted") {
+        //alert('권한이 거부됨.');
+        //alert('푸쉬알림을 허용해요주세요. 거부할 경우 정상적인 서비스 이용이 어렵습니다.');
+        //throw new Error('User denied permissions!');
+      }
+
+      await PushNotifications.register();
+    },
+    async getNotifications() {
+      if (Capacitor.getPlatform() !== "web") {
+        await PushNotifications.getDeliveredNotifications().then((pushList) => {
+          //alert('pushList'+ JSON.stringify(pushList));
+          for (let idx in pushList) {
+            //alert("pushList" + JSON.stringify(pushList[idx]));
+            //this.insertMessage(pushList[idx]["notifications"]);
+          }
+        });
+      }
+    },
+
+    setUserToken(token, platform) {
+      getData({
+        url: "/setUserToken",
+        param: {
+          token: token,
+          platform: platform
+        },
+        then: () => {
+        }
+      });
+    },
+
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+
+    getBannerList() {
+      getData({
+        url: "/getBannerList",
+        param: { bannerType: "HOME" },
+        then: (data) => {
+          this.$nextTick(() => {
+            let sampleList = data;
+            this.bannerList = [...sampleList].sort(() => Math.random() - 0.5);
+          });
+        }
+      });
+    },
+
+    getHomeItemListAll() {
+      this.imgsLength = 0; //전체 이미지수 초기화
+      this.loadedImgsLength = 0; //조회완료된 이미지수
+      
+      getData({
+        url: "/getHomeItemListAll",
+        param: {
+          contestType: 1,
+          category: "all",
+          stateCd: this.hotpeopleStateCd
+        },
+        then: (data) => {
+          this.openChatList = data.openChatList;
+          this.boardList = data.articleList;
+          this.userNewList = data.userAdList;
+          this.hotPeopleList = data.hotPeopleList;
+          this.hotAskMeList = data.hotAskMeList;
+          this.homeLodingCheck = true;
+
+          this.openChatListMeeting = data.openChatList.filter(
+            (item) => item.partitionCd === "test3"
+          );
+          this.openChatListMoim = data.openChatList.filter(
+            (item) => item.partitionCd === "test4"
+          );
+
+          this.$nextTick(() => {
+            this.imgsLength = this.imgsLength + data.openChatList.length;
+          });
+        }
+      });
+    },
+    getContestUserList() {
+      getData({
+        url: "/getHomeContestUserList",
+        param: { contestType: 1 },
+        then: (data) => {
+          this.contestUserList = data.contestUserList;
+          this.contestState = data.contestState;
+        }
+      });
+    },
+    /** 모달창내 내용 들어갈예정 **/
+    homeModalBtn(type) {
+      if (type === "save") {
+        this.useProfileAd();
+      } else if (type === "openModal") {
+        this.getUserCouponDataOne();
+      }
+    },
+    /** useProfileAd 보유현황 **/
+    getUserCouponDataOne() {
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: "CU010" },
+        then: (data) => {
+          this.coupon = data;
+          if (data.quantity > 0) {
+            this.useType = "COUPON";
+          } else {
+            this.useType = "HEART";
+          }
+          this.$nextTick(() => {
+            this.modalHome = true;
+          });
+        }
+      });
+    },
+    /** useProfileAd 사용 로직 **/
+    useProfileAd() {
+      getData({
+        url: "/useProfileAd",
+        param: {
+          couponCd: "CU010",
+          useType: "COUPON",
+          itemCd: "",
+          pointCd: ""
+          // 수량 0일때 하트로 구매
+          // useType: this.useType, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          // itemCd: this.useType === "HEART" ? "IT010_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드
+          // pointCd: this.useType === "HEART" ? "BUY" : "" // useType 'HEART' 일 시 BUY
+        },
+        then: (data) => {
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NH" ||
+            data.successYn === "NE"
+          ) {
+            this.alertMessage = true;
+            // this.warningAlert(data.message);
+            // this.modalHome = false;
+          } else {
+            this.modalHome = false;
+            this.getHomeItemListAll();
+          }
+        }
+      });
+    },
+    getMessageMainMap() {
+      getData({
+        url: "/messageMain/getMessageMainMap",
+        param: {},
+        then: (data) => {
+          this.$nextTick(() => {
+            this.$store.state.messageMainMap = data;
+          });
+        }
+      });
+    },
+
+    goRouter() {
+      this.modalHome = false;
+      this.alertMessage = false;
+      storeMapFn({ categoryType: "item" });
+      this.$router.push("/store");
+    },
+    /** 경고 팝업창 **/
+    async warningAlertNH(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/store");
+              this.modalContest = false;
+            }
+          }
+        ]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.main-content {
+  background: var(--ion-color-dark);
+}
+</style>

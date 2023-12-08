@@ -1,0 +1,28 @@
+<template>
+  <ion-list lines="full">
+    <ion-list-header>
+      <ion-text color="light" class="text-md">참여 신청자</ion-text>
+    </ion-list-header>
+    <slot name="content"></slot>
+  </ion-list>
+</template>
+<script>
+export default {
+  name: 'OpenChatAttendList'
+};
+</script>
+<style lang="scss" scoped>
+ion-list {
+  ion-list-header {
+    --background: var(--ion-color-secondary);
+    padding: 0 18px;
+    align-items: center;
+    border-radius: var(--ion-border-radius);
+    margin-bottom: 10px;
+    ion-text {
+      display: block;
+      margin: 0 auto;
+    }
+  }
+}
+</style>

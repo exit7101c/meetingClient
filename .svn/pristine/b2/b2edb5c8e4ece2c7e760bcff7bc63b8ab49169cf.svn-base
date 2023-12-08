@@ -1,0 +1,124 @@
+<template>
+  <!-- 홈 메인 배너 : 배너 이미지는 동일한 사이즈로 올리는 것이 정석 -->
+  <swiper
+    @swiper="setSwiperRef"
+    :modules="modules"
+    :pagination="{ clickable: true }"
+    :slides-per-view="1"
+    :autoplay="{
+      delay: 3000,
+      disableOnInteraction: false
+    }"
+    :loop="true"
+    :observer="true"
+  >
+    <swiper-slide v-for="(item, index) in bannerList" :key="index">
+      <ion-img
+        v-bind:src="
+          item.cdnNm !== '' && item.cdnNm !== null
+            ? 'https://' + item.cdnNm
+            : require('../../assets/img/Loading_icon.gif')
+        "
+        @ionError="
+          $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+        "
+        @click="routerPush(item.path, item.articleId)"
+      />
+    </swiper-slide>
+  </swiper>
+
+  <NotificationModal
+    :is-open="notificationModalIsOpen"
+    :item="modalItem"
+    :contentType="modalItem.contentType"
+    :type="'announcement'"
+    @ionModalDidDismiss="notificationModalIsOpen = false"
+  />
+</template>
+<script>
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/vue";
+
+import { storeMapFn, getData } from '@/assets/js/common';
+
+
+import NotificationModal from "@/components/Modal/NotificationModal";
+
+export default {
+  name: "MainBanner",
+  props: {
+    bannerList: { type: Array }
+  },
+  components: {
+    Swiper,
+    SwiperSlide,
+    NotificationModal
+  },
+  data() {
+    return {
+      modules: [Autoplay, Pagination, Navigation],
+      swiperRef: null,
+      notificationModalIsOpen: false,
+      modalItem: ""
+    };
+  },
+  mounted() {
+  },
+  beforeMount() {
+  },
+  beforeUpdate() {
+  },
+  updated() {
+    // this.swiperRef.update();
+    console.log(this.swiperRef);
+    if (this.swiperRef != null) {
+      this.swiperRef.slideNext(2000);
+    }
+  },
+  beforeUnmount() {
+  },
+  methods: {
+    routerPush(path, articleId) {
+      // this.swiperRef.autoplay.start();
+      // return;
+      if (path != "" && path != null) {
+        if(path == '/subscription'){
+          storeMapFn({subscribeYn: 'Y'});
+          this.$router.push('/store');
+        } else if(path == '/notice') {
+          if(articleId != '' || articleId != null){
+            //공지사항 조회
+
+            getData({
+              url: "/getNoticeArticleOne",
+              param: {articleId: articleId},
+              then: (data) => {
+                this.modalItem = data;
+                this.notificationModalIsOpen = true;
+              }
+            });
+
+          } else {
+            return;
+          }
+        } else {
+          this.$router.push(path);
+        }
+      }
+    },
+    setSwiperRef(swiper) {
+      this.swiperRef = swiper;
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+.swiper {
+  padding: 0;
+  margin: 0;
+
+  ion-img {
+    border-radius: 0;
+  }
+}
+</style>

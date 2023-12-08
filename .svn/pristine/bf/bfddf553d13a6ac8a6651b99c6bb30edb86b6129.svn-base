@@ -1,0 +1,592 @@
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+// import { RouteRecordRaw } from 'vue-router';
+
+// import HomePage from '../views/page/HomePage.vue'
+import Tabs from "../views/layout/Tabs.vue";
+
+import { getData, SS_VERSION, SS_BUILD } from "@/assets/js/common.js";
+import { store } from "../assets/js/store.js";
+
+/*import { setBackForwardNavigationGestures } from "capacitor-plugin-ios-webview-configurator";
+
+setBackForwardNavigationGestures(true);*/
+
+const routes = [
+  {
+    path: "/",
+    redirect: "/start"
+  },
+  {
+    path: "/",
+    component: Tabs,
+    children: [
+      {
+        path: "",
+        redirect: "/home"
+      },
+      {
+        path: "dailyDating",
+        component: () => import("../views/page/DailyDatingPage.vue")
+      },
+      {
+        path: "home",
+        component: () => import("../views/page/HomePage.vue")
+      },
+      {
+        path: "choice",
+        component: () => import("../views/page/Choice.vue")
+      },
+      {
+        path: "library",
+        component: () => import("../views/page/LibraryPage.vue")
+      },
+      {
+        path: "openChat",
+        component: () => import("../views/page/OpenChat.vue"),
+        props: true
+      },
+      {
+        path: "community",
+        component: () => import("../views/page/Community.vue")
+      },
+      {
+        path: "mypage",
+        component: () => import("../views/page/Mypage.vue")
+      },
+      {
+        path: "message",
+        component: () => import("../views/page/Message.vue")
+      }
+    ]
+  },
+  {
+    path: "/start",
+    component: () => import("../views/layout/Start.vue")
+  },
+  {
+    path: "/inputTest",
+    name: "InputTest",
+    component: () => import("../views/layout/inputtest.vue")
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("../views/layout/Login.vue")
+  },
+  {
+    path: "/findUserInfo",
+    name: "FindUserInfo",
+    component: () => import("../views/layout/FindUserInfo.vue")
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: () => import("../views/layout/Register.vue")
+  },
+  {
+    path: "/join",
+    name: "Join",
+    component: () => import("../views/layout/Join.vue")
+  },
+  {
+    path: "/joinConditions",
+    name: "JoinConditions",
+    component: () => import("../views/layout/JoinConditions.vue")
+  },
+  {
+    path: "/joinNickname",
+    name: "JoinNickname",
+    component: () => import("../views/layout/JoinNickname.vue")
+  },
+  {
+    path: "/joinIcon",
+    name: "JoinIcon",
+    component: () => import("../views/layout/JoinIcon.vue")
+  },
+  {
+    path: "/joinJob",
+    name: "JoinJob",
+    component: () => import("../views/layout/JoinJob.vue")
+  },
+  {
+    path: "/joinInfo",
+    name: "JoinInfo",
+    component: () => import("../views/layout/JoinInfo.vue")
+  },
+  {
+    path: "/joinLocation",
+    name: "JoinLocation",
+    component: () => import("../views/layout/JoinLocation.vue")
+  },
+  {
+    path: "/joinEducation",
+    name: "JoinEducation",
+    component: () => import("../views/layout/JoinEducation.vue")
+  },
+  {
+    path: "/joinProfile",
+    name: "JoinProfile",
+    component: () => import("../views/layout/JoinProfile.vue")
+  },
+  {
+    path: "/joinIntroduce",
+    name: "JoinIntroduce",
+    component: () => import("../views/layout/JoinIntroduce.vue")
+  },
+  {
+    path: "/joinInterview",
+    name: "JoinInterview",
+    component: () => import("../views/layout/JoinInterview.vue")
+  },
+
+  {
+    path: "/dailyCardInfo",
+    name: "DailyCardInfo",
+    component: () => import("../views/page/DailyCardInfo.vue")
+  },
+  {
+    path: "/dailyCardDetail",
+    name: "DailyCardDetail",
+    component: () => import("../views/page/DailyCardDetail.vue")
+  },
+  {
+    path: "/sendLike",
+    name: "SendLike",
+    component: () => import("../views/page/SendLikePage.vue")
+  },
+  {
+    path: "/messageMain",
+    name: "MessageMain",
+    component: () => import("../views/page/Message.vue")
+  },
+  {
+    path: "/messageTalk",
+    name: "MessageTalk",
+    component: () => import("../views/page/MessageTalk.vue")
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: () => import("../views/page/Profile.vue")
+  },
+  {
+    path: "/invite",
+    name: "Invite",
+    component: () => import("../views/page/Invite.vue")
+  },
+  {
+    path: "/notification",
+    name: "Notification",
+    component: () => import("../views/page/Notification.vue")
+  },
+  {
+    path: "/notificationRule",
+    name: "NotificationRule",
+    component: () => import("../views/page/NotificationRule.vue")
+  },
+  {
+    path: "/notificationPolice",
+    name: "NotificationPolice",
+    component: () => import("../views/page/NotificationPolice.vue")
+  },
+  {
+    path: "/notificationOpenChat",
+    name: "NotificationOpenChat",
+    component: () => import("../views/page/NotificationOpenChat.vue")
+  },
+  {
+    path: "/notificationEvent",
+    name: "NotificationEvent",
+    component: () => import("../views/page/NotificationEvent.vue")
+  },
+  {
+    path: "/notificationOpenChatGuide",
+    name: "NotificationOpenChatGuide",
+    component: () => import("../views/page/NotificationOpenChatGuide.vue")
+  },
+  {
+    path: "/notificationCommunityGuide",
+    name: "NotificationCommunityGuide",
+    component: () => import("../views/page/NotificationCommunityGuide.vue")
+  },
+  {
+    path: "/notificationSecondGuide",
+    name: "NotificationSecondGuide",
+    component: () => import("../views/page/NotificationSecondGuide.vue")
+  },
+  {
+    path: "/setting",
+    name: "Setting",
+    component: () => import("../views/page/Setting.vue")
+  },
+  {
+    path: "/store",
+    name: "Store",
+    component: () => import("../views/page/Store.vue")
+  },
+  {
+    path: "/alarm",
+    name: "Alarm",
+    component: () => import("../views/page/Alarm.vue")
+  },
+  {
+    path: "/usedetails",
+    name: "Usedetails",
+    component: () => import("../views/page/Usedetails.vue")
+  },
+  {
+    path: "/usePointDetails",
+    name: "UsePointDetails",
+    component: () => import("../views/page/UsePointDetails.vue")
+  },
+  {
+    path: "/openChatView",
+    name: "OpenChatView",
+    component: () => import("../views/page/OpenChatView.vue"),
+    props: true
+  },
+  {
+    path: "/myOpenChatView",
+    name: "MyOpenChatView",
+    component: () => import("../views/page/MyOpenChatView.vue"),
+    props: true
+  },
+  {
+    path: "/communityView",
+    name: "CommunityView",
+    component: () => import("../views/page/CommunityView.vue")
+  },
+  {
+    path: "/openChatWrite",
+    name: "OpenChatWrite",
+    component: () => import("../views/page/OpenChatWrite.vue")
+  },
+  {
+    path: "/openChatMap",
+    name: "OpenChatMap",
+    component: () => import("../views/page/OpenChatMap.vue")
+  },
+  {
+    path: "/communityWrite",
+    name: "CommunityWrite",
+    component: () => import("../views/page/CommunityWrite.vue")
+  },
+  {
+    path: "/communityLetterPost",
+    name: "CommunityLetterPost",
+    component: () => import("../views/page/CommunityLetterPost.vue")
+  },
+  {
+    path: "/myCommunity",
+    name: "MyCommunity",
+    component: () => import("../views/page/MyCommunity.vue")
+  },
+  {
+    path: "/myOpenChat",
+    name: "MyOpenChat",
+    component: () => import("../views/page/MyOpenChat.vue")
+  },
+  {
+    path: "/myLike",
+    name: "MyLike",
+    component: () => import("../views/page/MyLike.vue")
+  },
+  {
+    path: "/letter",
+    name: "Letter",
+    component: () => import("../views/page/Letter.vue")
+  },
+  {
+    path: "/note",
+    name: "Note",
+    component: () => import("../views/page/Note.vue")
+  },
+  {
+    path: "/settingAlarm",
+    name: "SettingAlarm",
+    component: () => import("../views/page/SettingAlarm.vue")
+  },
+  {
+    path: "/settingPassword",
+    name: "SettingPassword",
+    component: () => import("../views/page/SettingPassword.vue")
+  },
+  {
+    path: "/notificationAnnouncement",
+    name: "NotificationAnnouncement",
+    component: () => import("../views/page/NotificationAnnouncement.vue")
+  },
+  {
+    path: "/notificationWhoIsNAVY",
+    name: "NotificationWhoIsNAVY",
+    component: () => import("../views/page/NotificationWhoIsNAVY.vue")
+  },
+  {
+    path: "/notificationChoiceGuide",
+    name: "NotificationChoiceGuide",
+    component: () => import("../views/page/NotificationChoiceGuide.vue")
+  },
+  {
+    path: "/loungeGuide",
+    name: "LoungeGuide",
+    component: () => import("../views/page/LoungeGuide.vue")
+  },
+  {
+    path: "/partyGuide",
+    name: "PartyGuide",
+    component: () => import("../views/page/PartyGuide.vue")
+  },
+  {
+    path: "/settingAccount",
+    name: "SettingAccount",
+    component: () => import("../views/page/SettingAccount.vue")
+  },
+  {
+    path: "/settingService",
+    name: "SettingService",
+    component: () => import("../views/page/SettingService.vue")
+  },
+  {
+    path: "/settingTermsAndConditions",
+    name: "SettingTermsAndConditions",
+    component: () => import("../views/page/SettingTermsAndConditions.vue")
+  },
+  {
+    path: "/profileShortWord",
+    name: "ProfileShortWord",
+    component: () => import("../views/page/ProfileShortWord.vue")
+  },
+  {
+    path: "/profileProfile",
+    name: "ProfileProfile",
+    component: () => import("../views/page/ProfileProfile.vue")
+  },
+  {
+    path: "/profileLocation",
+    name: "ProfileLocation",
+    component: () => import("../views/page/ProfileLocation.vue")
+  },
+  {
+    path: "/profileJob",
+    name: "ProfileJob",
+    component: () => import("../views/page/ProfileJob.vue")
+  },
+  {
+    path: "/profileEducation",
+    name: "ProfileEducation",
+    component: () => import("../views/page/ProfileEducation.vue")
+  },
+  {
+    path: "/profileKeyword",
+    name: "ProfileKeyword",
+    component: () => import("../views/page/ProfileKeyword.vue")
+  },
+  {
+    path: "/profileInfo",
+    name: "ProfileInfo",
+    component: () => import("../views/page/ProfileInfo.vue")
+  },
+  {
+    path: "/profileInterview",
+    name: "ProfileInterview",
+    component: () => import("../views/page/ProfileInterview.vue")
+  },
+  {
+    path: "/police",
+    name: "Police",
+    component: () => import("../views/page/Police.vue")
+  },
+  {
+    path: "/friendBlock",
+    name: "FriendBlock",
+    component: () => import("../views/page/FriendBlock.vue")
+  },
+  {
+    path: "/partnersAdmin",
+    name: "PartnersAdmin",
+    component: () => import("../views/page/PartnersAdmin.vue")
+  },
+  {
+    path: "/partnersAdminUseCheck",
+    name: "PartnersAdminUseCheck",
+    component: () => import("../views/page/PartnersAdminUseCheck.vue")
+  },
+  {
+    path: "/askMe/:askMeCode",
+    name: "AskMe",
+    component: () => import("../views/page/AskMe.vue")
+  },
+  {
+    path: "/askMeNext",
+    name: "AskMeNext",
+    component: () => import("../views/page/AskMeNext.vue")
+  },
+  {
+    path: "/askMeSecond",
+    name: "AskMeSecond",
+    component: () => import("../views/page/AskMeSecond.vue")
+  },
+  {
+    path: "/askMeSend",
+    name: "AskMeSend",
+    component: () => import("../views/page/AskMeSend.vue")
+  },
+  {
+    path: "/askMeList",
+    name: "AskMeList",
+    component: () => import("../views/page/AskMeList.vue")
+  },
+  {
+    path: "/askMeListProfile",
+    name: "AskMeListProfile",
+    component: () => import("../views/page/AskMeListProfile.vue")
+  },
+  {
+    path: "/messageMap",
+    name: "MessageMap",
+    component: () => import("../views/page/MessageMap.vue")
+  },
+  {
+    path: "/partnersMap",
+    name: "PartnersMap",
+    component: () => import("../views/page/PartnersMap.vue")
+  },
+  {
+    path: "/subscription",
+    name: "Subscription",
+    component: () => import("../views/page/Subscription.vue")
+  },
+  {
+    path: "/subscription_Shop",
+    name: "Subscription_Shop",
+    component: () => import("../views/page/Subscription_Shop.vue")
+  },
+  {
+    path: "/contestHot",
+    name: "ContestHot",
+    component: () => import("../views/page/ContestHot.vue")
+  },
+  {
+    path: "/contestSupport",
+    name: "ContestSupport",
+    component: () => import("../views/page/ContestSupport.vue")
+  },
+  {
+    path: "/contest",
+    name: "Contest",
+    component: () => import("../views/page/Contest.vue")
+  },
+  {
+    path: "/contestDetail",
+    name: "ContestDetail",
+    component: () => import("../views/page/ContestDetail.vue")
+  },
+  {
+    path: "/contestVoteHis",
+    name: "ContestVoteHis",
+    component: () => import("../views/page/ContestVoteHis.vue")
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes
+});
+
+router.beforeEach((to, from, next) => {
+  console.log("-----------router start------------–");
+  console.log(from);
+  console.log(to);
+  console.log("-----------router end------------–");
+
+  //글을 갔다가 돌아올때 스크롤을 유지하기위해 구분을 지어야함.
+  //-> 이전: 마이커뮤니티 , 다음 : 커뮤니티상세 일경우
+  if (from.path === "/communityView" && to.path === "/myCommunity") {
+    to.params["routerType"] = "doNotRefrash";
+  } else if (from.path === "/myOpenChatView" && to.path === "/myOpenChat") {
+    to.params["routerType"] = "doNotRefrash";
+  } else if (
+    from.path === "/openChatWrite" &&
+    to.path === "/notificationOpenChatGuide"
+  ) {
+    to.params["routerType"] = "doNotRefrash";
+  } else if (
+    from.path === "/CommunityWrite" &&
+    to.path === "/notificationOpenChatGuide"
+  ) {
+    to.params["routerType"] = "doNotRefrash";
+  } else if (from.path === "/openChat" && to.path === "/openChatWrite") {
+    to.params["routerType"] = "doRefrash";
+  } else {
+    to.params["routerType"] = "doRefrash";
+  }
+
+  if (
+    to.path === "/login" ||
+    to.path === "/findUserInfo" ||
+    to.path === "/start" ||
+    to.path === "/register" ||
+    to.path === "/join" ||
+    to.path === "/joinConditions" ||
+    to.path === "/joinNickname" ||
+    to.path === "/joinIcon" ||
+    to.path === "/joinJob" ||
+    to.path === "/joinLocation" ||
+    to.path === "/joinEducation" ||
+    to.path === "/joinProfile" ||
+    to.path === "/joinIntroduce" ||
+    to.path === "/joinInfo" ||
+    to.path === "/joinInterview" ||
+    to.path === "/inputTest" ||
+    to.path === "/notificationSecondGuide" ||
+    to.path === "/notificationWhoIsNAVY" ||
+    to.name === "AskMe"
+  ) {
+    next();
+  } else {
+    let CURR_TOKEN = localStorage.getItem("SS_USER_TOKEN");
+    if (!CURR_TOKEN) {
+      alert("업데이트되어 접속이 만료되었습니다. 다시 로그인 해 주세요.");
+      // next('/login');
+      //next({path: '/start'});
+      //console.log('로그인정보 만료');
+      //this.$router.push('/');
+      location.replace("/");
+    } else {
+      // 버전체크,
+      // 차단사용자 체크
+      // reject체크
+      getData({
+        url: "/sessionCheck",
+        param: { fromAddr: from.path, toAddr: to.path, version: SS_VERSION, build: SS_BUILD },
+        then: (data) => {
+          if (data.successYn === "Y") {
+            localStorage.setItem("SS_USER_COMMUNITY_NICK", data.communityNick);
+            localStorage.setItem("SS_USER_COMMUNITY_ICON", data.communityIcon);
+            localStorage.setItem("SS_USER_SUBSCRIBE_YN", data.subscribeYn);
+            if (data.alarmCount != undefined) {
+              store.state.alarmCount = data.alarmCount;
+            }
+          } else {
+            if (data.type == "ban") {
+              alert(data.message);
+            } else if (data.type == "connect") {
+              alert(data.message);
+            } else if (data.type == "dayBan") {
+              alert(data.message);
+            } else if (data.type == "maintainance") {
+              alert(data.message);
+            }
+            localStorage.removeItem("SS_USER_TOKEN");
+            location.replace("/");
+            //next({path: '/start'});
+          }
+        }
+      });
+      //alert(localStorage.getItem('SS_USER_TOKEN'))
+      next();
+    }
+  }
+});
+
+export default router;

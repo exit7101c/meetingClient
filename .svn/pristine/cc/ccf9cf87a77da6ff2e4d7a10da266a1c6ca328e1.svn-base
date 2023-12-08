@@ -1,0 +1,251 @@
+<template>
+  <div class="ion-padding">
+    <ion-list lines="none">
+      <div class="sticky-top segment-round">
+        <ion-segment
+          v-model="selectedAvatar"
+          mode="md"
+          :scrollable="true"
+          class="radio-button"
+        >
+          <ion-segment-button value="HOUR" @click="chageSearch('HOUR')"> 시간별 조회</ion-segment-button>
+          <ion-segment-button value="DAY" @click="chageSearch('DAY')"> 일별 조회</ion-segment-button>
+          <ion-segment-button value="MONTH" @click="chageSearch('MONTH')"> 월별 조회</ion-segment-button>
+        </ion-segment>
+      </div>
+    </ion-list>
+    <!--    <ion-row style="margin-bottom: 20px;">-->
+    <!--      <ion-button @click="openPicker()">Open</ion-button>-->
+    <!--    </ion-row>-->
+    <highcharts
+      :options="chartOptions"
+      :highcharts="hcInstance"
+    />
+  </div>
+</template>
+
+<script>
+import Highcharts from "highcharts";
+import { Chart } from "highcharts-vue";
+import { IonButton, pickerController } from "@ionic/vue";
+import { getData, partnerInfoMap, partnerInfoMapFn } from "@/assets/js/common";
+
+export default {
+  components: {
+    highcharts: Chart,
+    IonButton
+  },
+  mounted() {
+    this.getChartData();
+    // this.totalData();
+    this.setChartInterval();
+  },
+  data() {
+    return {
+      hcInstance: Highcharts,
+      chartOptions: {},
+      chartInterval: null,
+      chartData: null,
+      totalSumData: {},
+
+      selectedAvatar: "DAY"
+
+    };
+  },
+  methods: {
+    chageSearch(value) {
+      this.getChartData(value);
+    },
+    setChartInterval() {
+      if (partnerInfoMap.interval) {
+        clearInterval(partnerInfoMap.interval);
+      }
+      partnerInfoMap["interval"] = setInterval(() => {
+        this.getChartData();
+        // this.totalData();
+      }, 10000);
+      partnerInfoMapFn(partnerInfoMap);
+    },
+    getChartData(type) {
+      getData({
+        url: "/partnerChartData",
+        param: {
+          partnersCode: partnerInfoMap.partnersCode,
+          timeType: type ? type : this.selectedAvatar
+        },
+        then: (data) => {
+          this.chartData = data;
+          this.chartInit(data);
+        }
+      });
+    },
+    chartInit(data) {
+      this.chartOptions = {
+        chart: {
+          type: "line"
+        },
+        title: {
+          text: "광고노출 추이"
+        },
+        legend: {
+          enabled: true,
+          align: "center",
+          verticalAlign: "bottom",
+          layout: "horizontal"
+        },
+        xAxis: {
+          crosshair: true,
+          type: "datetime"
+        },
+        yAxis: [
+          {
+            crosshair: true,
+            startOnTick: false,
+            title: {
+              text: ""
+            }
+          }, {
+            crosshair: true,
+            startOnTick: false,
+            title: {
+              text: ""
+            },
+            min: 0,
+            opposite: true,
+            labels: {
+              format: "{value}"
+            }
+          }
+        ],
+        tooltip: {
+          crosshairs: true,
+          xDateFormat: this.selectedAvatar == "DAY" ? "%Y-%m-%d" : (this.selectedAvatar == "HOUR" ? "%Y-%m-%d %H" : "%Y-%m"),
+          valueSuffix: "{value}" + " 건"
+        },
+        series: data
+      };
+    },
+    totalData() {
+      getData({
+        url: "/partnerExposureData",
+        param: {
+          partnersCode: partnerInfoMap.partnersCode,
+          timeType: this.selectedAvatar
+        },
+        then: (data) => {
+          this.totalSumData = data;
+        }
+      });
+    },
+    pickerColumn() {
+      let array = new Array();
+
+
+    },
+    async openPicker() {
+      const picker = await pickerController.create({
+        columns: this.pickerColumn(),
+        //   [
+        //   {
+        //     name: "year",
+        //     options: [
+        //       {
+        //         text: "Pepperoni",
+        //         value: "pepperoni"
+        //       },
+        //       {
+        //         text: "Smoked Ham",
+        //         value: "smoked-ham"
+        //       },
+        //       {
+        //         text: "Crispy Bacon",
+        //         value: "bacon"
+        //       }
+        //     ]
+        //   },
+        //   {
+        //     name: "month",
+        //     options: [
+        //       {
+        //         text: "Red onion",
+        //         value: "red-onion"
+        //       },
+        //       {
+        //         text: "Peppers",
+        //         value: "peppers"
+        //       },
+        //       {
+        //         text: "Black olives",
+        //         value: "black-olives"
+        //       }
+        //     ]
+        //   },
+        //   {
+        //     name: "day",
+        //     options: [
+        //       {
+        //         text: "Pan style",
+        //         value: "pan"
+        //       },
+        //       {
+        //         text: "Hand tossed",
+        //         value: "hand-tossed"
+        //       },
+        //       {
+        //         text: "Stuffed crust",
+        //         value: "stuffed-crust"
+        //       }
+        //     ]
+        //   }
+        // ],
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel"
+          },
+          {
+            text: "확인",
+            handler: (value) => {
+              console.log(
+                `${value.year.text} \n ${value.month.text} \n ${value.day.text}`
+              );
+            }
+          }
+        ]
+      });
+      await picker.present();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+ion-segment.radio-button {
+  padding: 10px;
+  margin: 0 0;
+  border: 0;
+
+  &:after {
+    display: none;
+  }
+
+  ion-segment-button {
+    --color: white;
+    --background: #4a4a4a;
+    --background-checked: var(--ion-color-primary);
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+    z-index: 2;
+    margin: 0 3px;
+    font-size: 12px;
+    font-weight: bold;
+    max-width: none;
+    min-height: 38px;
+
+    &::part(indicator-background) {
+      height: 0;
+    }
+  }
+}
+</style>

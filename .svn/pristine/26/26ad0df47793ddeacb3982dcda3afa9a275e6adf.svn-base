@@ -1,0 +1,5 @@
+"use strict";(self["webpackChunknavy"]=self["webpackChunknavy"]||[]).push([[5132],{55132:(e,n,i)=>{i.r(n),i.d(n,{c:()=>r});var o=i(46075),r=function(e){var n,i,r,t=function(){n=function(){r=!0,e&&e(!0)},i=function(){r=!1,e&&e(!1)},null===o.w||void 0===o.w||o.w.addEventListener("keyboardWillShow",n),null===o.w||void 0===o.w||o.w.addEventListener("keyboardWillHide",i)},l=function(){null===o.w||void 0===o.w||o.w.removeEventListener("keyboardWillShow",n),null===o.w||void 0===o.w||o.w.removeEventListener("keyboardWillHide",i),n=i=void 0},d=function(){return r};return t(),{init:t,destroy:l,isKeyboardVisible:d}};
+/*!
+ * (C) Ionic http://ionicframework.com - MIT License
+ */}}]);
+//# sourceMappingURL=5132.7aaed8b3.js.map

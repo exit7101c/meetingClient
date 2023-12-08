@@ -1,0 +1,48 @@
+<template lang="">
+  <ion-item>
+    <ion-label @click="handlerSearch">
+      {{ item }}
+    </ion-label>
+    <ion-icon slot="end" :icon="close" size="small" @click="handlerDeleteKeyword" />
+  </ion-item>
+
+
+
+
+</template>
+<script>
+import { close } from "ionicons/icons";
+
+export default {
+  name: "OpenChatRecentlyKeywordItem",
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  data() {
+    return {
+      close
+    };
+  },
+  methods: {
+    handlerSearch() {
+      this.$emit("handlerSearch");
+    },
+    handlerDeleteKeyword() {
+      this.$emit("handlerDeleteKeyword");
+    }
+
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  font-size: 12px;
+  --padding-start: 4px;
+
+  ion-icon {
+    color: var(--ion-color-secondary);
+  }
+}
+</style>

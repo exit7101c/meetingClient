@@ -1,0 +1,114 @@
+<template>
+  <ion-card style="margin-bottom: 16px;">
+    <div class="row-box">
+      <ion-row
+        class="ion-align-items-center ion-justify-content-between gap-md flex-nowrap"
+      >
+        <ion-label color="light" class="text-lg text-bold">
+          {{ item.title }}
+        </ion-label>
+        <div>
+          <ion-button
+            v-if="item.attendYn === 'N'"
+            size="small"
+            shape="round"
+            color="primary"
+            @click="btnAdd"
+            style="font-size: 15px"
+            >참석
+          </ion-button>
+          <ion-button
+            v-else
+            size="small"
+            shape="round"
+            color="danger"
+            @click="btnCancel"
+            :disabled="btnDisabled"
+            style="font-size: 15px"
+            >참석취소
+          </ion-button>
+        </div>
+      </ion-row>
+    </div>
+    <div class="row-box info-list">
+      <div class="mt-2">
+        <ion-icon :icon="calendarNumber" color="secondary"></ion-icon>
+        <ion-text color="light" class="text-sm"> {{ item.meetDate }}</ion-text>
+      </div>
+      <div class="mt-2">
+        <ion-icon :icon="locationSharp" color="secondary"></ion-icon>
+        <ion-text color="light" class="text-sm">
+          {{ item.meetAddr }} {{ item.meetAddrDetail }}</ion-text
+        >
+      </div>
+      <div class="mt-2">
+        <ion-icon :icon="personSharp" color="secondary"></ion-icon>
+        <ion-text color="light" class="text-sm">
+          {{ item.participateCnt }} / {{ item.meetRange }}
+          <ion-text color="light" class="text-link" @click="btnAttend(item)">
+            참여자보기</ion-text
+          >
+        </ion-text>
+      </div>
+      <div class="mt-2">
+        <ion-icon :icon="wallet" color="secondary"></ion-icon>
+        <ion-text color="light" class="text-sm">
+          {{ item.meetCost }}원</ion-text
+        >
+      </div>
+    </div>
+  </ion-card>
+</template>
+<script>
+import {
+  calendarNumber,
+  locationSharp,
+  personSharp,
+  wallet
+} from 'ionicons/icons';
+export default {
+  name: ' OpenChatMeetItem',
+  props: {
+    item: {
+      type: Object
+    },
+    btnDisabled: {
+      type: Boolean
+    }
+  },
+  data() {
+    return {
+      calendarNumber,
+      locationSharp,
+      personSharp,
+      wallet
+    };
+  },
+  methods: {
+    btnAdd(item) {
+      this.$emit('btnAdd', item);
+    },
+    btnCancel(item) {
+      this.$emit('btnCancel', item);
+    },
+    btnAttend(item) {
+      this.$emit('btnAttend');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-card {
+  --background: var(--ion-border-color);
+  margin: 0;
+  padding: 10px 16px;
+  .info-list {
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+  }
+}
+</style>

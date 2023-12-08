@@ -1,0 +1,94 @@
+<template>
+  <ion-item lines="none">
+    <CardBox shadow="primary" style="margin-top: 20px; padding: 10px; width: 100%;">
+      <ion-card-content>
+        <ion-row style="display: flex; align-items: center; justify-content: space-between;">
+          <ion-text color="light" class="text-bold text-lg">{{ item.title }}</ion-text>
+        </ion-row>
+        <ion-row>
+          <ion-text color="light">
+            모임날짜 : {{ item.meetDate }}
+          </ion-text>
+        </ion-row>
+        <ion-row>
+          <ion-text color="light">
+            장소: {{ item.meetAddr }}
+          </ion-text>
+        </ion-row>
+        <ion-row>
+          <ion-text color="light">
+            회비: {{ item.meetCost }}
+          </ion-text>
+        </ion-row>
+        <ion-row>
+          <ion-text color="light">
+            참여: {{ item.participateCnt }} / {{ item.meetRange }}
+          </ion-text>
+        </ion-row>
+        <ion-row style="display: flex; align-items: center; justify-content: space-around;" v-if="pageType == 'Meet'">
+          <ion-button
+            color="primary"
+            v-if="item.attendYn === 'N'"
+            @click="addMeetUser"
+            :disabled="btnDisabled"
+          >
+            참여하기
+          </ion-button>
+          <ion-button
+            color="danger"
+            v-else @click="deleteMeetUser"
+            :disabled="btnDisabled"
+          >
+            참여취소
+          </ion-button>
+          <ion-button
+            color="secondary"
+            @click="openMeetUserList"
+          >
+            참여자보기
+          </ion-button>
+          <ion-button
+            color="tertiary"
+            v-if="item.createdUserYn === 'Y'"
+            @click="editOpenChatMeet"
+          >
+            수정하기
+          </ion-button>
+        </ion-row>
+      </ion-card-content>
+    </CardBox>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: "OpenChatMeetCardItem",
+  props: {
+    item: {
+      type: Object
+    },
+    pageType: {
+      type: String
+    },
+    btnDisabled: {
+      type: Boolean,
+      default: false
+    }
+  },
+  methods: {
+    addMeetUser() {
+      this.$emit("addMeetUser");
+    },
+    deleteMeetUser() {
+      this.$emit("deleteMeetUser");
+    },
+    openMeetUserList() {
+      this.$emit("openMeetUserList");
+    },
+    editOpenChatMeet() {
+      this.$emit("editOpenChatMeet");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+</style>

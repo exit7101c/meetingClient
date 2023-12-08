@@ -1,0 +1,115 @@
+<template>
+  <ion-item style="position: relative;" @click="handleRouterAlarm">
+    <!-- TODO : 아이콘 조건별로 적용 하기 -->
+    <template v-if="item.pushType === 'community'">
+      <ion-icon class="icon" slot="start" :icon="communityOutline" color="light"></ion-icon>
+    </template>
+    <template v-else-if="item.pushType === 'communityChat'">
+      <ion-icon class="icon" slot="start" :icon="messageOutline" color="light"></ion-icon>
+    </template>
+    <template v-else-if="item.pushType === 'openChat'">
+      <ion-icon class="icon" slot="start" :icon="opentChatOutline" color="light"></ion-icon>
+    </template>
+    <template v-else-if="item.pushType === 'myLikeMatching'">
+      <ion-icon class="icon" slot="start" :icon="choiceOutline" color="light"></ion-icon>
+    </template>
+    <ion-label>
+      <ion-text class="sub-text01 text-bold text-sm"
+      >{{ item.alarmNm }}
+      </ion-text>
+      <br />
+      <ion-text color="light" class="text-bold text-md">
+        {{ item.contents }}
+      </ion-text>
+      <!-- TODO : 더보기 작업 -->
+      <!--      <ion-text class="sub-text04 text-bold text-xs btn-more">-->
+      <!--        12건 더보기-->
+      <!--      </ion-text>-->
+    </ion-label>
+    <div slot="end">
+      <ion-text color="light" class="text-xs">
+        {{ item.sendTimeMm }}
+      </ion-text>
+    </div>
+    <ion-icon :icon="closeNoneOutline" color="light"
+              style="position: absolute; top: 0px; right: -5px; font-size: 20px; z-index: 99;"
+              @click="removeAlarm"
+    ></ion-icon>
+  </ion-item>
+</template>
+<script>
+import IconChoice from "@/assets/img/icon/icon_tabs_choice.svg";
+import IconOpenChat from "@/assets/img/icon/icon_tabs_open_chat.svg";
+import IconCommunity from "@/assets/img/icon/icon_tabs_community.svg";
+import IconMessage from "@/assets/img/icon/icon_tabs_message.svg";
+import IconClose from "@/assets/img/icon/icon_close.svg";
+
+import { getData } from "@/assets/js/common";
+
+export default {
+  name: "AlarmListItem",
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  data() {
+    return {
+      choiceOutline: IconChoice,
+      opentChatOutline: IconOpenChat,
+      communityOutline: IconCommunity,
+      messageOutline: IconMessage,
+      closeNoneOutline: IconClose
+    };
+  },
+  methods: {
+    handleRouterAlarm($event) {
+      this.$emit("handleRouterAlarm", $event.target.value);
+    },
+    removeAlarm($event) {
+      this.$emit("removeAlarm", $event.target.value);
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: #242541;
+
+  ion-icon {
+    .icon {
+      width: 28px;
+      height: 28px;
+      background-color: #3b3b67;
+      border-radius: 50%;
+      padding: 4px;
+      margin-right: 16px;
+    }
+  }
+
+
+  &::part(native) {
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: var(--ion-border-radius-lg);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+  }
+
+  + ion-item {
+    margin-top: 10px;
+  }
+
+  ion-label {
+    margin: 0;
+    margin-right: 20px;
+    white-space: pre-wrap !important;
+  }
+
+  .btn-more {
+    display: block;
+    margin-top: 4px;
+  }
+}
+</style>

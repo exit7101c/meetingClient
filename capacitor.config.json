@@ -1,0 +1,14 @@
+{
+  "appId": "cmdg.navy.client",
+  "appName": "App",
+  "plugins": {
+    "Keyboard": {
+      "resize": "ionic",
+      "style": "DARK",
+      "resizeOnFullScreen": true
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound"]
+    }
+  }
+}

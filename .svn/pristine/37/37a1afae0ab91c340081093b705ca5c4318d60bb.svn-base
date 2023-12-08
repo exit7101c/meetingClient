@@ -1,0 +1,161 @@
+<template>
+  <div class="row-box">
+    <ion-item lines="none">
+      <ion-textarea
+        placeholder="내용을 입력해주세요."
+        maxlength="500"
+        :rows="2"
+        :clear-on-edit="false"
+        class="custom-textarea"
+        :value="value"
+        @input="handleLimitComment"
+        @ionFocus="handelFocus"
+        @ionBlur="handelBlur"
+      >
+      </ion-textarea>
+
+      <div class="btn-area">
+        <ion-fab-button
+          size="small"
+          @click="handleAddPhoto"
+          class="btn-add-photo"
+        >
+          <ion-icon :icon="addPhotoIcon" color="light" size="small"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button
+          size="small"
+          color="secondary"
+          @click="handleSendComment"
+        >
+          <ion-icon :icon="sendIcon" color="light" size="small"></ion-icon>
+        </ion-fab-button>
+      </div>
+    </ion-item>
+  </div>
+  <div
+    class="row-box img-area"
+    v-if="reimgViewFileId !== null || reimgFileId !== null"
+  >
+    <ion-row class="gap-lg">
+      <div class="img-item">
+        <ion-img
+          v-if="reimgFileId != null"
+          :src="'https://' + reimgViewFileId"
+          @ionError="
+            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+          "
+        />
+        <ion-fab-button
+          color="secondary"
+          size="small"
+          class="btn-close"
+          @click="handleDeleteImg"
+        >
+          <ion-icon :icon="closeIcon" />
+        </ion-fab-button>
+      </div>
+    </ion-row>
+  </div>
+</template>
+<script>
+import IconSend from "@/assets/img/icon/icon_send.svg";
+import IconAddPhoto from "@/assets/img/icon/icon_add_photo.svg";
+import IconClose from "@/assets/img/icon/icon_close.svg";
+
+export default {
+  name: "CommentReplyForm",
+  props: {
+    value: {
+      type: String
+    },
+    reimgFileId: {
+      type: String
+    },
+    reimgViewFileId: {
+      type: String
+    }
+  },
+  data() {
+    return {
+      sendIcon: IconSend,
+      addPhotoIcon: IconAddPhoto,
+      closeIcon: IconClose
+    };
+  },
+  methods: {
+    handleAddPhoto() {
+      this.$emit("addPhoto");
+    },
+    handleLimitComment($event) {
+      this.$emit("update:value", $event.target.value);
+    },
+    handleSendComment() {
+      this.$emit("sendComment");
+    },
+    handleDeleteImg() {
+      this.$emit("deleteImg");
+    },
+    handelFocus() {
+      this.$emit("handelFocus");
+    },
+    handelBlur() {
+      this.$emit("handelBlur");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.img-area {
+  .img-item {
+    position: relative;
+
+    ion-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+    }
+
+    .btn-close {
+      position: absolute;
+      right: -16px;
+      top: -16px;
+      margin: 0;
+      transform: scale(0.5);
+    }
+  }
+}
+
+ion-item {
+  border: 2px solid var(--ion-border-color);
+  border-radius: var(--ion-border-radius);
+  align-items: center;
+  --padding-start: 0;
+  --inner-padding-end: 10px;
+
+  ion-textarea {
+    color: white;
+    margin: 0;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .btn-area {
+    display: flex;
+    white-space: nowrap;
+
+    ion-fab-button {
+      margin: 0;
+      width: 32px;
+      height: 32px;
+
+      &.btn-add-photo {
+        --background: transparent;
+      }
+
+      + ion-fab-button {
+        margin-left: 4px;
+      }
+    }
+  }
+}
+</style>

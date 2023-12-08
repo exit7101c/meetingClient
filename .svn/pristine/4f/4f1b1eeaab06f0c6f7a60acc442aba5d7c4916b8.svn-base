@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "419376558152",
+    "project_id": "navy-69d5c",
+    "storage_bucket": "navy-69d5c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419376558152:android:bc7397d7013b8c169c287d",
+        "android_client_info": {
+          "package_name": "cmdg.navy.client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419376558152-k2vik8ljv43dr6mccjk0it9hon13obbu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7KSCzY7m_L-G72wcV2Apetk6nJs4Uz8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419376558152-k2vik8ljv43dr6mccjk0it9hon13obbu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "419376558152-6v0044po4d7npvhk7gjqttrpc9mhpkcg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "cmdg.navy.client"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

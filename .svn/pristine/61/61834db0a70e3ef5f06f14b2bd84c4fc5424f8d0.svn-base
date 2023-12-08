@@ -1,0 +1,177 @@
+<template>
+  <div>
+    <div
+      class="img-area"
+      v-if="newimgViewFileId !== null || newimgFileId !== null"
+    >
+      <ion-row class="gap-lg">
+        <div class="img-item">
+          <ion-img
+            :src="
+              newimgFileId != null
+                ? 'https://' + newimgViewFileId
+                : require('../../assets/img/Loading_icon.gif')
+            "
+            @ionError="
+              $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+            "
+          />
+          <ion-fab-button
+            color="primary"
+            size="small"
+            class="btn-close"
+            @click="handleDeleteImg"
+          >
+            <ion-icon :icon="closeIcon" />
+          </ion-fab-button>
+        </div>
+      </ion-row>
+    </div>
+    <ion-item lines="none" color="medium" class="comment-area">
+      <ion-fab-button color="secondary" @click="handleAddPhoto">
+        <ion-icon :icon="addPhotoIcon" size="small" color="light"></ion-icon>
+      </ion-fab-button>
+      <div class="input-area">
+        <ion-textarea
+          placeholder="댓글을 입력해주세요."
+          maxlength="500"
+          :rows="1"
+          :clear-on-edit="false"
+          :value="value"
+          @input="handleLimitComment"
+        >
+        </ion-textarea>
+        <div class="btn-area">
+          <!-- TODO : 이모지 아이콘 이벤트 -->
+          <!--          <ion-fab-button color="light">-->
+          <!--            <ion-icon :icon="emojiIcon" color="light"></ion-icon>-->
+          <!--          </ion-fab-button>-->
+          <ion-fab-button color="dark" @click="handleSendComment">
+            <ion-icon :icon="sendIcon" size="small"></ion-icon>
+          </ion-fab-button>
+        </div>
+      </div>
+      <slot></slot>
+    </ion-item>
+  </div>
+</template>
+<script>
+import IconAddPhoto from "@/assets/img/icon/icon_add_photo.svg";
+import IconSend from "@/assets/img/icon/icon_send.svg";
+import IconClose from "@/assets/img/icon/icon_close.svg";
+import IconEmoji from "@/assets/img/icon/icon_emoji.svg";
+
+export default {
+  name: "CommunityViewSendComment",
+  props: {
+    value: {
+      type: String
+    },
+    newimgFileId: {
+      type: String
+    },
+    newimgViewFileId: {
+      type: String
+    }
+  },
+  data() {
+    return {
+      closeIcon: IconClose,
+      addPhotoIcon: IconAddPhoto,
+      sendIcon: IconSend,
+      emojiIcon: IconEmoji
+    };
+  },
+  methods: {
+    handleAddPhoto() {
+      this.$emit("addPhoto");
+    },
+    handleLimitComment($event) {
+      this.$emit("update:value", $event.target.value);
+    },
+    handleSendComment() {
+      this.$emit("sendComment");
+    },
+    handleDeleteImg() {
+      this.$emit("deleteImg");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.img-area {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  width: 100%;
+  padding: 16px 10px;
+  background-color: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+
+  .img-item {
+    position: relative;
+
+    ion-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+
+    .btn-close {
+      position: absolute;
+      right: -16px;
+      top: -16px;
+      margin: 0;
+      transform: scale(0.75);
+    }
+  }
+}
+
+.comment-area {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --padding-start: 0;
+  align-items: center;
+
+  .input-area {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    height: 100%;
+    border-radius: 40px;
+    background-color: white;
+
+    ion-textarea {
+      height: 100%;
+      color: black;
+      margin: 0;
+      caret-color: black;
+      font-size: 12px;
+
+      .textarea-wrapper.sc-ion-textarea-md {
+        height: 100%;
+      }
+    }
+  }
+
+  ion-fab-button {
+    width: 36px;
+    height: 36px;
+    margin: 0 4px;
+    --box-shadow: none;
+
+    + ion-fab-button {
+      margin-left: 4px;
+    }
+  }
+
+  .btn-area {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+}
+</style>

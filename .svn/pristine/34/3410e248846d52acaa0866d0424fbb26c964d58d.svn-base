@@ -1,0 +1,6 @@
+"use strict";(self["webpackChunknavy"]=self["webpackChunknavy"]||[]).push([[5213],{45213:(e,r,n)=>{n.r(r),n.d(r,{i:()=>t});
+/*!
+ * (C) Ionic http://ionicframework.com - MIT License
+ */
+var t=function(e){return e&&""!==e.dir?"rtl"===e.dir.toLowerCase():"rtl"===(null===document||void 0===document?void 0:document.dir.toLowerCase())}}}]);
+//# sourceMappingURL=5213-legacy.e5e3c11a.js.map

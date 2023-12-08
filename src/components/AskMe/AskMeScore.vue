@@ -1,0 +1,66 @@
+<template>
+  <ion-grid class="gap-md">
+    <ion-row>
+      <ion-col size="6">
+        <div class="card-box text-center">
+          <h5>
+            <ion-text color="light" class="sub-text04"> 노출수</ion-text>
+          </h5>
+          <p>
+            <ion-text color="light"> {{ askMeInfo.viewCnt }}</ion-text>
+          </p>
+        </div>
+      </ion-col>
+      <ion-col size="6">
+        <div class="card-box text-center">
+          <h5>
+            <ion-text color="light" class="sub-text04"> 참여수 </ion-text>
+          </h5>
+          <p>
+            <ion-text color="light"> {{ askMeInfo.receivedCnt }}</ion-text>
+          </p>
+        </div>
+      </ion-col>
+      <ion-col size="12">
+        <div class="card-box text-center">
+          <h5>
+            <ion-text color="light" class="sub-text04">평균 평가점수</ion-text>
+          </h5>
+          <p>
+            <ion-text color="light" v-if="askMeInfo.scoreSum !== 0">
+              {{ askMeInfo.scoreAvg + ' 점' }}
+            </ion-text>
+            <ion-text color="light" v-else class="sub-text04 text-md">
+              아직 받은 점수가 없습니다
+            </ion-text>
+          </p>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</template>
+<script>
+export default {
+  name: 'AskMeScore',
+  props: {
+    askMeInfo: {
+      type: Object
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.card-box {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--ion-border-radius);
+  padding: 1rem;
+  h5 {
+    font-size: 14px;
+    margin: 0;
+  }
+  p {
+    font-size: 24px;
+    margin: 1rem 0 0;
+  }
+}
+</style>

@@ -1,0 +1,164 @@
+<template>
+  <ion-card @click="handleClick">
+    <ion-img
+      :src="
+        isLoaded
+          ? 'https://' + item.cdnNm1
+          : require('../../assets/img/Loading_icon.gif')
+      "
+      @ionImgDidLoad="handleImgloaded"
+      @ionError="
+        $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+      "
+    />
+    <ion-card-header>
+      <ion-label>
+        <ion-row style="align-items: center;">
+          <ion-text color="light">
+            <h3>{{ item.nick }}</h3>
+          </ion-text>
+          <ion-avatar v-if="item.cdnThumbNmIcon"
+                      style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-left: 3px;float:right;">
+            <ion-img
+              :src="'https://' + item.cdnThumbNmIcon"
+              @ionError="
+                          $event.srcElement.src = require('@/assets/img/Loading_icon.gif')
+                        "
+              style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden;"
+            />
+          </ion-avatar>
+        </ion-row>
+        <ion-card-subtitle>
+          <span>
+            <ion-icon :icon="locationSharp" size="small" />
+            <ion-text style="text-transform: lowercase;">{{ item.distanceKm }}</ion-text>
+          </span>
+        </ion-card-subtitle>
+      </ion-label>
+    </ion-card-header>
+  </ion-card>
+</template>
+<script>
+import { locationSharp } from "ionicons/icons";
+
+export default {
+  name: "OpenChatDefaultImgItem",
+  props: {
+    item: {
+      type: Object
+    },
+    type: {
+      type: String
+    }
+  },
+  data() {
+    return {
+      isLoaded: false,
+      locationSharp
+    };
+  },
+  methods: {
+    handleImgloaded() {
+      this.isLoaded = true;
+    },
+    handleClick() {
+      this.$emit("event");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-card {
+  position: relative;
+  margin: 0 auto;
+  max-width: 100%;
+
+  ion-radio {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    padding: 0;
+    margin: 0;
+    width: 22px;
+    border-radius: 50%;
+
+    &::part(container) {
+      background-color: white;
+    }
+
+    &.radio-checked {
+      + ion-img {
+        border-color: var(--ion-color-warning);
+      }
+    }
+  }
+
+  ion-img {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    overflow: hidden;
+    border: 2px solid transparent;
+
+    &:before {
+      display: block;
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(0, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+      z-index: 2;
+    }
+
+    &::part(image) {
+      transform: scale(1.1);
+    }
+  }
+
+
+  ion-card-header {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: 8px;
+    margin: 0;
+    text-align: left;
+    width: 100%;
+    z-index: 3;
+
+    ion-card-title {
+      display: block;
+      --color: white;
+      font-size: 14px;
+      font-weight: bold;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+
+    ion-card-subtitle {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      --color: var(--ion-color-light);
+      font-size: 12px;
+      width: 100%;
+
+      span {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      ion-text {
+        width: 100%;
+      }
+    }
+  }
+}
+</style>

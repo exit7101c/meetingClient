@@ -1,0 +1,129 @@
+<template>
+  <ion-modal :is-open="isOpen" @ionModalDidDismiss="ionModalDidDismiss">
+    <ion-content>
+      <ion-toolbar>
+        {{ title }}
+      </ion-toolbar>
+      <ion-content>
+        <div class="message">
+          <ion-item
+            ref="content"
+            lines="none"
+            counter="true"
+            class="input-field"
+          >
+            <ion-textarea
+              :rows="1"
+              @input="handleLimitMessage"
+              :maxlength="maxlength"
+              placeholder="내용을 입력해주세요"
+            />
+          </ion-item>
+        </div>
+        <div class="modal-footer">
+          <ion-row>
+            <ion-col style="margin: 0 auto; align-items: center">
+              <custom-button
+                shape="round"
+                fill="outline"
+                color="light"
+                @click="ionModalDidDismiss"
+              >취소
+              </custom-button>
+              <custom-button shape="round" @click="handleSendMessage">
+                {{ btnName }}
+              </custom-button>
+            </ion-col>
+          </ion-row>
+        </div>
+      </ion-content>
+    </ion-content>
+  </ion-modal>
+</template>
+<script>
+export default {
+  name: "MessageModal",
+  props: {
+    isOpen: {
+      type: Boolean
+    },
+    title: {
+      type: String
+    },
+    btnName: {
+      type: String
+    },
+    message: {
+      type: String
+    },
+    maxlength: {
+      type: Number
+    }
+  },
+  methods: {
+    ionModalDidDismiss() {
+      this.$emit("ionModalDidDismiss");
+    },
+    handleSendMessage() {
+      this.$emit("handleSendMessage");
+    },
+    handleLimitMessage($event) {
+      this.$emit("update:value", $event.target.value);
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+//.custom-toolbar {
+//  --background: transparent;
+//  --border-color: transparent;
+//}
+
+ion-modal {
+  --max-width: 345px;
+  --max-height: 190px;
+  padding: 0 18px;
+
+  &::part(content) {
+    border-radius: var(--ion-border-radius-lg);
+  }
+
+  ion-content {
+    &::part(scroll) {
+      overflow: hidden;
+    }
+  }
+
+  ion-toolbar {
+    text-align: center;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --min-height: 44px;
+
+    ion-title {
+      font-size: 14px;
+      font-weight: bold;
+    }
+  }
+
+  ion-content {
+    .message {
+      margin-top: 5px;
+      padding: 10px;
+      min-height: 100px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+  }
+
+  .modal-footer {
+    margin-top: -15px;
+    padding: 0 4px;
+  }
+}
+
+ion-col {
+  display: flex;
+  justify-content: center;
+}
+</style>

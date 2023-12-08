@@ -1,0 +1,43 @@
+<template>
+  <ion-text color="light">{{ text }}</ion-text>
+  <ion-item lines="none">
+    <ion-text color="light">{{ subText }}</ion-text>
+    <ion-toggle slot="start"
+                mode="ios"
+                :checked="checkBoolean"
+                @click="handelToggleBtn"
+                style="height: 25px; width: 45px;">
+    </ion-toggle>
+  </ion-item>
+</template>
+<script>
+export default {
+  name: "PartnersSettingToggle",
+  props: {
+    text: {
+      type: String
+    },
+    subText: {
+      type: String
+    },
+    checkBoolean: {
+      type: Boolean
+    }
+  },
+  methods: {
+    handelToggleBtn() {
+      this.$emit("toggle");
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  + ion-item {
+    margin-top: 20px;
+  }
+}
+</style>

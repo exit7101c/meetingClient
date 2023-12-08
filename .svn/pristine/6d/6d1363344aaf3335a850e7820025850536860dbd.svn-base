@@ -1,0 +1,289 @@
+<template>
+  <div
+    class="wrapper"
+    :class="{ 'emoji-open': emojiCheck }"
+    :style="{ height: emojiCheck ? '405px' : '100px' }"
+  >
+    <div class="img-area" v-if="emojiCheck === true" @click="handleCloseEmoji">
+      <ion-row class="gap-lg">
+        <div class="img-item">
+          <ion-row>
+            <ion-col
+              size="4"
+              v-for="item in emoticonList"
+              :key="item.emoticonCd"
+              style="padding: 10px"
+            >
+              <ion-card @click="handleClick(item)" class="custom-card">
+                <ion-img
+                  style="max-width: 100%; max-height: 100%"
+                  :src="
+                    isLoaded
+                      ? 'https://' + item.cdnNm
+                      : require('../../assets/img/Loading_icon.gif')
+                  "
+                  @ionImgDidLoad="handleImgloaded"
+                  @ionError="
+                    $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                  "
+                />
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </div>
+      </ion-row>
+    </div>
+    <ion-grid class="comment-area" style="width: 100%; padding: 10px">
+      <ion-row>
+        <ion-col size="1.5">
+          <ion-fab-button color="secondary" @click="handleAddPhoto">
+            <ion-icon
+              :icon="addPhotoIcon"
+              size="small"
+              color="light"
+            ></ion-icon>
+          </ion-fab-button>
+        </ion-col>
+        <ion-col size="10.5">
+          <div class="input-area">
+            <ion-textarea
+              ref="inputArea"
+              placeholder="메세지를 입력하세요."
+              maxlength="300"
+              :rows="1"
+              :clear-on-edit="false"
+              :value="value"
+              @input="handleLimitComment"
+              @click="handleCloseEmoji"
+            >
+            </ion-textarea>
+            <div class="btn-area">
+              <!-- TODO : 이모지 아이콘 이벤트 -->
+              <ion-fab-button color="light" @click="handleEmoji">
+                <ion-icon :icon="emojiIcon" color="dark"></ion-icon>
+              </ion-fab-button>
+              <ion-fab-button color="dark" @click="handleSendComment">
+                <ion-icon :icon="sendIcon" size="small"></ion-icon>
+              </ion-fab-button>
+            </div>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <!--    <ion-item lines="none" color="primary" class="comment-area">-->
+    <!--      <ion-fab-button color="primary" @click="handleAddPhoto">-->
+    <!--        <ion-icon :icon="addPhotoIcon" size="small" color="light"></ion-icon>-->
+    <!--      </ion-fab-button>-->
+    <!--      <div class="input-area">-->
+    <!--        <ion-textarea-->
+    <!--          ref="inputArea"-->
+    <!--          placeholder="메세지를 입력하세요."-->
+    <!--          maxlength="300"-->
+    <!--          :rows="1"-->
+    <!--          :clear-on-edit="false"-->
+    <!--          :value="value"-->
+    <!--          @input="handleLimitComment"-->
+    <!--          @click="handleCloseEmoji"-->
+    <!--        >-->
+    <!--        </ion-textarea>-->
+
+    <!--        <div class="btn-area">-->
+    <!--          &lt;!&ndash; TODO : 이모지 아이콘 이벤트 &ndash;&gt;-->
+    <!--          <ion-fab-button color="light" @click="handleEmoji">-->
+    <!--            <ion-icon :icon="emojiIcon" color="light"></ion-icon>-->
+    <!--          </ion-fab-button>-->
+    <!--          <ion-fab-button color="primary" @click="handleSendComment">-->
+    <!--            <ion-icon :icon="sendIcon" size="small"></ion-icon>-->
+    <!--          </ion-fab-button>-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--    </ion-item>-->
+  </div>
+  <EmptyBox :is-open="focusCheck" />
+</template>
+<script>
+import IconAddPhoto from '@/assets/img/icon/icon_add_photo.svg';
+import IconSend from '@/assets/img/icon/icon_send.svg';
+import IconClose from '@/assets/img/icon/icon_close.svg';
+import IconEmoji from '@/assets/img/icon/icon_emoji.svg';
+import EmptyBox from '@/components/EmptyBox';
+
+export default {
+  name: 'MessageSendForm',
+  props: {
+    value: {
+      type: String
+    },
+    emoticonList: {
+      type: Object
+    },
+    emoji: {
+      type: Boolean
+    }
+  },
+  components: {
+    EmptyBox
+  },
+  data() {
+    return {
+      closeIcon: IconClose,
+      addPhotoIcon: IconAddPhoto,
+      sendIcon: IconSend,
+      emojiIcon: IconEmoji,
+
+      emojiCheck: false,
+      isLoaded: false,
+      emojiShowView: false,
+      focusCheck: false
+    };
+  },
+  methods: {
+    handleAddPhoto() {
+      this.$emit('handleAddPhoto');
+    },
+    handleLimitComment($event) {
+      this.$emit('update:value', $event.target.value);
+    },
+
+    handleSendComment() {
+      this.$emit('sendComment');
+    },
+    handleCloseEmoji() {
+      this.emojiCheck = false;
+    },
+    handleImgloaded() {
+      this.isLoaded = true;
+    },
+    // handleFocus(type) {
+    //   if (type === "f") {
+    //     this.focusCheck = true;
+    //   } else {
+    //     this.focusCheck = false;
+    //   }
+    // },
+    handleEmoji() {
+      if (this.emojiShowView === false) {
+        this.emojiCheck = true;
+        this.emojiShowView = true;
+      } else {
+        this.emojiCheck = false;
+        this.emojiShowView = false;
+      }
+      this.$emit('handleEmoji');
+    },
+    handleClick(item) {
+      this.$emit('emoticonClick', item);
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.custom-card {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  align-items: center;
+  background-color: #30324b;
+  width: 80px;
+  height: 80px;
+}
+
+.img-area {
+  overflow-y: auto;
+  height: 325px;
+  position: absolute;
+  left: 0;
+  bottom: 0%;
+  width: 100%;
+  padding: 16px 10px;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1;
+
+  .img-item {
+    position: relative;
+
+    ion-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+
+    .btn-close {
+      position: absolute;
+      right: -16px;
+      top: -16px;
+      margin: 0;
+      transform: scale(0.75);
+    }
+  }
+}
+
+.comment-area {
+  //--margin-bottom: 10px;
+  //--padding-top: 10px;
+  //--padding-bottom: 30px;
+  //--padding-start: 0;
+  //align-items: center;
+  padding-top: 10px;
+  padding-bottom: 30px;
+  align-items: center;
+  background-color: var(--ion-color-medium);
+
+  .input-area {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    height: 100%;
+    border-radius: 40px;
+    background-color: white;
+
+    ion-textarea {
+      height: 100%;
+      color: black;
+      margin: 0;
+      caret-color: black;
+      font-size: 12px;
+
+      .textarea-wrapper.sc-ion-textarea-md {
+        height: 100%;
+      }
+    }
+  }
+
+  ion-fab-button {
+    width: 36px;
+    height: 36px;
+    margin: 0 4px;
+    --box-shadow: none;
+
+    + ion-fab-button {
+      margin-left: 4px;
+    }
+  }
+
+  .btn-area {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+}
+
+.wrapper {
+  margin-bottom: -20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+  height: calc(360px - var(--emoji-height, 0px));
+
+  &.emoji-open {
+    flex-direction: column;
+  }
+
+  .img-area {
+    --emoji-height: 250px;
+  }
+}
+</style>

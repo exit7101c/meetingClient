@@ -1,0 +1,54 @@
+<template>
+  <ion-card>
+    <ion-item
+      lines="none"
+      button
+      :class="{ 'has-content': content }"
+      mode="ios"
+    >
+      <ion-text color="light">{{ title }}</ion-text>
+    </ion-item>
+    <ion-card-content v-if="content">
+      <slot></slot>
+    </ion-card-content>
+  </ion-card>
+</template>
+<script>
+export default {
+  name: 'MyPageNavButtonItem',
+  props: {
+    title: {
+      type: String
+    },
+    content: {
+      type: Boolean,
+      default: false
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-card {
+  margin: 5px;
+  border-radius: var(--ion-border-radius);
+  box-shadow: var(--ion-box-shadow);
+  + ion-card {
+    margin-top: 10px;
+  }
+  ion-item {
+    padding: 5px;
+    --detail-icon-color: white;
+    --detail-icon-opacity: 1;
+    --detail-icon-font-size: 20px;
+
+    &.has-content {
+      + ion-card-content {
+        padding-top: 0;
+      }
+    }
+    ion-card-content {
+      padding: 1rem;
+    }
+  }
+}
+</style>

@@ -1,0 +1,729 @@
+<template>
+  <ion-page>
+    <custom-header page-name="근처" class="main-header" />
+    <ion-toolbar style="padding: 0 10px 0 10px" mode="md">
+      <ion-buttons slot="start">
+        <ion-button @click="filterClick">
+          <ion-icon slot="icon-only" :icon="optionsOutline" ios />
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="start">
+        <ion-button @click="modalOpen = true">
+          <ion-icon slot="icon-only" :icon="locationSharp" ios />
+        </ion-button>
+      </ion-buttons>
+      <ion-title @click="modalOpen = true" style="padding: 0px;font-weight: 400;font-size: 18px;">{{ locationView }}</ion-title>
+      <ion-buttons slot="end">
+        <ion-button @click="resetLocation">
+          초기화
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-content :fullscreen="true" ref="imsiTap">
+      <!--  메인   -->
+      <ion-list lines="none">
+        <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+          <ion-refresher-content
+            refreshing-spinner="circles"
+            :pulling-icon="chevronDownCircleOutline"
+          ></ion-refresher-content>
+        </ion-refresher>
+        <ion-row style="margin-left:20px;margin-right:20px;">
+          <ion-col size="4" v-for="(item, index) in albumList" :key="index" style="padding: 3px;">
+            <ImsiTapAlbumItem
+              :item="item"
+              @event="goRouter(item)"
+            />
+          </ion-col>
+        </ion-row>
+        <ion-infinite-scroll
+          :disabled="isEndScroll"
+          threshold="100px"
+          @ionInfinite="ionInfinite"
+        >
+          <ion-infinite-scroll-content></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </ion-list>
+      <ChoiceFilterModal
+        :is-open="isChoiceModal"
+        title="사용자 필터"
+        ok-label="변경"
+        cancel-label="취소"
+        @ok="filterSave"
+        @cancel="isChoiceModal = false"
+        @ionModalDidDismiss="isChoiceModal = false"
+      >
+        <ion-row>
+          <ion-col size="12">
+            <ion-text color="light">나와의 거리</ion-text>
+          </ion-col>
+          <ion-col size="12">
+            <ion-range
+              aria-label="distance"
+              min="10"
+              max="1000"
+              step="10"
+              :value="filteredOptions.distance"
+              @ionChange="onChangeFilteredDistance"
+            >
+              <ion-label color="light" slot="end" class="text-sm">
+                {{ filteredOptions.distance }} km
+              </ion-label>
+            </ion-range>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <ion-text color="light">나이</ion-text>
+          </ion-col>
+          <ion-col size="12">
+            <ion-range
+              aria-label="age"
+              min="19"
+              max="100"
+              step="1"
+              :dual-knobs="true"
+              :value="{
+                            lower: filteredOptions.ageMin,
+                            upper: filteredOptions.ageMax
+                          }"
+              @ionChange="onChangeFilteredAge"
+            >
+              <ion-label color="light" slot="end" class="text-sm">
+                {{ filteredOptions.ageMin }} ~ {{ filteredOptions.ageMax }} 세
+              </ion-label>
+            </ion-range>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <ion-row class="gap-lg">
+              <ion-text color="light">성향 (중복 선택 가능)</ion-text>
+              <NavyPlusLabel />
+            </ion-row>
+          </ion-col>
+          <ion-col size="12">
+            <ion-list lines="none">
+              <div class="img-checkbox-group">
+                <ion-grid class="gap-sm">
+                  <ion-row>
+                    <ion-col
+                      size="2"
+                      v-for="data in iconList"
+                      :key="data.iconCd"
+                    >
+                      <ion-item class="img-checkbox-button" @click="filterCheckBoxClick(data.iconCd)">
+                        <ion-label>
+                          <ion-img :src="'https://' + data.cdnThumbNm" />
+                          <ion-text color="light">{{ data.iconNm }}</ion-text>
+                        </ion-label>
+                        <ion-checkbox
+                          :disabled="subscribeInfo.subscribeYn == 'N'"
+                          :value="data.iconCd"
+                          v-model="data.checked"
+                        ></ion-checkbox>
+                        <!--                        @ionChange="onChangeSelectedCharacters"-->
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </div>
+            </ion-list>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <ion-row class="gap-lg">
+              <ion-text color="light">광고 제거</ion-text>
+              <NavyPlusLabel />
+            </ion-row>
+            <p class="mt-1">
+              <ion-text color="light" class="text-sm sub-text04"
+              >광고를 더이상 보지 않습니다
+              </ion-text
+              >
+            </p>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item lines="none" class="pl-0">
+              <ion-label>
+                <ion-text color="light">
+                  &nbsp;&nbsp; {{
+                    filteredOptions.choiceAdd ? " 활성화됨" : "비 활성화됨"
+                  }}
+                </ion-text
+                >
+              </ion-label>
+              <ion-toggle
+                :disabled="subscribeInfo.subscribeYn == 'N'"
+                slot="start"
+                mode="ios"
+                :checked="filteredOptions.choiceAdd"
+                @click="onChangeFilteredChoiceAdd"
+              ></ion-toggle>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ChoiceFilterModal>
+      <!-- 주소 검색 모달 -->
+      <ion-modal
+        class="location-modal"
+        :is-open="modalOpen"
+        @ionModalDidDismiss="modalOpen = false"
+        @ionModalDidPresent="mapOpen"
+        :initial-breakpoint="1"
+        :breakpoints="[0, 1]"
+      >
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button @click="closeModal()">
+                <ion-icon slot="icon-only" :icon="chevronBack" />
+              </ion-button>
+            </ion-buttons>
+            <ion-title>지도에서 위치 확인</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content :fullscreen="true">
+          <div id="profileLocationMap" style="width: 100%; height: 80%" />
+        </ion-content>
+        <ion-footer
+          class="location-modal-footer"
+          style="height: 110px; background-color: #191a39; padding: 5px"
+        >
+          <div class="layout-container">
+            <ion-grid>
+              <ion-row
+                class="ion-align-items-end ion-justify-content-between"
+                style="padding: 0 15px 0 15px"
+              >
+                <ion-text color="light">
+                  {{ locationView }}
+                </ion-text>
+                <ion-text color="light" @click="jibunGuCheck">
+                  <ion-icon
+                    :icon="swapHorizontalOutline"
+                    class="v-middle"
+                  ></ion-icon>
+                  <!--                  <span class="v-middle">{{ checkBtnText }}</span>-->
+                </ion-text>
+              </ion-row>
+            </ion-grid>
+            <div class="btn-group">
+              <custom-button
+                color="primary"
+                size="large"
+                expand="block"
+                shape="round"
+                @click="saveModalbtn"
+              >
+                이 위치로 주소 설정
+              </custom-button>
+            </div>
+          </div>
+        </ion-footer>
+      </ion-modal>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+
+import ImsiTapAlbumItem from "@/components/Choice/ImsiTapAlbumItem";
+import { dailyCardInfoMapFn, getData } from "@/assets/js/common";
+import { chevronDownCircleOutline, optionsOutline, locationSharp } from "ionicons/icons";
+import ChoiceFilterModal from "@/components/Choice/ChoiceFilterModal.vue";
+
+export default {
+  name: "ImsiTap",
+  inject: ["alertController", "loadingController"],
+  components: {
+    ImsiTapAlbumItem,
+    ChoiceFilterModal
+  },
+  data() {
+    return {
+      locationSharp,
+      optionsOutline,
+      chevronDownCircleOutline,
+      albumList: [],
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+
+      // 지도
+      addrItem: [],
+      locationView: "",
+      toolbarLocation: "",
+
+      currLat: "", // 로그인 유저 기본 위치의 위도
+      currLon: "", // 로그인 유저 기본 위치의 경도
+
+      selectedLat: null, // 클릭한 위치의 위도
+      selectedLng: null, // 클릭한 위치의 경도
+
+      selectedjibunAddress: null, // 클릭한 위치의 지번 주소
+      selectedroadAddress: null, // 클릭한 위치의 도로명 주소
+
+      selectedAddressGu: null, // 클릭한 위치의 지번 주소 구까지
+      selectedjibunAddressDong: null, // 클릭한 위치의 지번 주소 동까지만
+      selectedroadAddressDong: null, // 클릭한 위치의 도로명 주소 동까지만
+      checkBtn: "gu", // 버튼상태
+      checkBtnText: "구까지 표시",
+
+      modalOpen: false,
+
+      subscribeInfo: {},
+
+      // TODO: 필터
+      isChoiceModal: false,
+      filteredOptions: {
+        distance: 1000, // 거리
+        ageMin: 19,
+        ageMax: 100,
+        characters: [],
+        choiceAdd: false
+      },
+      iconList: [], // 성향 캐릭터 목록
+
+      lastRowNum: 0
+    };
+  },
+  ionViewWillEnter() {
+    this.getUserSubscribeInfo();
+  },
+  ionViewDidLeave() {
+    // 초기화
+  },
+  mounted() {
+    this.getInfoList();
+    this.resetLocation();
+  },
+  methods: {
+    getResult(isModalSave) {
+      let resultObj = {};
+
+      resultObj.pageNo = this.pageNo;
+      resultObj.pageSize = this.pageSize;
+
+      resultObj.selectedLat = this.selectedLat;
+      resultObj.selectedLng = this.selectedLng;
+
+      resultObj.isUpdateYn = isModalSave ? "Y" : "N";
+      resultObj.aroundLiveSum = this.locationView;
+
+      return resultObj;
+    },
+    resetLocation() {
+      //this.locationView = '현재위치';
+      this.locationView = this.toolbarLocation;
+      this.selectedLat = null;
+      this.selectedLng = null;
+      this.getChoice(true);
+      this.scrollToTop();
+      this.getLocation();
+    },
+
+    scrollToTop() {
+      this.$refs.imsiTap.$el.scrollToTop(0);
+    },
+
+    getChoice(isModalSave) {
+      if(isModalSave){
+        this.scrollToTop();
+      }
+      this.pageNo = 1;
+      this.pageSize = 30;
+      this.currentPageNo = 1;
+      this.albumList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getChiceImsiTap",
+        param: this.getResult(isModalSave),
+        then: (data) => {
+          this.albumList = data.result;
+          // this.totalCount = data.totalCount;
+        }
+      });
+    },
+    goRouter(item) {
+      dailyCardInfoMapFn({ userKey: item.userKey, pageType: "myLike", likeSeq: item.likeSeq, nick: item.nick });
+      this.$router.push("/imsiTapCardDetail");
+    },
+
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        self.pageNo = self.currentPageNo + 1;
+
+        let url = "/getChiceImsiTap";
+
+        getData({
+          url: url,
+          param: self.getResult(),
+          then: (data) => {
+            for (let i in data.result) {
+              self.albumList.push(data.result[i]);
+              self.lastRowNum = data.result[i].rowNum;
+            }
+            self.currentPageNo += 1;
+            self.$nextTick(() => {
+              if (self.albumList.length == self.lastRowNum)
+                self.isEndScroll = true;
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    },
+    doRefresh(e) {
+
+      this.getChoice();
+
+      setTimeout(() => {
+        e.target.complete();
+      }, 500);
+    },
+    /** 구독현황 및 슈퍼라이크 무제한 가능여부 **/
+    getUserSubscribeInfo() {
+      getData({
+        url: "/getUserSubscribeInfo",
+        param: { infiniteActionCd: "SUPER_LIKE" },
+        then: (data) => {
+          this.subscribeInfo = data;
+        }
+      });
+    },
+    // TODO : 필터
+    filterSave() {
+      this.isChoiceModal = false;
+      this.filteredOptions.characters = this.filteredOptions.characters.toString();
+      this.filteredOptions.choiceAdd = this.filteredOptions.choiceAdd ? "N" : "Y";
+      this.filteredOptions.subscribeYn = this.subscribeInfo.subscribeYn;
+      getData({
+        url: "/filterSave",
+        param: this.filteredOptions,
+        then: (data) => {
+          this.warningAlert(data.message);
+          this.getChoice();
+        }
+      });
+    },
+    filterClick() {
+      this.isChoiceModal = true;
+      this.filteredOptions.characters = [];
+
+      getData({
+        url: "/getChoiceFileter",
+        param: {},
+        then: (data) => {
+          if (data.successYn == "Y") {
+            // 저장내역이 있는 경우
+            this.filteredOptions.distance = data.result.kmMax;
+            this.filteredOptions.ageMin = data.result.ageMin;
+            this.filteredOptions.ageMax = data.result.ageMax;
+            this.filteredOptions.characters = data.result.icon.split(",");
+            this.filteredOptions.choiceAdd = data.result.choiceAdd == "Y" ? false : true;
+          } else {
+            // 저장내역이 없는 경우
+            this.filteredOptions = {
+              distance: 1000, // 거리
+              ageMin: 19,
+              ageMax: 100,
+              characters: ["A", "B", "C", "D", "E", "F"],
+              choiceAdd: false
+            };
+          }
+
+          for (let i = 0; this.iconList.length > i; i++) {
+            if (this.filteredOptions.characters.includes(this.iconList[i].iconCd)) {
+              this.iconList[i].checked = true;
+            } else {
+              this.iconList[i].checked = false;
+            }
+          }
+
+        }
+      });
+    },
+    onChangeFilteredDistance($event) {
+      this.filteredOptions.distance = $event.detail.value;
+    },
+    onChangeFilteredAge($event) {
+      this.filteredOptions.ageMin = $event.detail.value.lower;
+      this.filteredOptions.ageMax = $event.detail.value.upper;
+    },
+    filterIconCheck(iconCd) {
+      return this.filteredOptions.characters.includes(iconCd);
+    },
+    filterCheckBoxClick(iconCd) {
+      if (this.filteredOptions.characters.includes(iconCd)) {
+        const selectedValue = this.filteredOptions.characters.indexOf(iconCd);
+        this.filteredOptions.characters.splice(selectedValue, 1);
+      } else {
+        this.filteredOptions.characters.push(iconCd);
+      }
+      for (let i = 0; this.iconList.length > i; i++) {
+        if (this.filteredOptions.characters.includes(this.iconList[i].iconCd)) {
+          this.iconList[i].checked = true;
+        } else {
+          this.iconList[i].checked = false;
+        }
+      }
+    },
+    onChangeSelectedCharacters($event) {
+      if (this.filteredOptions.characters.includes($event.detail.value)) {
+        const selectedValue = this.filteredOptions.characters.indexOf($event.detail.value);
+        this.filteredOptions.characters.splice(selectedValue, 1);
+      } else {
+        this.filteredOptions.characters.push($event.detail.value);
+      }
+    },
+    onChangeFilteredChoiceAdd() {
+      if (this.subscribeInfo.subscribeYn == "Y") {
+        // ion-toggle 첫 클릭 시 value값은 바뀌지만 true / false 인식이 안되는 현상이 있음
+        // javascript 동작이슈인지 불명확,,, event queue에 강제로 박아넣고 stack 실행
+        setTimeout(() => {
+          this.filteredOptions.choiceAdd = this.filteredOptions.choiceAdd === true ? false : true;
+        }, 0);
+      }
+    },
+    getInfoList() {
+      getData({
+        url: "/getInfoList",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.iconList = data.iconList;
+        }
+      });
+    },
+
+    // 지도
+    getLocation() {
+      getData({
+        url: "/getChiceImsiTapLocation",
+        param: {},
+        then: (data) => {
+          this.addrItem = data;
+          //this.locationView = this.addrItem.aroundLat != null && this.addrItem.aroundLon != null ? this.addrItem.aroundLiveSum : this.addrItem.addrLiveSum ;
+          this.locationView = '현재 위치';
+          this.toolbarLocation = this.addrItem.aroundLat != null && this.addrItem.aroundLon != null ? this.addrItem.aroundLiveSum : this.addrItem.addrLiveSum;
+
+          /** 위치업데이트값 null 인경우 기본주소로 **/
+          if(this.addrItem.aroundLat != null && this.addrItem.aroundLon != null){
+            this.currLat = this.addrItem.aroundLat;
+            this.currLon = this.addrItem.aroundLon;
+          } else {
+            if (
+              this.addrItem.currLat === null ||
+              this.addrItem.currLon === null
+            ) {
+              this.currLat = this.addrItem.lat;
+              this.currLon = this.addrItem.lon;
+            } else {
+              this.currLat = this.addrItem.currLat;
+              this.currLon = this.addrItem.currLon;
+            }
+          }
+        }
+      });
+    },
+    saveModalbtn() {
+      this.modalOpen = false;
+      this.getChoice(true);
+    },
+    mapOpen() {
+      // this.getLocation();
+      // 시점문제로 따로 뺌
+      getData({
+        url: "/getChiceImsiTapLocation",
+        param: {},
+        then: (data) => {
+          this.addrItem = data;
+          this.locationView = this.addrItem.aroundLat != null && this.addrItem.aroundLon != null ? this.addrItem.aroundLiveSum : this.addrItem.addrLiveSum ;
+          this.toolbarLocation = this.addrItem.aroundLat != null && this.addrItem.aroundLon != null ? this.addrItem.aroundLiveSum : this.addrItem.addrLiveSum;
+
+          /** 위치업데이트값 null 인경우 기본주소로 **/
+          if(this.addrItem.aroundLat != null && this.addrItem.aroundLon != null){
+            this.currLat = this.addrItem.aroundLat;
+            this.currLon = this.addrItem.aroundLon;
+          } else {
+            if (
+              this.addrItem.currLat === null ||
+              this.addrItem.currLon === null
+            ) {
+              this.currLat = this.addrItem.lat;
+              this.currLon = this.addrItem.lon;
+            } else {
+              this.currLat = this.addrItem.currLat;
+              this.currLon = this.addrItem.currLon;
+            }
+          }
+
+          this.$nextTick(() => {
+            this.naverMap(this.currLat, this.currLon);
+          });
+
+        }
+      });
+
+    },
+
+    jibunGuCheck() {
+      if (this.checkBtn === "dong") {
+        if (this.selectedAddressGu !== null) {
+          this.locationView = this.selectedAddressGu;
+        }
+        this.checkBtnText = "동까지 표시";
+        this.checkBtn = "gu";
+      } else {
+        if (this.selectedjibunAddressDong !== null) {
+          this.locationView = this.selectedjibunAddressDong;
+        }
+        this.checkBtnText = "구까지 표시";
+        this.checkBtn = "dong";
+      }
+    },
+    /** naver map **/
+    naverMap(lat, lng) {
+      let self = this;
+      const navermaps = window.naver.maps;
+      if (this.selectedLat !== null || this.selectedLng !== null) {
+        lat = this.selectedLat;
+        lng = this.selectedLng;
+      }
+      let mapOptions = {
+        center: new navermaps.LatLng(lat, lng),
+        zoom: 17,
+        /** 줌 컨트롤러 **/
+        zoomControl: true,
+        zoomControlOptions: {
+          style: navermaps.ZoomControlStyle.LARGE,
+          position: navermaps.Position.TOP_RIGHT
+        }
+      };
+
+      /** 맵 생성 **/
+      self.map = new navermaps.Map("profileLocationMap", mapOptions);
+
+      // 마커 객체 생성
+      const marker = new navermaps.Marker({
+        position: self.map.getCenter(), // 중심 좌표에 마커 설정
+        map: self.map, // 지도에 마커 추가
+        icon: {
+          url: "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png", // 마커의 이미지 URL
+          size: new navermaps.Size(24, 37), // 이미지의 원래 크기
+          scaledSize: new navermaps.Size(24, 37), // 화면에 표시될 이미지 크기
+          origin: new navermaps.Point(0, 0), // 이미지의 시작점
+          anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+        }
+      });
+      /** 이동없이 그냥 완료 누를때 좌표값 저장 **/
+      this.selectedLat = lat;
+      this.selectedLng = lng;
+
+      let latlng = new navermaps.LatLng(lat, lng);
+      this.reverseGeocodes(latlng);
+
+      navermaps.Event.addListener(self.map, "drag", () => {
+        marker.setPosition(self.map.getCenter()); // 마커 위치 변경
+      });
+      // 클릭 이벤트 핸들러 설정
+      navermaps.Event.addListener(self.map, "dragend", () => {
+        // 마커 위치 변경
+        // marker.setMap(null); // 이전 마커를 지도에서 제거
+        // marker.setPosition(e.coord); // 마커 위치 변경
+        // marker.setMap(this.map); // 마커를 지도에 추가
+
+        // 클릭한 위치의 좌표 저장
+        this.selectedLat = self.map.getCenter().y; // e.coord.lat();
+        this.selectedLng = self.map.getCenter().x; //e.coord.lng();
+
+        let latlng = new navermaps.LatLng(self.map.getCenter().y, self.map.getCenter().x);
+
+        this.reverseGeocodes(latlng);
+      });
+    },
+    /** 좌표값 주소로 변환 **/
+    reverseGeocodes(latlng) {
+      let self = this;
+
+      const navermaps = window.naver.maps;
+      navermaps.Service.reverseGeocode(
+        {
+          coords: latlng,
+          orders: [
+            navermaps.Service.OrderType.ADDR,
+            navermaps.Service.OrderType.ROAD_ADDR
+          ].join(",")
+        },
+        function(status, response) {
+          if (status === navermaps.Service.Status.ERROR) {
+            return alert("Something Wrong!");
+          }
+
+          let idx = response.v2.results.length > 1 ? 1 : 0;
+          // 지번 주소 구까지
+          self.selectedAddressGu =
+            response.v2.results[idx].region.area1.name +
+            " " +
+            response.v2.results[idx].region.area2.name;
+
+          // 지번 주소 동까지
+          self.selectedjibunAddressDong =
+            response.v2.results[idx].region.area1.name +
+            " " +
+            response.v2.results[idx].region.area2.name +
+            " " +
+            response.v2.results[idx].region.area3.name;
+
+          // 도로명 주소
+          self.selectedroadAddressDong =
+            response.v2.results[idx].region.area1.name +
+            " " +
+            response.v2.results[idx].region.area2.name +
+            " " +
+            response.v2.results[idx].land.name;
+
+          if (self.checkBtn === "dong") {
+            self.locationView = self.selectedjibunAddressDong;
+          } else {
+            self.locationView = self.selectedAddressGu;
+          }
+        }
+      );
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+
+
+  }
+};
+</script>
+
+<style scoped lang="scss">
+ion-toolbar {
+  --background: var(--ion-color-dark);
+
+  ion-title {
+    --color: white;
+    font-size: 20px;
+    font-weight: bold;
+  }
+}
+</style>

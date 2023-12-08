@@ -1,0 +1,31 @@
+<template>
+  <section class="main-section">
+    <slot name="title"></slot>
+    <div class="main-section-content">
+      <slot name="content"></slot>
+    </div>
+  </section>
+</template>
+<script>
+export default {
+  name: "MainSection"
+};
+</script>
+<style scoped lang="scss">
+.main-section {
+  padding: 20px 0;
+  //background-color: #1c1d48;
+  background-color: #23244d;
+  //background-color: #23244d;
+  border-radius: var(--ion-border-radius-lg);
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.16);
+
+  + .main-section {
+    margin-top: 18px;
+  }
+
+  &:first-of-type {
+    padding-top: 30px;
+  }
+}
+</style>

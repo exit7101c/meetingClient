@@ -1,0 +1,191 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>신고하기</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="row-box">
+        <ion-text color="light">
+          <h3>이용자 신고하기</h3>
+        </ion-text>
+      </div>
+      <div class="row-box">
+        <ion-list>
+          <ion-item
+            v-for="data in policeList"
+            :key="data.policeCd"
+            lines="none"
+            @click="checkBox(data)"
+          >
+            <ion-checkbox slot="start" v-model="data.checked" />
+            <ion-text color="light">
+              <span class="text-md text-bold">{{ data.policeNm }}</span>
+              <p class="text-sm">{{ data.policeDetail }}</p>
+            </ion-text>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-content>
+    <ion-footer>
+      <div class="ion-padding">
+        <ion-button
+          color="primary"
+          shape="round"
+          expand="block"
+          size="large"
+          @click="saveBtn"
+        >신고하기
+        </ion-button
+        >
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import { getData, policeMap } from "@/assets/js/common";
+
+export default {
+  name: "Register",
+  inject: ["alertController"],
+  components: {},
+  data() {
+    return {
+      selectPolice: [],
+      policeList: "",
+      policeListSize: "",
+      pageType: ""
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.selectPolice = [];
+    this.getPoliceList();
+  },
+
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  mounted() {
+  },
+
+  methods: {
+    checkBox(e) {
+      const index = this.selectPolice.indexOf(e.policeCd);
+      if (e.checked) {
+        if (index === -1) {
+          this.selectPolice.push(e.policeCd);
+        }
+      } else {
+        if (index !== -1) {
+          this.selectPolice.splice(index, 1);
+        }
+      }
+    },
+
+    saveBtn() {
+      if (this.selectPolice.length === 0) {
+        this.warningAlert("아무것도 선택하지 않았습니다.");
+      } else {
+        this.savePolice();
+      }
+    },
+
+    getResult() {
+      var resultObj = {};
+
+      resultObj.policeCd = JSON.stringify(this.selectPolice);
+
+      resultObj.targetKey = policeMap.targetKey;
+      resultObj.targetId = policeMap.targetId;
+
+      switch (policeMap.type) {
+        case "openChatView":
+          resultObj.targetType = "OPENCHAT";
+          break;
+        case "community":
+          resultObj.targetType = "COMMUNITY";
+          break;
+        case "comment":
+          resultObj.targetType = "COMMENT";
+          break;
+        case "commentRe":
+          resultObj.targetType = "CHILD_COMMENT";
+          break;
+        case "dailyInfo":
+          resultObj.targetType = "DAILY_INFO";
+          break;
+        case "message":
+          resultObj.targetType = "MESSAGE_TALK";
+          break;
+        case "contestDetail":
+          resultObj.targetType = "CONTEST";
+          break;
+      }
+
+      return resultObj;
+    },
+
+    getPoliceList() {
+      getData({
+        url: "/getPoliceList",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.policeList = data;
+          this.policeListSize = this.policeList.length;
+        }
+      });
+    },
+
+    savePolice() {
+      console.log(this.getResult());
+      // return;
+      getData({
+        url: "/savePolice",
+        param: this.getResult(),
+        target: this,
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.warningAlert(data.message);
+            this.goRouter();
+          }
+        }
+      });
+    },
+    goRouter() {
+      this.$router.go(-1);
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+
+    /** Introduce bar **/
+    customFormatter(inputLength, maxLength) {
+      if (inputLength > maxLength) {
+        return "더이상 입력할수 없습니다.";
+      } else if (inputLength < 5) {
+        return `${5 - inputLength} 글자 남음 (최소입력글자)`;
+      } else {
+        return `${maxLength - inputLength} 글자 남음`;
+      }
+    }
+  }
+};
+</script>
+
+<style scoped></style>

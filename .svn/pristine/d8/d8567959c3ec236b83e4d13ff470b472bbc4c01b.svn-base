@@ -1,0 +1,182 @@
+<template>
+  <ion-item
+    lines="none"
+    class="add-photo"
+    :class="{ 'type-img': type === 'img' }"
+  >
+    <template v-if="name == null">
+      <ion-button
+        class="add-photo-button"
+        expand="block"
+        fill="clear"
+        @click.stop="onClick"
+      >
+        <ion-icon
+          :icon="image"
+          color="light"
+          v-if="type === 'img'"
+          class="add-image-icon"
+        />
+        <ion-icon :icon="addOutline" class="add-plus-icon" v-else />
+        <ion-text color="light" v-if="type !== 'img'">
+          <template v-if="label">
+            {{ label }}
+          </template>
+          <template v-else>
+            {{ required ? '필수' : '선택' }}
+          </template>
+        </ion-text>
+      </ion-button>
+    </template>
+    <template v-else>
+      <div @click.stop="photoDelete" class="PhotoDelete" v-if="delPhoto">
+        <div class="photo_delete">
+          <ion-icon :icon="closeIcon" />
+        </div>
+        <!--        <PhotoDelete />-->
+      </div>
+      <ion-img
+        @click.stop="onClick"
+        :src="'https://' + name"
+        class="add-photo-img"
+      />
+    </template>
+  </ion-item>
+  <div class="bonus-label" v-if="subscribe">
+    <NavyPlusLabel />
+  </div>
+</template>
+<script>
+import { addOutline, image } from 'ionicons/icons';
+import NavyPlusLabel from '@/components/NavyPlusLabel.vue';
+import IconClose from '@/assets/img/icon/icon_close.svg';
+
+export default {
+  name: 'AddPhotoButton',
+  props: {
+    name: null,
+    label: {
+      type: String
+    },
+    delPhoto: {
+      type: Boolean,
+      default: false
+    },
+    required: {
+      type: Boolean,
+      default: false
+    },
+    subscribe: {
+      type: Boolean,
+      default: false
+    },
+    type: {
+      type: String
+    }
+  },
+  components: {
+    NavyPlusLabel
+  },
+  data() {
+    return {
+      closeIcon: IconClose,
+      addOutline,
+      image
+    };
+  },
+  methods: {
+    onClick() {
+      this.$emit('click');
+    },
+    photoDelete() {
+      this.$emit('photoDelete');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+/* add photo */
+$width: 108px;
+.add-photo {
+  position: relative;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: $width;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+
+  &.type-img {
+    ion-button {
+      border-color: #dbdbdb;
+      background-color: var(--ion-border-color);
+    }
+  }
+
+  ion-button {
+    width: 100%;
+    height: $width;
+    border: 2px solid var(--ion-border-color);
+    border-radius: 10px;
+    margin: 0;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    ion-text {
+      position: absolute;
+      bottom: 15px;
+      right: 0;
+      display: block;
+      margin-top: 10px;
+    }
+  }
+
+  ion-img.add-photo-img {
+    width: 100%;
+    height: $width;
+    object-fit: cover;
+    border: 2px solid var(--ion-color-primary);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+}
+.bonus-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 32px;
+  height: 20px;
+}
+.add-image-icon {
+  width: 30px;
+  height: 30px;
+  padding: 10px;
+  border-radius: 50%;
+  background-color: var(--ion-color-dark);
+}
+.add-plus-icon {
+  width: 30px;
+}
+
+.PhotoDelete {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
+.photo_delete {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--ion-color-danger);
+  color: #ffffff;
+}
+</style>

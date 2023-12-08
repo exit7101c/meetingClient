@@ -1,0 +1,206 @@
+<template>
+  <div>
+    <div class="row-box">
+      <!-- 사용자 정보 -->
+      <ion-row
+        class="ion-align-items-center ion-justify-content-between gap-lg flex-nowrap"
+      >
+        <ion-row
+          class="ion-align-items-center ion-justify-content-center gap-md flex-nowrap"
+        >
+          <ion-text color="light" class="text-sm">
+            {{ data.commentNick }}
+          </ion-text>
+          <ion-badge color="warning" v-if="data.isRegYn === 'Y'"
+            >본인</ion-badge
+          >
+        </ion-row>
+        <ion-row
+          class="ion-align-items-center ion-justify-content-center gap-md mt-0"
+        >
+          <ion-text color="light" class="text-sm">{{
+            data.regTimeMm
+          }}</ion-text>
+          <!--댓글 관리 메뉴-->
+          <ion-buttons v-if="data.delYn == 'N'">
+            <ion-button
+              color="medium"
+              :id="'popover-button-' + data.commentKey"
+            >
+              <ion-icon :icon="ellipsisVertical"></ion-icon>
+            </ion-button>
+            <ion-popover
+              :trigger="'popover-button-' + data.commentKey"
+              :dismiss-on-select="true"
+              mode="ios"
+            >
+              <ion-content>
+                <ion-list lines="full">
+                  <template v-if="data.isRegYn === 'Y'">
+                    <ion-item
+                      :button="true"
+                      :detail="false"
+                      @click="handleUpdateComment()"
+                      >수정
+                    </ion-item>
+                    <ion-item
+                      :button="true"
+                      :detail="false"
+                      @click="handleDeleteComment()"
+                      >삭제
+                    </ion-item>
+                  </template>
+                  <template v-else>
+                    <ion-item
+                      :button="true"
+                      :detail="false"
+                      @click="handlePoliceComment()"
+                      >신고
+                    </ion-item>
+                  </template>
+                </ion-list>
+              </ion-content>
+            </ion-popover>
+          </ion-buttons>
+        </ion-row>
+      </ion-row>
+    </div>
+    <!-- 본문 내용 -->
+    <div class="row-box" style="margin-top:0px;">
+      <p>
+        <ion-text
+          color="light"
+          class="text-md"
+          v-html="data.replaceContents"
+        ></ion-text>
+      </p>
+    </div>
+    <!-- 첨부 이미지 -->
+    <div
+      class="row-box"
+      v-if="data.attachFileId !== null && data.delYn === 'N'"
+    >
+      <CommentAttachImg :data="data" @zoomImg="handleZoomImg" />
+    </div>
+    <!-- 댓글 달기 & 좋아요 / 싫어요 -->
+    <div class="row-box">
+      <ion-row
+        class="ion-align-items-center ion-justify-content-between gap-lg"
+      >
+        <div>
+          <!-- 1 Depth 일때만 노출 -->
+          <custom-button
+            fill="clear"
+            color="light"
+            @click="handleReplyComment()"
+            class="btn-thumbs-up"
+            v-if="isReply"
+          >
+            <ion-icon
+              slot="start"
+              :icon="chatboxOutline"
+              color="light"
+            ></ion-icon>
+            <ion-text color="light" class="text-bold"
+              >{{ data.childCommentList.length }}
+            </ion-text>
+          </custom-button>
+        </div>
+        <!--<div>
+          <custom-button
+            fill="clear"
+            color="light"
+            @click="handleThumbsUp()"
+            class="btn-thumbs-up"
+          >
+            <ion-icon
+              slot="start"
+              :icon="thumbsUpIcon"
+              color="light"
+            ></ion-icon>
+            <ion-text color="light" class="text-bold"
+              >{{ data.likeCnt }}
+            </ion-text>
+          </custom-button>
+          <custom-button
+            fill="clear"
+            color="light"
+            @click="handleThumbsDown()"
+            class="btn-thumbs-down"
+          >
+            <ion-icon
+              slot="start"
+              :icon="thumbsDownIcon"
+              color="light"
+            ></ion-icon>
+            <ion-text color="light" class="text-bold">{{
+              data.badCnt
+            }}</ion-text>
+          </custom-button>
+        </div>-->
+      </ion-row>
+    </div>
+  </div>
+</template>
+<script>
+import CommentAttachImg from '@/components/Comment/CommentAttachImg.vue';
+import IconMenu from '@/assets/img/icon/icon_menu.svg';
+import IconThumbsUp from '@/assets/img/icon/icon_thumbs_up.svg';
+import IconThumbsDown from '@/assets/img/icon/icon_thumbs_down.svg';
+
+import { chatboxOutline, ellipsisVertical } from 'ionicons/icons';
+
+export default {
+  name: 'CommentContent',
+  components: {
+    CommentAttachImg
+  },
+  props: {
+    data: {
+      type: Object
+    },
+    isReply: {
+      // 댓글 버튼 노출 여부
+      type: Boolean
+    }
+  },
+  data() {
+    return {
+      menuIcon: IconMenu,
+      thumbsUpIcon: IconThumbsUp,
+      thumbsDownIcon: IconThumbsDown,
+      chatboxOutline,
+      ellipsisVertical
+    };
+  },
+  methods: {
+    handleUpdateComment() {
+      this.$emit('updateComment');
+    },
+    handleDeleteComment() {
+      this.$emit('deleteComment');
+    },
+    handlePoliceComment() {
+      this.$emit('policeComment');
+    },
+    handleReplyComment() {
+      this.$emit('replyComment');
+    },
+    handleZoomImg() {
+      this.$emit('zoomImg');
+    },
+    handleThumbsUp() {
+      this.$emit('thumbsUp');
+    },
+    handleThumbsDown() {
+      this.$emit('thumbsDown');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.btn-thumbs-up,
+.btn-thumbs-down {
+  --padding-end: 8px;
+}
+</style>

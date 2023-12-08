@@ -1,0 +1,650 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title> 나의 호감목록</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content ref="myLikeContent">
+      <div class="sticky-top segment-round">
+        <ion-segment
+          v-model="currentTab"
+          mode="md"
+          :scrollable="true"
+          @ionChange="changeSegment"
+          class="segment-round-button"
+        >
+          <ion-segment-button value="my">내가 받은 좋아요({{ receiveLikeCnt }}명)</ion-segment-button>
+          <ion-segment-button value="send">내가 보낸 좋아요</ion-segment-button>
+        </ion-segment>
+      </div>
+      <div class="mt-2 pt-2">
+        <!-- 아이템 구매하기 전 -->
+        <MyLikeTopNotice
+          v-if="subscribeInfo.isActionInfinite != 'Y'"
+          :icon="iconSample"
+          @click.stop="profileModalBtn('confirmReceiveLike')"
+        >
+          <template #content>
+            <ion-text color="light" class="text-lg">
+              {{ receiveLikeCnt }}명이 나를 LIKE 했어요!
+            </ion-text>
+            <br />
+            <ion-text color="light" class="text-sm">
+              네이비 PLUS 로 업그레이드하고 누군지 확인해 보세요
+            </ion-text>
+          </template>
+        </MyLikeTopNotice>
+        <!-- 아이템 구매하기 후 -->
+        <MyLikeTopNotice
+          v-else
+          :icon="iconSample"
+          :active="true"
+          @click.stop="profileModalBtn('confirmReceiveLike')"
+        >
+          <template #content>
+            <ion-text color="light" class="text-lg"
+            >지금 받은 좋아요를 확인해 보세요!
+              <!--            >지금 슈퍼라이크를 확인해 보세요!-->
+            </ion-text>
+            <br />
+            <ion-text color="light" class="text-sm">
+              익명채팅을 통해 상대방을 알아가보세요
+              <!-- {{ this.subscribeInfo.startDate }}~{{
+                this.subscribeInfo.endDate
+              }}
+              일까지 확인 가능해요 -->
+            </ion-text>
+          </template>
+        </MyLikeTopNotice>
+      </div>
+      <div class="ion-padding">
+        <!-- 본문 -->
+        <!--   내가 받은 좋아요    -->
+        <template v-if="currentTab === 'my'">
+          <!-- Refresh -->
+          <ion-refresher slot="fixed" @ionRefresh="doRefresh($event, 'my')">
+            <ion-refresher-content
+              refreshing-spinner="circles"
+              :pulling-icon="chevronDownCircleOutline"
+            ></ion-refresher-content>
+          </ion-refresher>
+          <!-- /Refresh -->
+          <ion-grid class="gap-md">
+            <ion-row>
+              <ion-col size="6" v-for="item in likeReceivedList" :key="item.likeSeq">
+                <MyLikeCardItem
+                  :item="item"
+                  :subscribeInfo="subscribeInfo"
+                  :is-buff-yn="isBuffYn"
+                  :current-tab="currentTab"
+                  @event="dailyCardDetail(item)"
+                />
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-infinite-scroll
+            :disabled="isEndScroll"
+            threshold="100px"
+            @ionInfinite="ionInfinite($event, 'receive')"
+          >
+            <ion-infinite-scroll-content
+              loadingText="Please wait..."
+              loadingSpinner="bubbles"
+            ></ion-infinite-scroll-content>
+          </ion-infinite-scroll>
+          <!-- 내가받은좋아요 확인 모달창 시작 -->
+          <ion-modal
+            :is-open="modalChoice2"
+            @ionModalDidDismiss="modalChoice2 = false"
+          >
+            <ion-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-text> 숨겨진 카드를 확인해요</ion-text>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-text>
+                      내가 받은 좋아요 확인을 사용하시겠습니까?
+                    </ion-text>
+                    <br />
+                    <ion-text>
+                      ( 내가 받은 좋아요 확인 x {{ this.coupon.quantity }}개 )
+                    </ion-text>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-button
+                      @click="profileModalBtn('cancel')"
+                      fill="clear"
+                      class="modal-btn"
+                    >취소
+                    </ion-button>
+                    <ion-button
+                      @click="profileModalBtn('save2')"
+                      fill="clear"
+                      class="modal-btn"
+                    >사용
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-text>
+                      ( 내가 받은 좋아요 확인 x {{ profileADitem }}개 소모 )
+                    </ion-text>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-content>
+          </ion-modal>
+        </template>
+        <!--   내가 보낸 좋아요    -->
+        <template v-else>
+          <ion-refresher slot="fixed" @ionRefresh="doRefresh($event, 'send')">
+            <ion-refresher-content
+              refreshing-spinner="circles"
+              :pulling-icon="chevronDownCircleOutline"
+            ></ion-refresher-content>
+          </ion-refresher>
+          <!--        <div class="infinite-list-container">-->
+          <ion-grid class="gap-md">
+            <ion-row>
+              <ion-col size="6" v-for="item in sendList" :key="item.likeSeq">
+                <MyLikeCardItem
+                  :item="item"
+                  :subscribeInfo="subscribeInfo"
+                  :is-buff-yn="isBuffYn"
+                  :current-tab="currentTab"
+                  @event="sendListDailyCardDetail(item)"
+                />
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-infinite-scroll
+            :disabled="isEndScroll"
+            threshold="100px"
+            @ionInfinite="ionInfinite($event, 'send')"
+          >
+            <ion-infinite-scroll-content
+              loadingText="Please wait..."
+              loadingSpinner="bubbles"
+            ></ion-infinite-scroll-content>
+          </ion-infinite-scroll>
+          <!--        </div>-->
+          <!-- 허니부스트 모달창 시작 -->
+          <HoneyBoostModal
+            :is-open="modalChoice"
+            :quantity="coupon.quantity"
+            @ionModalDidDismiss="modalChoice = false"
+            @ok="honeyModalBtn('save')"
+            @cancel="honeyModalBtn('cancel')"
+          />
+
+          <!-- 모달창 끝  -->
+
+          <!-- TODO : 이미지 하단 우측 버튼 -->
+          <!--
+        <ion-fab-button
+          @click.stop="profileModalBtn('openModal')"
+          class="btn-bottom-right"
+          fill="outline"
+          shape="round"
+        >
+          <ion-icon :icon="iconChoice" />
+        </ion-fab-button>
+        -->
+        </template>
+      </div>
+    </ion-content>
+    <AlertMessageModal
+      :is-open="alertMessage"
+      :title="'NAVY'"
+      :message="'회원님은 현재 구독 상태가 아닙니다.'"
+      :subMessage="'슈퍼라이크를 제외한 좋아요는 구독 이후 확인이 가능합니다😥 구독화면으로 이동하시겠습니까?'"
+      :btnName="'이동'"
+      :height="210"
+      :disabledCheck="false"
+      @ionModalDidDismiss="alertMessage = false"
+      @handleClickBtn="goRouter()"
+    />
+  </ion-page>
+</template>
+
+<script>
+import {
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  alertController,
+  IonRefresher,
+  IonRefresherContent
+} from "@ionic/vue";
+import { locationOutline, chevronDownCircleOutline } from "ionicons/icons";
+
+import { getData, SS_USER_SEQ, dailyCardInfoMapFn, storeMapFn } from "@/assets/js/common";
+import MyLikeTopNotice from "@/components/MyLike/MyLikeTopNotice.vue";
+import MyLikeCardItem from "@/components/MyLike/MyLikeCardItem.vue";
+import HoneyBoostModal from "@/components/Modal/HoneyBoostModal.vue";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal.vue";
+
+//  TODO: 아이콘 추후 교체
+import IconSample from "@/assets/img/icon/icon_mylike.svg";
+import IconChoice from "@/assets/img/icon/icon_choice.svg";
+
+export default {
+  name: "MyLike",
+  components: {
+    IonInfiniteScrollContent,
+    IonInfiniteScroll,
+    MyLikeTopNotice,
+    MyLikeCardItem,
+    HoneyBoostModal,
+    AlertMessageModal,
+    IonRefresher,
+    IonRefresherContent
+  },
+  computed: {
+    likeReceivedList() {
+      return this.$store.state.likeReceivedList;
+    },
+    ready() {
+      return true;
+    }
+  },
+  data() {
+    return {
+      chevronDownCircleOutline,
+
+      iconChoice: IconChoice,
+      iconSample: IconSample,
+      locationOutline,
+      currentTab: "my",
+      pageNo: 0,
+      pageSize: 15,
+      currentReceivePageNo: 0,
+      currentSendPageNo: 0,
+      isEndScroll: false,
+
+      receiveList: [],
+      receiveLikeCnt: 0,
+      sendList: [],
+      coupon: "",
+      couponCd: "",
+      modalChoice: false,
+      modalChoice2: false,
+      // 아이템 수량(임시)
+      profileADitem: 1,
+      isBuffYn: "",
+      remainingTime: "",
+      remainingTimeStr: "",
+
+      subscribeInfo: {},
+      alertMessage: false
+    };
+  },
+  ionViewWillEnter() {
+    this.getUserSubscribeInfo();
+    this.getUserReceiveLikeCnt();
+    // this.getBuffUsingInfo();
+  },
+  ionViewDidLeave() {
+    // 초기화
+  },
+  beforeMount() {
+    this.getReceiveLike();
+  },
+  methods: {
+    changeSegment(event) {
+      this.currentTab = event.detail.value;
+      if (this.currentTab == "my") {
+        this.getReceiveLike();
+        this.getUserReceiveLikeCnt();
+      } else {
+        this.getSendLike();
+      }
+      this.$refs.myLikeContent.$el.scrollToTop(0);
+    },
+
+    getBuffUsingInfo() {
+      getData({
+        url: "/getBuffUsingInfo",
+        param: {
+          couponCd: this.currentTab === "my" ? "CU003" : "CU002"
+        },
+        then: (data) => {
+          this.isBuffYn = data.isBuffYn;
+          this.remainingTime = data.remainingTime;
+          this.remainingTimeStr = data.remainingTimeStr;
+        }
+      });
+    },
+
+    getUserSubscribeInfo() {
+      getData({
+        url: "/getUserSubscribeInfo",
+        param: { infiniteActionCd: "RECEIVE_LIKE" },
+        then: (data) => {
+          this.subscribeInfo = data;
+        }
+      });
+    },
+    getUserReceiveLikeCnt() {
+      getData({
+        url: "/getUserReceiveLikeCnt",
+        param: {},
+        then: (data) => {
+          this.receiveLikeCnt = data.receiveLikeCnt;
+        }
+      });
+    },
+    getReceiveLike() {
+      // 초기화
+      this.pageNo = 0; //페이지 넘버
+      this.currentReceivePageNo = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getReceiveLike",
+        param: {
+          pageNo: this.pageNo
+        },
+        then: (data) => {
+          // this.receiveList = data;
+          this.$store.state.likeReceivedList = data;
+        }
+      });
+    },
+    getSendLike() {
+      // 초기화
+      this.pageNo = 0; //페이지 넘버
+      this.currentSendPageNo = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getSendLike",
+        param: {
+          pageNo: this.pageNo
+        },
+        then: (data) => {
+          this.sendList = data;
+        }
+      });
+    },
+
+    dailyCardDetail(item) {
+      // if (item.superLikeYn === null) {
+      //   dailyCardInfoMapFn({
+      //     pageType: "myLike",
+      //     likeSeq: null,
+      //     superLikeMessage: null
+      //   });
+      // }
+      if (item.superLikeYn === "Y") {
+        dailyCardInfoMapFn({
+          userKey: item.userKey,
+          pageType: "myLike",
+          likeSeq: item.likeSeq,
+          nick: item.nick,
+          superLikeMessage: item.superLikeMessage
+        });
+        this.$router.push("/dailyCardDetail");
+      } else if (this.subscribeInfo.isActionInfinite == "Y") {
+        // PUB
+        dailyCardInfoMapFn({ userKey: item.userKey, pageType: "myLike", likeSeq: item.likeSeq, nick: item.nick });
+        this.$router.push("/dailyCardDetail");
+      } else {
+        // 구독아니라고 띄워주기
+        this.alertMessage = true;
+        // this.warningAlertRouter(
+        //   '슈퍼라이크를 제외한 좋아요는 구독 이후 확인이 가능합니다😥 구독화면으로 이동하시겠습니까?'
+        // );
+      }
+    },
+    sendListDailyCardDetail(item) {
+      dailyCardInfoMapFn({ userKey: item.userKey, type: "sendLike" });
+      this.$router.push("/dailyCardInfo");
+    },
+    goRouter() {
+      this.modalMypage = false;
+      this.alertMessage = false;
+      storeMapFn({ subscribeYn: "Y" });
+      this.$router.push("/store");
+    },
+    /** 모달창내 내용 들어갈예정 **/
+    profileModalBtn(type) {
+      /*if (type === "openModal") {
+        this.getUserCouponDataOne("honey");
+      } else */if (type === "save") {
+        this.useHoneyBoost();
+      } else if (type === "confirmReceiveLike") {
+        // this.getUserCouponDataOne('confirmReceiveLike');
+        // this.$router.push("/subscription");
+        // storeMapFn({subscribeYn: 'Y'});
+        // this.$router.push('/store');
+      } else if (type === "save2") {
+        this.useReceivedLike();
+      } else {
+        this.modalChoice = false;
+        this.modalChoice2 = false;
+      }
+    },
+    /** 허니부스트 보유현황 **/
+    getUserCouponDataOne(type) {
+      let couponCd = "";
+      if (type === "attack") {
+        couponCd = "CU001";
+      } else if (type === "honey") {
+        couponCd = "CU002";
+      } else if (type === "confirmReceiveLike") {
+        couponCd = "CU003";
+      }
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: couponCd },
+        then: (data) => {
+          this.coupon = data;
+          if (type === "honey") {
+            this.modalChoice = true;
+          } else if (type === "confirmReceiveLike") {
+            this.modalChoice2 = true;
+          }
+        }
+      });
+    },
+    /** useHoneyBoost 사용 로직 **/
+    useHoneyBoost() {
+      getData({
+        url: "/useHoneyBoost",
+        param: {
+          couponCd: "CU002",
+          useType: "COUPON", // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          itemCd: "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT002_01
+          pointCd: "" // useType 'HEART' 일 시 BUY
+        },
+        then: (data) => {
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NH" ||
+            data.successYn === "NE"
+          ) {
+            this.warningAlert(data.message);
+            this.$refs.modal.$el.dismiss();
+          } else {
+            this.warningAlert(data.message);
+            this.isBuffYn = data.isBuffYn;
+            this.remainingTime = data.remainingTime;
+            this.remainingTimeStr = data.remainingTimeStr;
+            this.modalChoice = false;
+          }
+        }
+      });
+    },
+    /** useReceivedLike 사용 로직 **/
+    useReceivedLike() {
+      getData({
+        url: "/useReceivedLike",
+        param: {
+          couponCd: "CU003",
+          useType: "COUPON", // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          itemCd: "", // useType 'HEART' 일 시 1개 수량인 아이템코드 IT002_01
+          pointCd: "" // useType 'HEART' 일 시 BUY
+        },
+        then: (data) => {
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NH" ||
+            data.successYn === "NE"
+          ) {
+            this.warningAlert(data.message);
+            this.$refs.modal.$el.dismiss();
+          } else {
+            this.warningAlert(data.message);
+            this.isBuffYn = data.isBuffYn;
+            this.remainingTime = data.remainingTime;
+            this.remainingTimeStr = data.remainingTimeStr;
+            this.modalChoice2 = false;
+          }
+        }
+      });
+    },
+
+    /** 경고창 **/
+    async warningAlert(message) {
+      const alert = await alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 이동 팝업창 **/
+    async warningAlertRouter(message) {
+      const alert = await alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/subscription");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 무한스크롤 이벤트 **/
+    ionInfinite(event, type) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        if (type === "receive") {
+          self.pageNo = self.currentReceivePageNo + 1;
+          getData({
+            url: "/getReceiveLike",
+            param: {
+              pageNo: self.pageNo
+            },
+            then: (data) => {
+              // if (!data.isExist) {
+              //   return;
+              // }
+              self.currentReceivePageNo += 1;
+              self.$nextTick(() => {
+                for (let i in data) {
+                  data[i]["pageNo"] = self.pageNo;
+                  self.$store.state.likeReceivedList.push(data[i]);
+                }
+                if(data.length < 1){
+                  self.isEndScroll = true;
+                } else {
+                  self.isEndScroll = false;
+                }
+              });
+            }
+          });
+        } else {
+          self.pageNo = self.currentSendPageNo + 1;
+          getData({
+            url: "/getSendLike",
+            param: {
+              pageNo: self.pageNo
+            },
+            then: (data) => {
+              // if (!data.isExist) {
+              //   return;
+              // }
+              self.currentSendPageNo += 1;
+              self.$nextTick(() => {
+                for (let i in data) {
+                  data[i]["pageNo"] = self.pageNo;
+                  self.sendList.push(data[i]);
+                }
+                if(data.length < 1){
+                  self.isEndScroll = true;
+                } else {
+                  self.isEndScroll = false;
+                }
+              });
+            }
+          });
+        }
+        event.target.complete();
+      }, 1000);
+    },
+    /** Refresh **/
+    doRefresh(event, segmentType) {
+      if (!this.ready) {
+        event.target.complete();
+        return;
+      }
+
+      if(segmentType == 'my'){
+        this.getReceiveLike();
+      } else {
+        this.getSendLike();
+      }
+      this.getUserSubscribeInfo();
+      this.getUserReceiveLikeCnt();
+
+      setTimeout(() => {
+        event.target.complete();
+      }, 500);
+    },
+  }
+};
+</script>
+
+<style scoped>
+.infinite-list-container {
+  padding: 14px 4px;
+}
+
+.btn-bottom-right {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+</style>

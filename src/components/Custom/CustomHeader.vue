@@ -1,0 +1,265 @@
+<template>
+  <ion-header class="custom-header">
+    <ion-toolbar mode="md" style="--opacity-scale:2;">
+      <ion-buttons slot="start" v-if="this.pageName === 'ImsiTapView' || this.pageName === '설정'">
+        <BackButton />
+      </ion-buttons>
+      <ion-title class="main-header">
+        <template
+          v-if="this.pageName === 'ImsiTapView'">
+          근처
+        </template>
+        <template
+          v-else-if="this.pageName !== '게시글' && this.pageName !== '피드' && this.pageName !== '초이스' && this.pageName !== '근처'">
+          {{ this.pageName }}
+        </template>
+        <!--        <template v-else>-->
+        <template v-else-if="this.pageName !== '초이스' && this.pageName !== '근처'">
+          <ion-button
+            fill="clear"
+            size="large"
+            @click="$router.push('/feed')"
+            class="btn-link"
+            :class="{ 'is-active': this.pageName === '피드' }"
+            style="font-size:24px;"
+          >피드
+          </ion-button
+          >
+          <ion-button
+            fill="clear"
+            size="large"
+            @click="$router.push('/community')"
+            class="btn-link"
+            :class="{ 'is-active': this.pageName === '게시글' }"
+            style="font-size:24px;"
+          >게시글
+          </ion-button
+          >
+        </template>
+        <template v-else>
+          <ion-button
+            fill="clear"
+            size="large"
+            @click="$router.push('/Choice')"
+            class="btn-link"
+            :class="{ 'is-active': this.pageName === '초이스' }"
+            style="font-size:24px;"
+          >초이스
+          </ion-button
+          >
+          <ion-button
+            fill="clear"
+            size="large"
+            @click="$router.push('/ImsiTap')"
+            class="btn-link"
+            :class="{ 'is-active': this.pageName === '근처' }"
+            style="font-size:24px;"
+          >근처
+          </ion-button
+          >
+        </template>
+      </ion-title>
+      <ion-buttons slot="secondary">
+        <!-- TODO : 소모임 검색 버튼 -->
+        <ion-button
+          class="my-button"
+          v-if="this.pageName === '소모임'"
+          @click="$store.state.searchModalOpen = true"
+        >
+          <ion-icon slot="icon-only" :icon="searchOutline" />
+        </ion-button>
+        <ion-button
+          class="my-button"
+          v-if="this.pageName === '피드'"
+          @click="$store.state.feedSearchModalOpen = true"
+        >
+          <ion-icon slot="icon-only" :icon="searchOutline" />
+        </ion-button>
+        <ion-button
+          class="my-button"
+          v-if="this.pageName === '게시글'"
+          @click="$store.state.communitySearchModalOpen = true"
+        >
+          <ion-icon slot="icon-only" :icon="searchOutline" />
+        </ion-button>
+        <!--     초이스 - MY     -->
+        <ion-button
+          class="my-button"
+          v-if="this.pageName === '초이스' || this.pageName === '근처' || this.pageName === 'ImsiTapView'"
+          @click="$router.push({ name: 'MyLike' })"
+        >
+          <ion-icon slot="icon-only" :icon="myOutline" />
+        </ion-button>
+        <!--     OpenChat - MY     -->
+        <ion-button
+          class="my-button"
+          v-if="this.pageName === '소모임'"
+          @click="$router.push({ name: 'MyOpenChat' })"
+        >
+          <ion-icon slot="icon-only" :icon="myOutline" />
+        </ion-button>
+        <!--     Community - MY     -->
+        <ion-button
+          class="my-button"
+          v-if="this.pageName === '게시글' || this.pageName === '피드'"
+          @click="$router.push({ name: 'MyCommunity' })"
+        >
+          <ion-icon slot="icon-only" :icon="myOutline" />
+        </ion-button>
+        <!--    상점 임시 주석      -->
+        <ion-button
+          v-if="
+            this.pageName === '라운지' ||
+            this.pageName === '초이스' ||
+            this.pageName === '소모임' ||
+            // this.pageName === 'Community' ||
+            this.pageName === '메세지' ||
+            this.pageName === '설정' ||
+            this.pageName === '근처' ||
+            this.pageName === 'ImsiTapView'
+          "
+          @click="$router.push('/store')"
+        >
+          <ion-icon slot="icon-only" :icon="storefrontOutline" />
+        </ion-button>
+        <ion-button @click="checkedAlarm" class="has-badge">
+          <ion-icon
+            slot="icon-only"
+            size="large"
+            :icon="notificationsOutline"
+          ></ion-icon>
+          <ion-badge v-if="alarmCount > 0" color="primary">{{
+              alarmCount
+            }}
+          </ion-badge>
+        </ion-button>
+        <ion-button
+          v-if="this.pageName !== '설정'"
+          @click="$router.push('/mypage')"
+        >
+          <ion-icon
+            slot="icon-only"
+            size="large"
+            :icon="settingsOutline"
+          ></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+</template>
+
+<script>
+import { personOutline, chatboxOutline, searchOutline } from "ionicons/icons";
+import IconNotification from "@/assets/img/icon/icon_notification.svg";
+import IconStoreFront from "@/assets/img/icon/icon_store_front.svg";
+import IconMy from "@/assets/img/icon/icon_my.svg";
+import IconSettings from "@/assets/img/icon/icon_tabs_settings.svg";
+
+export default {
+  name: "CustomHeader",
+  props: ["pageName"],
+  data() {
+    return {
+      personOutline,
+      storefrontOutline: IconStoreFront,
+      notificationsOutline: IconNotification,
+      settingsOutline: IconSettings,
+      myOutline: IconMy,
+      chatboxOutline,
+      searchOutline,
+      chkAlarm: false
+    };
+  },
+  computed: {
+    alarmCount() {
+      //storex 감시
+      return this.$store.state.alarmCount;
+    }
+  },
+  mounted() {
+  },
+  methods: {
+    /** 신규알람 확인하면 신규알람 아이콘 제거 **/
+    checkedAlarm() {
+      // chkAlarm을 true로 변경하고
+      this.chkAlarm = true;
+      // alarm으로 라우팅
+
+      this.$router.push("/alarm");
+
+      /** 새알람이 들어오면 다시 chkAlarm을 false로 **/
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+ion-header.custom-header {
+  ion-toolbar {
+    --background: var(--ion-color-dark);
+
+    ion-title {
+      --color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+  }
+
+  ion-button {
+    &::part(native) {
+      padding: 0;
+    }
+
+    ion-badge {
+      top: 4px;
+      width: 6px;
+      height: 6px;
+      padding: 0;
+      border-radius: 50%;
+      min-width: 0;
+      font-size: 0;
+      margin-left: 5px;
+    }
+  }
+
+  .button-has-icon-only {
+    width: 40px;
+    height: 40px;
+    --border-radius: 0;
+  }
+}
+
+.btn-link {
+  position: relative;
+  opacity: 0.5;
+
+  + .btn-link {
+    padding-left: 9px;
+
+    &:before {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      margin-top: -6px;
+      display: inline-block;
+      content: '';
+      width: 2px;
+      height: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  &.is-active {
+    opacity: 1;
+  }
+}
+
+/* 상단 MY 버튼 (현재는 사람 아이콘으로 변경 후, 주석처리) */
+ion-button.my-button {
+  font-weight: bold;
+  --padding-start: 6px;
+  --padding-end: 5px;
+  --border-radius: 6px;
+  margin-right: 8px;
+}
+</style>

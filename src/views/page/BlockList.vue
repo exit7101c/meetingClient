@@ -1,0 +1,197 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar class="join-toolbar">
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>차단목록</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-item
+        lines="none" style="border: 1px solid white; border-radius: 10px; margin-bottom: 10px;"
+        v-for="item in dataList"
+        v-if="dataList.length > 0"
+      >
+        <ion-label>
+          <h4>
+            <ion-text color="light" class="text-bold text-lg">
+              {{ item.nick }}
+            </ion-text>
+          </h4>
+          <ion-text color="light" class="text-sm">
+            {{ item.regTime }}
+          </ion-text>
+          <div>
+            <ion-button
+              color="primary"
+              slot="end"
+              style="position: absolute; width: 80px; height: 45px; right: 10px; top: 7px;"
+              @click="confirm(item.targetUserId)"
+            >차단해제
+            </ion-button>
+          </div>
+        </ion-label>
+      </ion-item>
+      <ion-item
+        lines="none" v-else
+      >
+        <ion-text color="light" class="text-lg" style="margin: 0 auto;">
+          아직 차단된 유저가 없습니다.
+        </ion-text>
+      </ion-item>
+
+      <ion-infinite-scroll
+        :disabled="isEndScroll"
+        threshold="100px"
+        @ionInfinite="ionInfinite"
+      >
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import {
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent
+} from "@ionic/vue";
+import { getData } from "@/assets/js/common.js";
+import CustomAccordion from "@/components/Custom/CustomAccordion.vue";
+
+export default {
+  name: "BlockList",
+  inject: ["alertController"],
+  components: {
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent,
+    CustomAccordion
+  },
+  data() {
+    return {
+      dataList: [],
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.getBlockUserList();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  methods: {
+    //차단목록 조회
+    getBlockUserList() {
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 9;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getBlockUserList",
+        param: { pageNo: this.pageNo, pageSize: this.pageSize },
+        then: (data) => {
+          console.log(data);
+          this.dataList = data.result;
+          this.totalCount = data.totalCount;
+        }
+      });
+    },
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        self.pageNo = self.currentPageNo + 1;
+
+        getData({
+          url: "/getBlockUserList",
+          param: {
+            pageNo: self.pageNo,
+            pageSize: self.pageSize
+          },
+          then: (data) => {
+            for (let i in data.result) {
+              self.dataList.push(data.result[i]);
+            }
+            self.currentPageNo += 1;
+            self.$nextTick(() => {
+              if (self.dataList.length == self.totalCount)
+                self.isEndScroll = true;
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    },
+    /** 취소 or 예 버튼 **/
+    async confirm(targetId) {
+      console.log(targetId);
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "차단을 해제하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "예",
+            handler: () => {
+              getData({
+                url: "/setUnblockUser",
+                param: {
+                  targetUserId: targetId
+                },
+                then: (data) => {
+                  if (data.successYn == "Y") {
+                    this.warningAlert(data.message);
+                    this.getBlockUserList();
+                  } else {
+                    this.warningAlert(data.message);
+                  }
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style scoped>
+ion-icon {
+  color: black;
+}
+</style>

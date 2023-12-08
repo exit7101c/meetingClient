@@ -1,0 +1,1194 @@
+<template>
+  <ion-page>
+    <custom-header page-name="Choice" class="main-header"></custom-header>
+    <ion-content :fullscreen="true">
+      <!--  메인   -->
+      <swiper
+        @swiper="setSwiperRef"
+        :direction="'vertical'"
+        class="swiper"
+        @slideChange="onSlideChange($event)"
+        @slideChangeTransitionStart="slideNextTransitionStart($event)"
+        @slideChangeTransitionEnd="slideNextTransitionEnd($event)"
+        :modules="modules"
+        virtual
+      >
+        <swiper-slide
+          v-for="(item, idx) in slides"
+          :key="idx"
+          :virtualIndex="idx"
+        >
+          <swiper
+            :pagination="{ clickable: true }"
+            :navigation="true"
+            :modules="modules"
+            virtual
+            class="img-slider"
+          >
+            <swiper-slide
+              class="user-img"
+              v-for="(inner_item, inner_idx) in item.fileList"
+              :key="inner_idx"
+            >
+              <ion-img
+                :src="'https://' + inner_item.cdnNm"
+                @ionError="
+                  $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                "
+              />
+            </swiper-slide>
+          </swiper>
+          <!-- TODO : 부스트 -->
+          <ChoiceBoost
+            :calTimeStr="calTimeStr"
+            :boostCheck="remainingTime > 0"
+            @click="buttonClick('honey')"
+          />
+          <!--     이미지 하단 프로필      -->
+          <ChoiceProfileInfo v-if="item.isPartner == 'N'"
+                             :item="item"
+                             @btnChoiceBack="beforeCancelBtn()"
+                             @btnSuperLike="buttonClick('superLike', slides[idx])"
+                             @btnLike="buttonClick('like', slides[idx])"
+                             @btnHoney="buttonClick('skip', slides[idx])"
+                             @btnNope="buttonClick('nope', slides[idx])"
+                             @reSearch="getChoice"
+          />
+          <ChoicePartnerInfo v-else
+                             :item="item"
+                             @btnSkip="buttonClick('skip', item)"
+                             @btnChoiceBack="beforeCancelBtn()"
+          />
+        </swiper-slide>
+        <!-- 사용자가 없는 경우 -->
+        <swiper-slide class="no-user">
+          <ChoiceNoUser @tryAgain="tryAgain" />
+        </swiper-slide>
+        <!--    로딩 아이콘      -->
+        <swiper-slide v-if="isLast">
+          <PageLoadingCheck style="position: absolute; top: 48%; left: 48%" />
+        </swiper-slide>
+      </swiper>
+      <SuperLikeModal
+        :subscribeInfo="subscribeInfo"
+        :modalOpen="superLikeModalOpen"
+        :categoryList="categoryList"
+        :quantity="couponQuantity"
+        :isBonusYn="couponIsBonusYn"
+        :nick="choiceNick"
+        :emoji="'💘'"
+        :target="selectTargetUserData.userKey"
+        :likeType="'notDaily'"
+        @superLikeModalOpen="superLikeModalOpen = false"
+        @endNext="endNext"
+      />
+
+      <!-- 허니부스트 모달창 시작 -->
+      <HoneyBoostModal
+        :is-open="modalChoice"
+        :quantity="coupon.quantity"
+        @ionModalDidDismiss="modalChoice = false"
+        @ok="honeyModalBtn('save')"
+        @cancel="honeyModalBtn('cancel')"
+      />
+      <!-- TODO :  초이스  소진 시      -->
+      <ion-modal :is-open="buySwipeOpen">
+        <ion-page>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <BackButton @event="buySwipeOpen === false" :custom="true" />
+            </ion-buttons>
+          </ion-toolbar>
+          <ion-content class="ion-padding">
+            <!-- title -->
+            <JoinTitle>
+              <template v-slot:title>
+                오늘의 초이스<br />횟수를 모두 소진했어요
+              </template>
+              <template v-slot:desc>
+                스와이핑 횟수를 30회 추가합니다. <br />
+                추가 스와이프권을 사용하시겠습니까?
+              </template>
+            </JoinTitle>
+            <div class="row-box">
+              <CardBox>
+                <p class="text-center">
+                  <ion-text color="light" class="text-lg"
+                  >보유 스와이프 {{ this.swipeCoupon.quantity }}개
+                  </ion-text>
+                </p>
+              </CardBox>
+            </div>
+            <div class="row-box">
+              <CardBox>
+                <p class="text-center">
+                  <ion-text class="text-sm text-link"
+                  >추가스와이프 {{ profileADitem }}개 소모
+                  </ion-text>
+                </p>
+              </CardBox>
+            </div>
+          </ion-content>
+          <ion-footer>
+            <div class="ion-padding">
+              <ion-button
+                color="primary"
+                size="large"
+                shape="round"
+                expand="block"
+                @click="useSwiperPlus"
+              >사용하기
+              </ion-button>
+            </div>
+          </ion-footer>
+        </ion-page>
+      </ion-modal>
+      <AlertMessageModal
+        :is-open="alertMessage"
+        :title="'NAVY'"
+        :message="'아이템 수량이 부족합니다.'"
+        :subMessage="'아이템을 구매하기위해 상점으로 이동하시겠습니까?'"
+        :btnName="'이동'"
+        :height="200"
+        :disabledCheck="false"
+        @ionModalDidDismiss="alertMessage = false"
+        @handleClickBtn="goRouter()"
+      />
+      <!-- TODO: 필터  -->
+      <ChoiceFilterButton @click="filterClick" />
+      <ChoiceFilterModal
+        :is-open="isChoiceModal"
+        title="사용자 필터"
+        ok-label="변경"
+        cancel-label="취소"
+        @ok="filterSave"
+        @cancel="isChoiceModal = false"
+        @ionModalDidDismiss="isChoiceModal = false"
+      >
+        <ion-row>
+          <ion-col size="12">
+            <ion-text color="light">나와의 거리</ion-text>
+          </ion-col>
+          <ion-col size="12">
+            <ion-range
+              aria-label="distance"
+              min="10"
+              max="1000"
+              step="10"
+              :value="filteredOptions.distance"
+              @ionChange="onChangeFilteredDistance"
+            >
+              <ion-label color="light" slot="end" class="text-sm">
+                {{ filteredOptions.distance }} km
+              </ion-label>
+            </ion-range>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <ion-text color="light">나이</ion-text>
+          </ion-col>
+          <ion-col size="12">
+            <ion-range
+              aria-label="age"
+              min="19"
+              max="100"
+              step="1"
+              :dual-knobs="true"
+              :value="{
+                            lower: filteredOptions.ageMin,
+                            upper: filteredOptions.ageMax
+                          }"
+              @ionChange="onChangeFilteredAge"
+            >
+              <ion-label color="light" slot="end" class="text-sm">
+                {{ filteredOptions.ageMin }} ~ {{ filteredOptions.ageMax }} 세
+              </ion-label>
+            </ion-range>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <ion-row class="gap-lg">
+              <ion-text color="light">성향 (중복 선택 가능)</ion-text>
+              <NavyPlusLabel />
+            </ion-row>
+          </ion-col>
+          <ion-col size="12">
+            <ion-list lines="none">
+              <div class="img-checkbox-group">
+                <ion-grid class="gap-sm">
+                  <ion-row>
+                    <ion-col
+                      size="2"
+                      v-for="data in iconList"
+                      :key="data.iconCd"
+                    >
+                      <ion-item class="img-checkbox-button">
+                        <ion-label>
+                          <ion-img :src="'https://' + data.cdnThumbNm" />
+                          <ion-text color="light">{{ data.iconNm }}</ion-text>
+                        </ion-label>
+                        <ion-checkbox
+                          :disabled="subscribeInfo.subscribeYn == 'N'"
+                          :value="data.iconCd"
+                          :checked="filteredOptions.characters.includes(data.iconCd)"
+                          @ionChange="onChangeSelectedCharacters"
+                        ></ion-checkbox>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </div>
+            </ion-list>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <ion-row class="gap-lg">
+              <ion-text color="light">광고 제거</ion-text>
+              <NavyPlusLabel />
+            </ion-row>
+            <p class="mt-1">
+              <ion-text color="light" class="text-sm sub-text04"
+              >광고를 더이상 보지 않습니다
+              </ion-text
+              >
+            </p>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item lines="none" class="pl-0">
+              <ion-label>
+                <ion-text color="light">
+                  &nbsp;&nbsp; {{
+                    filteredOptions.choiceAdd ? " 활성화됨" : "비 활성화됨"
+                  }}
+                </ion-text
+                >
+              </ion-label>
+              <ion-toggle
+                :disabled="subscribeInfo.subscribeYn == 'N'"
+                slot="start"
+                mode="ios"
+                :checked="filteredOptions.choiceAdd"
+                @click="onChangeFilteredchoiceAdd"
+              ></ion-toggle>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ChoiceFilterModal>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination, Virtual } from "swiper/modules";
+
+import { getData, storeMapFn } from "@/assets/js/common";
+import ChoiceProfileInfo from "@/components/Choice/ChoiceProfileInfo.vue";
+import ChoicePartnerInfo from "@/components/Choice/ChoicePartnerInfo.vue";
+import ChoiceBoost from "@/components/Choice/ChoiceBoost.vue";
+import ChoiceNoUser from "@/components/Choice/ChoiceNoUser.vue";
+import ChoiceFilterButton from "@/components/Choice/ChoiceFilterButton.vue";
+import ChoiceFilterModal from "@/components/Choice/ChoiceFilterModal.vue";
+
+import PageLoadingCheck from "@/components/PageLoadingCheck.vue";
+import SuperLikeModal from "@/components/Modal/SuperLikeModal.vue";
+import HoneyBoostModal from "@/components/Modal/HoneyBoostModal.vue";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal";
+import NavyPlusLabel from "@/components/NavyPlusLabel.vue";
+
+export default {
+  name: "Choice",
+  inject: ["alertController", "loadingController"],
+  components: {
+    Swiper,
+    SwiperSlide,
+    ChoiceProfileInfo,
+    ChoiceBoost,
+    ChoiceNoUser,
+    PageLoadingCheck,
+    SuperLikeModal,
+    HoneyBoostModal,
+    AlertMessageModal,
+    ChoiceFilterButton,
+    ChoiceFilterModal,
+    NavyPlusLabel,
+    ChoicePartnerInfo
+  },
+  data() {
+    const setSwiperRef = (swiper) => {
+      this.swiperRef = swiper;
+      this.swiperRef.allowSlidePrev = false;
+    };
+    return {
+      buySwipeOpen: false,
+
+      currentTab: "newbie",
+
+      categoryList: [],
+      selectTargetUserData: {},
+
+      /* Slide */
+      modules: [Navigation, Pagination, Virtual],
+      setSwiperRef,
+      swiperRef: null,
+      isLast: false,
+      slides: null,
+      superLikeModalOpen: false,
+      choiceNick: "",
+      coupon: "",
+      useTypeHeart: "COUPON",
+      useTypeSwipe: "COUPON",
+      profileADitem: 1,
+      swipeCoupon: { quantity: 0 },
+      couponCd: "",
+      modalChoice: false,
+      isBuffYn: "",
+      remainingTime: "",
+      remainingTimeStr: "",
+
+      interval: null,
+      calTimeStr: "00:00:00",
+      cntEnd: false,
+
+      swiperActiveIndex: 0,
+      isSkip: true,
+
+      couponQuantity: 0,
+      couponIsBonusYn: "",
+
+      subscribeInfo: {},
+      gifTest: false,
+      alertMessage: false,
+
+      // TODO: 필터
+      isChoiceModal: false,
+      filteredOptions: {
+        distance: 1000, // 거리
+        ageMin: 19,
+        ageMax: 100,
+        characters: ["A", "B", "C", "D", "E", "F"],
+        choiceAdd: false
+      },
+      iconList: [] // 성향 캐릭터 목록
+    };
+  },
+  ionViewWillEnter() {
+    this.superLikeModalOpen = false;
+
+    this.selectTargetUserData = {};
+
+    if (this.swiperRef != null) {
+      this.swiperRef.allowSlidePrev = false;
+    }
+
+    this.remainingTime = "";
+    this.remainingTimeStr = "";
+    this.calTimeStr = "00:00:00";
+    this.getUserSwiperInfo();
+    this.checkBoost();
+    this.getUserSubscribeInfo();
+  },
+  ionViewDidLeave() {
+    // 초기화
+  },
+  mounted() {
+    this.isLast = true;
+    this.getChoice();
+    this.getInfoList();
+  },
+  methods: {
+    tryAgain() {
+      this.getChoice();
+    },
+    /** 모달창내 내용 들어갈예정 **/
+    honeyModalBtn(type) {
+      if (type === "openModal") {
+        this.getUserCouponDataOne("honey");
+      } else if (type === "save") {
+        this.useHoneyBoost();
+      } else {
+        this.modalChoice = false;
+      }
+    },
+    timeCal() {
+      let hour, min, sec;
+      hour = parseInt(this.remainingTime / 3600);
+      min = parseInt((this.remainingTime % 3600) / 60);
+      sec = this.remainingTime % 60;
+
+      if (hour.toString().length === 1) hour = "0" + hour;
+      if (min.toString().length === 1) min = "0" + min;
+      if (sec.toString().length === 1) sec = "0" + sec;
+
+      if (this.remainingTime > 0) {
+        this.remainingTime = this.remainingTime - 1;
+      } else {
+        this.remainingTime = 0;
+        clearInterval(this.interval);
+        this.isBuffYn = "N";
+      }
+      this.calTimeStr = hour + ":" + min + ":" + sec;
+    },
+    checkBoost() {
+      getData({
+        url: "/checkBoost",
+        param: {},
+        then: (data) => {
+          this.remainingTime = data.remainingTime;
+          this.remainingTimeStr = data.remainingTimeStr;
+
+          this.$nextTick(() => {
+            clearInterval(this.interval);
+            this.timeCal();
+            this.interval = setInterval(() => {
+              if (this.isBuffYn === "Y") {
+                this.timeCal();
+              }
+            }, 1000);
+          });
+        }
+      });
+    },
+    /** useHoneyBoost 사용 로직 **/
+    useHoneyBoost() {
+      getData({
+        url: "/useHoneyBoost",
+        param: {
+          couponCd: "CU002",
+          useType: "COUPON",
+          itemCd: "",
+          pointCd: ""
+          // useType: this.useTypeHeart, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          // itemCd: this.useTypeHeart === 'HEART' ? 'IT002_01' : '', // useType 'HEART' 일 시 1개 수량인 아이템코드 IT002_01
+          // pointCd: this.useTypeHeart === 'HEART' ? 'BUY' : '' // useType 'HEART' 일 시 BUY
+        },
+        then: (data) => {
+          // if (data.successYn === 'N' || data.successYn === 'NE') {
+          //   this.warningAlert(data.message);
+          //   this.$refs.modal.$el.dismiss();
+          // } else if (data.successYn === 'NH') {
+          //   this.warningAlertNH(data.message);
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NE" ||
+            data.successYn === "NH"
+          ) {
+            this.alertMessage = true;
+          } else {
+            this.warningAlert(data.message);
+            this.isBuffYn = data.isBuffYn;
+            this.remainingTime = data.remainingTime;
+            this.remainingTimeStr = data.remainingTimeStr;
+            this.modalChoice = false;
+
+            this.$nextTick(() => {
+              this.checkBoost();
+            });
+          }
+        }
+      });
+    },
+    goRouter() {
+      this.$emit("superLikeModalOpen");
+      this.alertMessage = false;
+      storeMapFn({ categoryType: "item" });
+      this.$router.push("/store");
+    },
+    getChoice() {
+      this.slides = [];
+      getData({
+        url: "/getChoice",
+        param: {},
+        then: (data) => {
+          this.$nextTick(() => {
+            this.slides = data;
+            this.swiperRef.allowSlidePrev = false;
+            this.isLast = false;
+            // this.swiperRef.slidePrev();
+            // this.swiperRef.slideTo(0,1000);
+          });
+        }
+      });
+    },
+
+    getUserSwiperInfo() {
+      getData({
+        url: "/getUserSwiperInfo",
+        param: {},
+        then: () => {
+        }
+      });
+    },
+
+    /** 모달창 카테고리 리스트 **/
+    getChoiceCategoryList() {
+      getData({
+        url: "/getChoiceCategoryList",
+        param: {},
+        then: (data) => {
+          this.categoryList = data;
+        }
+      });
+    },
+
+    /** 하트어택 보유현황 **/
+    getUserCouponDataOne(type) {
+      let couponCd = "";
+      if (type === "superLike") {
+        couponCd = "CU001";
+      } else if (type === "honey") {
+        couponCd = "CU002";
+      }
+
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: couponCd },
+        then: (data) => {
+          this.coupon = data;
+          this.couponQuantity = this.coupon.quantity;
+          this.couponIsBonusYn = this.coupon.isBonusYn;
+
+          if (this.coupon.quantity > 0) {
+            this.useTypeHeart = "COUPON";
+          } else {
+            this.useTypeHeart = "HEART";
+          }
+        }
+      });
+    },
+
+    /** 구독현황 및 슈퍼라이크 무제한 가능여부 **/
+    getUserSubscribeInfo() {
+      getData({
+        url: "/getUserSubscribeInfo",
+        param: { infiniteActionCd: "SUPER_LIKE" },
+        then: (data) => {
+          this.subscribeInfo = data;
+        }
+      });
+    },
+
+    /** 추가스와이프 보유현황 **/
+    getSwipeCouponDataOne() {
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: "CU004" },
+        then: (data) => {
+          this.swipeCoupon = data;
+
+          if (this.swipeCoupon.quantity > 0) {
+            this.useTypeSwipe = "COUPON";
+          } else {
+            this.useTypeSwipe = "HEART";
+          }
+        }
+      });
+    },
+
+    /** 추가스와이프 사용 로직 **/
+    useSwiperPlus() {
+      if (!confirm("사용하시겠습니까?")) {
+        return;
+      }
+      getData({
+        url: "/useSwiperPlus",
+        param: {
+          couponCd: "CU004",
+          useType: this.useTypeSwipe, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+          itemCd: this.useTypeSwipe === "HEART" ? "IT004_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드
+          pointCd: this.useTypeSwipe === "HEART" ? "BUY" : "" // useType 'HEART' 일 시 BUY
+        },
+        then: (data) => {
+          if (
+            data.successYn === "N" ||
+            data.successYn === "NH" ||
+            data.successYn === "NE"
+          ) {
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+
+    endNext() {
+      this.isSkip = false;
+      this.superLikeModalOpen = false;
+      this.swiperRef.slideNext();
+    },
+
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 경고 컨펌창 **/
+    async warningConfirm(message, callBack) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "아니요",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              callBack();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlertNI(message, targetUserId) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "완료",
+            handler: () => {
+              getData({
+                url: "/useSwiperPlus",
+                param: {
+                  couponCd: "CU004",
+                  useType: this.useTypeSwipe, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+                  itemCd: this.useTypeSwipe === "HEART" ? "IT004_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드
+                  pointCd: this.useTypeSwipe === "HEART" ? "BUY" : "", // useType 'HEART' 일 시 BUY
+                  userId: targetUserId,
+                  likeType: "choice"
+                },
+                then: (data) => {
+                  if (data.successYn === "N" || data.successYn === "NE") {
+                    this.warningAlert(data.message);
+                  } else if (data.successYn === "NH") {
+                    this.warningAlertNH(data.message);
+                  } else if (data.successYn === "MATCH") {
+                    this.warningAlertMatch(data.message);
+                    this.swiperRef.slideNext();
+                  } else {
+                    this.swiperRef.slideNext();
+                  }
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlertNH(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/store");
+              this.superLikeModalOpen = false;
+              this.modalChoice = false;
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 경고 팝업창 **/
+    async warningAlertMatch(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "이동",
+            handler: () => {
+              this.$router.push("/message");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 버튼 터치하면 다음 슬라이드로 이동 **/
+    buttonClick(type, item) {
+      if (type === "nope") {
+        this.isSkip = false;
+        this.setNope(item, "click");
+      } else if (type === "skip") {
+        this.isSkip = false;
+        this.setSkip(item, "click");
+      } else if (type === "like") {
+        this.isSkip = false;
+        this.setLike(item, "click");
+      } else if (type === "superLike") {
+        this.getChoiceCategoryList();
+        this.getUserSubscribeInfo();
+        this.getUserCouponDataOne("superLike");
+        this.choiceNick = item.nick;
+        this.superLikeModalOpen = true;
+
+        this.selectTargetUserData = item;
+      } else if (type === "honey") {
+        this.getUserCouponDataOne("honey");
+        this.modalChoice = true;
+      }
+      this.swiperRef.allowSlidePrev = false;
+    },
+    setLike(item, type) {
+      this.gifTest = false;
+      getData({
+        url: "/setLike",
+        param: {
+          userId: item.userKey,
+          likeType: "choice"
+        },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else if (data.successYn.includes("NI")) {
+            if (data.successYn == "NI_HI") {
+              // have item
+              this.warningConfirm(data.message, () => {
+                this.getSwipeCouponDataOne();
+                // this.warningAlertNI(data.message, item.userKey);
+                getData({
+                  url: "/useSwiperPlus",
+                  param: {
+                    couponCd: "CU004",
+                    useType: this.useTypeSwipe, // 'HEART', 'COUPON' / getUserCouponDataOne 에서 quantity(현재쿠폰수) 가 0 일경우 HEART 로 보내주면 됨
+                    itemCd: this.useTypeSwipe === "HEART" ? "IT004_01" : "", // useType 'HEART' 일 시 1개 수량인 아이템코드
+                    pointCd: this.useTypeSwipe === "HEART" ? "BUY" : "", // useType 'HEART' 일 시 BUY
+                    userId: item.userKey,
+                    likeType: "choice"
+                  },
+                  then: (data) => {
+                    if (data.successYn === "N" || data.successYn === "NE") {
+                      this.warningAlert(data.message);
+                    } else if (data.successYn === "NH") {
+                      this.warningAlertNH(data.message);
+                    } else if (data.successYn === "MATCH") {
+                      this.warningAlertMatch(data.message);
+                      this.swiperRef.slideNext();
+                    } else {
+                      this.swiperRef.slideNext();
+                    }
+                  }
+                });
+              });
+            } else if (data.successYn == "NI_NHI") {
+              // non have item
+              this.warningConfirm(data.message, () => {
+                this.$router.push("/store");
+              });
+            }
+          } else if (data.successYn === "MATCH") {
+            this.warningAlertMatch(data.message);
+            this.swiperRef.slideNext();
+          } else {
+            if (type != "swipe") {
+              this.swiperRef.slideNext();
+            }
+          }
+        }
+      });
+    },
+    setSkip(item, type) {
+      getData({
+        url: "/setSkip",
+        param: {
+          userId: item.userKey,
+          likeType: "choice"
+        },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            if (type != "swipe") {
+              this.swiperRef.slideNext();
+            }
+          }
+        }
+      });
+    },
+    setNope(item, type) {
+      getData({
+        url: "/setNope",
+        param: {
+          userId: item.userKey,
+          likeType: "choice"
+        },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            if (type != "swipe") {
+              this.swiperRef.slideNext();
+            }
+          }
+        }
+      });
+    },
+
+    beforeCancelBtn() {
+      getData({
+        url: "/revertBeforeActionCheck",
+        param: {},
+        then: (data) => {
+          this.$nextTick(() => {
+            if (data.successYn != "Y") {
+              if (data.successYn == "QUESTION") {
+                this.confirmBtn(data.message);
+              } else {
+                this.warningAlert(data.message);
+              }
+            }
+          });
+        }
+      });
+    },
+    slideNextTransitionStart(e) {
+      let self = this;
+
+      if (this.swiperActiveIndex < e.activeIndex) {
+        // 스킵처리
+        if (this.isSkip) {
+          this.setSkip(this.slides[this.swiperActiveIndex], "swipe");
+        }
+        this.swiperActiveIndex = e.activeIndex;
+        this.swiperRef.allowSlidePrev = false;
+
+        // 하단 스와이프 0.5초 막기
+        this.swiperRef.allowTouchMove = false;
+        setTimeout(function() {
+          self.swiperRef.allowTouchMove = true;
+        }, 500);
+      } else if (this.swiperActiveIndex > e.activeIndex) {
+        // 뒤로가기
+        this.swiperActiveIndex = e.activeIndex;
+      }
+
+      if (this.slides.length > 0 && this.slides.length == e.activeIndex + 1) {
+        this.reachEnd();
+      }
+    },
+    slideNextTransitionEnd(e) {
+      this.isSkip = true;
+      this.swiperActiveIndex = e.activeIndex;
+      this.swiperRef.allowSlidePrev = false;
+    },
+    onSlideChange(e) {
+      if (this.swiperActiveIndex > e.activeIndex) {
+        // 뒤로가기
+        this.swiperActiveIndex = e.activeIndex;
+      }
+    },
+
+    transitionStartLeftRight(e, item) {
+      if (item.fileList == undefined) {
+        return;
+      }
+
+      if (e.previousIndex > e.realIndex) {
+        e.allowSlidePrev = false;
+
+        if (item.fileList[e.activeIndex].fileNo > 0) {
+          if (e.activeIndex < 3) {
+            item.fileList[e.activeIndex + 2] = {};
+          }
+
+          getData({
+            url: "/getChoiceLeftRightSwiper",
+            param: {
+              connectUserKey: item.userKey,
+              leftRightType: "LEFT",
+              fileNo: item.fileList[e.activeIndex].fileNo
+            },
+            then: (data) => {
+              this.$nextTick(() => {
+                e.allowSlidePrev = true;
+                if (data.fileNo != undefined) {
+                  if (e.activeIndex > 0) {
+                    item.fileList[e.activeIndex - 1] = data;
+                  }
+                }
+              });
+            }
+          });
+        } else {
+          e.allowSlidePrev = true;
+        }
+      } else if (e.previousIndex < e.realIndex) {
+        e.allowSlideNext = false;
+
+        if (item.fileList[e.activeIndex].fileNo < 4) {
+          if (e.activeIndex > 1) {
+            item.fileList[e.activeIndex - 2] = {};
+          }
+
+          getData({
+            url: "/getChoiceLeftRightSwiper",
+            param: {
+              connectUserKey: item.userKey,
+              leftRightType: "RIGHT",
+              fileNo: item.fileList[e.activeIndex].fileNo
+            },
+            then: (data) => {
+              this.$nextTick(() => {
+                e.allowSlideNext = true;
+                if (data.fileNo != undefined) {
+                  if (item.fileList.length <= e.activeIndex + 1) {
+                    if (item.fileList.length < 5) {
+                      item.fileList = [...item.fileList, data];
+                    }
+                  } else {
+                    item.fileList[e.activeIndex + 1] = data;
+                  }
+                }
+              });
+            }
+          });
+        } else {
+          e.allowSlideNext = true;
+        }
+      }
+    },
+    /** 마지막 슬라이드 -> 새로운 슬라이드 추가 **/
+    // todo : 마지막 슬라이드에서 더 당기면 로딩바 나오고 로딩 ???
+    reachEnd() {
+      this.isLast = true;
+
+      getData({
+        url: "/getChoice",
+        param: {},
+        then: (data) => {
+          this.$nextTick(() => {
+            for (let i = 0; data.length > i; i++) {
+              if (
+                this.slides[this.swiperActiveIndex - 1].userKey !=
+                data[i].userKey &&
+                this.slides[this.swiperActiveIndex].userKey != data[i].userKey
+              ) {
+                this.slides.push(data[i]);
+              }
+            }
+            this.isLast = false;
+            this.swiperRef.allowSlidePrev = false;
+            // this.swiperRef.slidePrev();
+            // this.swiperRef.slideTo(0,1000);
+          });
+        }
+      });
+    },
+
+    /** 취소 or 예 버튼 **/
+    async confirmBtn(message) {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "예",
+            handler: () => {
+              getData({
+                url: "/revertBeforeAction",
+                param: {},
+                then: (data) => {
+                  this.warningAlert(data.message);
+                  this.swiperRef.allowSlidePrev = true;
+                  this.swiperRef.slideTo(this.swiperRef.activeIndex - 1, 500);
+                  this.swiperRef.allowSlidePrev = false;
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    // TODO : 필터
+    filterSave() {
+      this.isChoiceModal = false;
+      this.filteredOptions.characters = this.filteredOptions.characters.toString();
+      this.filteredOptions.choiceAdd = this.filteredOptions.choiceAdd ? "N" : "Y";
+      this.filteredOptions.subscribeYn = this.subscribeInfo.subscribeYn;
+      getData({
+        url: "/filterSave",
+        param: this.filteredOptions,
+        then: (data) => {
+          this.warningAlert(data.message);
+          this.getChoice();
+        }
+      });
+    },
+    filterClick() {
+      this.isChoiceModal = true;
+      getData({
+        url: "/getChoiceFileter",
+        param: {},
+        then: (data) => {
+          if (data.successYn == "Y") {
+            this.filteredOptions.distance = data.result.kmMax;
+            this.filteredOptions.ageMin = data.result.ageMin;
+            this.filteredOptions.ageMax = data.result.ageMax;
+            this.filteredOptions.characters = data.result.icon.split(",");
+            this.filteredOptions.choiceAdd = data.result.choiceAdd == "Y" ? false : true;
+          } else {
+            this.filteredOptions = {
+              distance: 1000, // 거리
+              ageMin: 19,
+              ageMax: 100,
+              characters: ["A", "B", "C", "D", "E", "F"],
+              choiceAdd: false
+            };
+          }
+        }
+      });
+    },
+    onChangeFilteredDistance($event) {
+      this.filteredOptions.distance = $event.detail.value;
+    },
+    onChangeFilteredAge($event) {
+      this.filteredOptions.ageMin = $event.detail.value.lower;
+      this.filteredOptions.ageMax = $event.detail.value.upper;
+    },
+    onChangeSelectedCharacters($event) {
+      const selectedValue = this.filteredOptions.characters.indexOf($event.detail.value);
+      if (selectedValue < 0) {
+        this.filteredOptions.characters.push($event.detail.value);
+      } else {
+        this.filteredOptions.characters.splice(selectedValue, 1);
+      }
+    },
+    onChangeFilteredchoiceAdd() {
+      if (this.subscribeInfo.subscribeYn == "Y") {
+        // ion-toggle 첫 클릭 시 value값은 바뀌지만 true / false 인식이 안되는 현상이 있음
+        // javascript event queue에 강제로 박아넣고 실행
+        setTimeout(() => {
+          this.filteredOptions.choiceAdd = this.filteredOptions.choiceAdd === true ? false : true;
+        }, 0);
+      }
+    },
+    getInfoList() {
+      getData({
+        url: "/getInfoList",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.iconList = data.iconList;
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+/* ---------------- slider -------------------- */
+.swiper {
+  width: 100%;
+  height: 100%;
+
+  .swiper-slide {
+    ion-img {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+
+      &:before {
+        display: block;
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 50%;
+        background: linear-gradient(
+            0,
+            rgba(0, 0, 0, 0.75) 0%,
+            transparent 100%
+        );
+      }
+    }
+  }
+}
+</style>
+<style lang="scss">
+.img-slider {
+  &.swiper-horizontal {
+    > .swiper-pagination-bullets,
+    .swiper-pagination-bullets {
+      &.swiper-pagination-horizontal {
+        bottom: auto;
+        top: 0;
+        text-align: left;
+        padding: 8px 16px;
+
+        .swiper-pagination-bullet {
+          width: 38px;
+          height: 4px;
+          border-radius: 0;
+          box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+          margin: 0 2px;
+          background-color: rgba($color: white, $alpha: 0.5);
+
+          &.swiper-pagination-bullet-active {
+            background-color: rgba($color: white, $alpha: 1);
+          }
+        }
+      }
+    }
+  }
+}
+</style>

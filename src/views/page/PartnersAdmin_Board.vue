@@ -1,0 +1,404 @@
+<template>
+  <div class="ion-padding">
+    <ion-list lines="none">
+      <div class="sticky-top segment-round">
+        <ion-segment
+          v-model="selectedAvatar"
+          mode="md"
+          :scrollable="true"
+          class="radio-button"
+        >
+          <ion-segment-button value="HOUR" @click="chageSearch('HOUR')">
+            시간별 조회</ion-segment-button
+          >
+          <ion-segment-button value="DAY" @click="chageSearch('DAY')">
+            일별 조회</ion-segment-button
+          >
+          <ion-segment-button value="MONTH" @click="chageSearch('MONTH')">
+            월별 조회</ion-segment-button
+          >
+        </ion-segment>
+      </div>
+    </ion-list>
+    <ion-row
+      style="
+        margin-bottom: 20px;
+        color: #f4f5f8;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      "
+      @click="openPicker()"
+    >
+      <ion-text style="margin-right: 10px">{{ yearText }}년</ion-text>
+      <ion-text style="margin-right: 10px">{{ monthText }}월</ion-text>
+      <ion-text v-if="selectedAvatar != 'MONTH'" style="margin-right: 10px"
+        >{{ dayText }}일</ion-text
+      >
+      <ion-text v-if="selectedAvatar == 'HOUR'" style="margin-right: 10px"
+        >{{ hourText }}시</ion-text
+      >
+    </ion-row>
+    <highcharts :options="chartOptions" :highcharts="hcInstance" />
+    <ion-row
+      v-for="(item, index) in currentChartData"
+      :key="index"
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 35px;
+      "
+    >
+      <ion-item
+        lines="none"
+        style="
+          color: #fff;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          border: 1px solid #fff;
+          border-radius: 10px;
+        "
+      >
+        <ion-label style="text-align: center">{{ item.name }}</ion-label>
+        <ion-label
+          style="text-align: center; font-weight: 600; color: #eff53c"
+          >{{ item.data }}</ion-label
+        >
+      </ion-item>
+    </ion-row>
+  </div>
+</template>
+
+<script>
+import Highcharts from "highcharts";
+import { Chart } from "highcharts-vue";
+import { pickerController } from "@ionic/vue";
+import { getData } from "@/assets/js/common";
+
+export default {
+  components: {
+    highcharts: Chart
+  },
+  computed: {
+    isIntervalRunning() {
+      return this.$store.getters.isIntervalRunning;
+    }
+  },
+  created() {
+    if (!this.isIntervalRunning) {
+      const intervalId = setInterval(() => {
+        this.getChartData();
+      }, 10000);
+      this.$store.dispatch('setAndStartInterval', intervalId);
+    }
+  },
+  mounted() {
+    this.defaultSetting();
+    this.getChartData();
+  },
+  unmounted() {
+    if (this.isIntervalRunning) {
+      this.$store.dispatch('clearAndStopInterval');
+    }
+  },
+  data() {
+    return {
+      hcInstance: Highcharts,
+      chartOptions: {},
+      currentChartData: [],
+
+      selectedAvatar: 'DAY',
+
+      yearArr: [],
+      monthArr: [],
+      dayArr: [],
+      hourArr: [],
+
+      yearValue: this.getDate('year'),
+      dayValue: this.getDate('day'),
+      monthValue: this.getDate('month'),
+      hourValue: this.getDate('hour'),
+      yearText: this.getDate('year'),
+      dayText: this.getDate('day'),
+      monthText: this.getDate('month'),
+      hourText: this.getDate('hour'),
+
+      measureTime: ''
+    };
+  },
+  methods: {
+    defaultSetting() {
+      //year setting
+      for (let i = 2023, len = this.getDate('year'); i <= len; i++) {
+        let obj = {};
+        obj['text'] = i.toString().length == 1 ? '0' + i : i;
+        obj['value'] = i;
+        this.yearArr.push(obj);
+      }
+      //month setting
+      for (let i = 1, len = 12; i <= len; i++) {
+        let obj = {};
+        obj['text'] = i.toString().length == 1 ? '0' + i : i;
+        obj['value'] = i;
+        this.monthArr.push(obj);
+      }
+      //day setting
+      for (let i = 1, len = 31; i <= len; i++) {
+        let obj = {};
+        obj['text'] = i.toString().length == 1 ? '0' + i : i;
+        obj['value'] = i;
+        this.dayArr.push(obj);
+      }
+      //hour setting
+      for (let i = 0, len = 24; i <= len; i++) {
+        let obj = {};
+        obj['text'] = i.toString().length == 1 ? '0' + i : i;
+        obj['value'] = i;
+        this.hourArr.push(obj);
+      }
+    },
+    getDate(state) {
+      let result = '';
+      let date = new Date();
+      switch (state) {
+        case 'year':
+          result = date.getFullYear();
+          break;
+        case 'month':
+          result =
+            (date.getMonth() + 1).toString().length == 1
+              ? '0' + (date.getMonth() + 1)
+              : date.getMonth() + 1;
+          break;
+        case 'day':
+          result =
+            date.getDate().toString().length == 1
+              ? '0' + date.getDate()
+              : date.getDate();
+          break;
+        case 'hour':
+          result =
+            date.getHours().toString().length == 1
+              ? '0' + date.getHours()
+              : date.getHours();
+          break;
+        default:
+          break;
+      }
+      return result;
+    },
+    chageSearch(value) {
+      this.yearValue = this.getDate('year');
+      this.yearText = this.getDate('year');
+      this.monthValue = this.getDate('month');
+      this.monthText = this.getDate('month');
+      // if (value == "MONTH") {
+      this.dayValue = this.getDate('day');
+      this.dayText = this.getDate('day');
+      this.hourValue = this.getDate('hour');
+      this.hourText = this.getDate('hour');
+      // } else if (value == "DAY") {
+      this.hourValue = this.getDate('hour');
+      this.hourText = this.getDate('hour');
+      // }
+      this.getChartData(value);
+    },
+    getChartData(type) {
+      if (type) {
+        this.selectedAvatar = type;
+      }
+      this.measureTime = [this.yearText, this.monthText].join('');
+      if (this.selectedAvatar == 'DAY') {
+        this.measureTime = [this.measureTime, this.dayText].join('');
+      } else if (this.selectedAvatar == 'HOUR') {
+        this.measureTime = [this.measureTime, this.dayText, this.hourText].join(
+          ''
+        );
+      }
+
+      getData({
+        url: '/partnerChartData',
+        param: {
+          partnersCode: this.$store.state.partnerInfoMap.partnersCode,
+          measureTime: this.measureTime,
+          timeType: type ? type : this.selectedAvatar
+        },
+        then: (data) => {
+          this.chartInit(data);
+
+          this.currentChartData = [];
+          Array.from(data).forEach((item) => {
+            if (!item.data.length > 0) {
+              return false;
+            }
+            let obj = {};
+            obj['name'] = item.name;
+            obj['data'] = item.data[item.data.length - 1]['y'];
+
+            this.currentChartData.push(obj);
+          });
+        }
+      });
+    },
+    chartInit(data) {
+      this.chartOptions = {
+        chart: {
+          type: 'line'
+        },
+        title: {
+          text: '광고노출 추이'
+        },
+        legend: {
+          enabled: true,
+          align: 'center',
+          verticalAlign: 'bottom',
+          layout: 'horizontal'
+        },
+        xAxis: {
+          crosshair: true,
+          type: 'datetime'
+        },
+        yAxis: [
+          {
+            crosshair: true,
+            startOnTick: false,
+            title: {
+              text: ''
+            }
+          },
+          {
+            crosshair: true,
+            startOnTick: false,
+            title: {
+              text: ''
+            },
+            min: 0,
+            opposite: true,
+            labels: {
+              format: '{value}'
+            }
+          }
+        ],
+        tooltip: {
+          crosshairs: true,
+          xDateFormat:
+            this.selectedAvatar == 'DAY'
+              ? '%Y-%m-%d'
+              : this.selectedAvatar == 'HOUR'
+              ? '%Y-%m-%d %H'
+              : '%Y-%m',
+          valueSuffix: '{value}' + ' 건'
+        },
+        series: data
+      };
+    },
+    pickerColumn() {
+      let array = new Array();
+      let obj = {};
+      obj['name'] = 'year';
+      obj['selectedIndex'] = this.yearValue - 1;
+      obj['options'] = this.yearArr;
+      array.push(obj);
+
+      obj = {};
+      obj['name'] = 'month';
+      obj['selectedIndex'] = this.monthValue - 1;
+      obj['options'] = this.monthArr;
+      array.push(obj);
+
+      if (this.selectedAvatar != 'MONTH') {
+        obj = {};
+        obj['name'] = 'day';
+        obj['selectedIndex'] = this.dayValue - 1;
+        obj['options'] = this.dayArr;
+        array.push(obj);
+
+        if (this.selectedAvatar == 'HOUR') {
+          obj = {};
+          obj['name'] = 'hour';
+          obj['selectedIndex'] = this.hourValue;
+          obj['options'] = this.hourArr;
+          array.push(obj);
+        }
+      }
+      return array;
+    },
+    async openPicker() {
+      const picker = await pickerController.create({
+        columns: this.pickerColumn(),
+        color: '#fff',
+        buttons: [
+          {
+            text: '취소',
+            role: 'cancel'
+          },
+          {
+            text: '확인',
+            handler: (v) => {
+              this.yearValue = v.year.value;
+              this.yearText = v.year.text;
+              this.monthValue = v.month.value;
+              this.monthText = v.month.text;
+              if (this.selectedAvatar == 'MONTH') {
+                this.dayValue = this.getDate('day');
+                this.hourValue = this.getDate('hour');
+              } else {
+                if (this.selectedAvatar == 'DAY') {
+                  this.dayValue = v.day.value;
+                  this.dayText = v.day.text;
+                  this.hourValue = this.getDate('hour');
+                } else {
+                  this.hourValue = v.hour.value;
+                  this.hourText = v.hour.text;
+                  this.dayValue = v.day.value;
+                  this.dayText = v.day.text;
+                }
+              }
+              this.getChartData();
+            }
+          }
+        ]
+      });
+      await picker.present();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+ion-segment.radio-button {
+  padding: 0px;
+  margin: 0;
+  border: 0;
+
+  &:after {
+    display: none;
+  }
+
+  ion-segment-button {
+    color: white;
+    --background: #4a4a4a;
+    --background-checked: var(--ion-color-primary);
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+    box-sizing: border-box;
+    z-index: 2;
+    margin: 10px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 80px;
+    min-height: 30px;
+
+    &::part(indicator-background) {
+      height: 0;
+    }
+  }
+}
+</style>

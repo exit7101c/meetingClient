@@ -1,0 +1,26 @@
+import Vuex from "vuex";
+
+
+export const store = new Vuex.Store({
+  state: {
+    currentChatroomId: 0,
+    messageMainMap: {},
+    messageList: [],
+    currentMsgHeightCalc: 0,
+    joinMap: {},
+    alarmList: {},
+    alarmCount: 0,
+    loading: null,
+    userPoint: 0,
+    likeReceivedList:[],
+  },
+  mutations: {
+    addMessage(state, map) {
+      state.messageList.push(map);
+    },
+    addAlarm(state, map) {
+      state.alarmList.push(map);
+      state.alarmCount = state.alarmCount+1;
+    }
+  }
+});

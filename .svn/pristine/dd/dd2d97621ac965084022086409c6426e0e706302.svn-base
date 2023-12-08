@@ -1,0 +1,455 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button @click="presentAlertConfirm()">
+            <ion-icon slot="icon-only" :icon="chevronBack" />
+          </ion-button>
+          <!--          <BackButton />-->
+        </ion-buttons>
+        <ion-title>기본설정</ion-title>
+      </ion-toolbar>
+      <ProgressBar :currIdx="isValidateForm ? 5 : 4"></ProgressBar>
+    </ion-header>
+
+    <ion-content>
+      <div class="layout-container">
+        <!-- title -->
+        <JoinTitle>
+          <template v-slot:title>
+            기본 정보를 <br />
+            작성해 주세요
+          </template>
+          <template v-slot:desc>
+            프로필에 기본으로 등록되는 정보입니다.
+          </template>
+        </JoinTitle>
+        <div class="form-wrapper">
+          <!-- 흡연 여부 -->
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm">흡연 여부 🚭</ion-text>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col
+                size="auto"
+                v-for="(data, index) in smokeList"
+                :key="index"
+              >
+                <ion-button
+                  :color="isSelectedSmoke(data) ? 'primary' : 'medium'"
+                  size="small"
+                  shape="round"
+                  :fill="isSelectedSmoke(data) ? 'solid' : 'outline'"
+                  @click="toggleItem('smoke', data)"
+                >
+                  <ion-text class="sub-text01">{{ data.smokeNm }}</ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <!-- 음주 여부 -->
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm">음주 여부 🥂</ion-text>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col
+                size="auto"
+                v-for="(data, index) in drinkingList"
+                :key="index"
+              >
+                <ion-button
+                  :color="isSelectedDrinking(data) ? 'primary' : 'medium'"
+                  size="small"
+                  shape="round"
+                  :fill="isSelectedDrinking(data) ? 'solid' : 'outline'"
+                  @click="toggleItem('drinking', data)"
+                >
+                  <ion-text class="sub-text01">{{ data.drinkNm }}</ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <!-- 체형 -->
+          <!--          <ion-grid>-->
+          <!--            <ion-row>-->
+          <!--              <ion-col>-->
+          <!--                <ion-text color="light" class="text-sm"-->
+          <!--                >체형을 알려주세요-->
+          <!--                </ion-text-->
+          <!--                >-->
+          <!--              </ion-col>-->
+          <!--            </ion-row>-->
+          <!--            <ion-row>-->
+          <!--              <ion-col-->
+          <!--                size="auto"-->
+          <!--                v-for="(data, index) in bodyList"-->
+          <!--                :key="index"-->
+          <!--              >-->
+          <!--                <ion-button-->
+          <!--                  color="primary"-->
+          <!--                  size="small"-->
+          <!--                  :fill="isSelectedBody(data) ? 'solid' : 'outline'"-->
+          <!--                  @click="toggleItem('body', data)"-->
+          <!--                >-->
+          <!--                  {{ data.formNm }}-->
+          <!--                </ion-button>-->
+          <!--              </ion-col>-->
+          <!--            </ion-row>-->
+          <!--          </ion-grid>-->
+          <!-- 키 -->
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm"
+                >키를 알려주세요
+                </ion-text
+                >
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-range
+                  aria-label="Volume"
+                  min="140"
+                  max="200"
+                  step="1"
+                  value="140"
+                  v-model="selectedValue"
+                  @ionChange="onRangeChange"
+                >
+                  <ion-label color="light" slot="end" class="text-sm"
+                  >{{ selectedValue }}cm
+                  </ion-label
+                  >
+                </ion-range>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <!-- 몸무게 -->
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm"
+                >몸무게를 알려주세요
+                </ion-text
+                >
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-range
+                  aria-label="Volume"
+                  min="40"
+                  max="120"
+                  step="1"
+                  value="40"
+                  v-model="weightValue"
+                  @ionChange="onWeightRangeChange"
+                >
+                  <ion-label color="light" slot="end" class="text-sm"
+                  >{{ weightValue }}kg
+                  </ion-label
+                  >
+                </ion-range>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </div>
+    </ion-content>
+    <ion-footer class="join-footer">
+      <div class="layout-container">
+        <div class="btn-group">
+          <custom-button
+            fill="outline"
+            color="primary"
+            size="large"
+            expand="block"
+            shape="round"
+            :disabled="!isValidateForm"
+            @click="isValidateAndNavigate"
+          >
+            다음으로
+          </custom-button>
+          <custom-button
+            fill="clear"
+            color="secondary"
+            size="large"
+            expand="block"
+            shape="round"
+            @click="this.$router.push('/joinInterview')"
+          >
+            건너뛰기
+          </custom-button>
+        </div>
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import { chevronBack } from "ionicons/icons";
+import { getData } from "@/assets/js/common";
+import JoinTitle from "@/components/JoinTitle.vue";
+import ProgressBar from "@/components/ProgressBar.vue";
+
+export default {
+  name: "JoinInfo",
+  inject: ["alertController"],
+  components: {
+    JoinTitle,
+    ProgressBar
+  },
+  computed: {
+    // PUB
+    isValidateForm() {
+      return (
+        this.selectSmokes.length > 0 &&
+        this.selectDrinkings.length > 0 &&
+        // this.selectBodys.length > 0 &&
+        this.selectedValue > 139 &&
+        this.selectedValue > 39
+      );
+    }
+  },
+  data() {
+    return {
+      chevronBack,
+      ItemList: [],
+
+      selectedValue: 139, // 키
+      weightValue: 39, // 몸무게
+
+      bodyList: [],
+      smokeList: [],
+      drinkingList: [],
+
+      selectBodys: [],
+      selectSmokes: [],
+      selectDrinkings: []
+    };
+  },
+
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.getInfoList();
+    this.selectedValue = 139;
+    this.weightValue = 39;
+    // if (tempMap.state !== "ing") {
+    // this.selectBodys = [];
+    this.selectSmokes = [];
+    this.selectDrinkings = [];
+    // }
+
+
+  },
+
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  // PUB
+  mounted() {
+    this.getInfoList();
+  },
+  methods: {
+    onRangeChange(event) {
+      this.selectedValue = event.detail.value;
+    },
+    onWeightRangeChange(event) {
+      this.weightValue = event.detail.value;
+    },
+
+    goRouter() {
+      // tempMap.item = {
+      //   tall: this.selectedValue,
+      //   weight: this.weightValue,
+      //   smoke: this.selectSmokes[0].smokeCd,
+      //   drink: this.selectDrinkings[0].drinkCd
+      // };
+      this.$store.state.joinMap["tall"] = this.selectedValue;
+      this.$store.state.joinMap["weight"] = this.weightValue;
+      this.$store.state.joinMap["smoke"] = this.selectSmokes[0].smokeCd;
+      this.$store.state.joinMap["drink"] = this.selectDrinkings[0].drinkCd;
+      // tempMap.item.tall = this.selectedValue;
+      // tempMap.item.weight = this.weightValue;
+      // tempMap.item.smoke = this.selectSmokes[0].smokeCd;
+      // tempMap.item.drink = this.selectDrinkings[0].drinkCd;
+      // tempMap.item.form = this.selectBodys[0].formCd;
+
+      this.$router.push("/joinInterview");
+    },
+
+    getInfoList() {
+      getData({
+        url: "/join/getInfoList",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.bodyList = data.bodyList;
+          this.smokeList = data.smokeList;
+          this.drinkingList = data.drinkingList;
+        }
+      });
+    },
+
+    isSelectedBody(item) {
+      return this.selectBodys.includes(item);
+    },
+    isSelectedSmoke(item) {
+      return this.selectSmokes.includes(item);
+    },
+    isSelectedDrinking(item) {
+      return this.selectDrinkings.includes(item);
+    },
+
+    toggleItem(state, item) {
+      if (state === "body") {
+        /** 체형 **/
+        if (item.formNm === "비공개") {
+          if (!this.isSelectedBody(item)) {
+            if (
+              this.selectBodys.some(
+                (selectedItem) => selectedItem.formNm === "비공개"
+              )
+            ) {
+              this.selectBodys.splice(
+                this.selectBodys.findIndex(
+                  (selectedItem) => selectedItem.formNm !== "비공개"
+                ),
+                1,
+                item
+              );
+            } else {
+              this.selectBodys.push(item);
+            }
+            this.selectBodys = this.selectBodys.filter(
+              (selectedItem) => selectedItem.formNm === "비공개"
+            );
+          } else {
+            this.selectBodys = this.selectBodys.filter(
+              (selectedItem) => selectedItem.formNm !== "비공개"
+            );
+          }
+        } else {
+          if (this.isSelectedBody(item)) {
+            this.selectBodys.splice(this.selectBodys.indexOf(item), 1);
+          } else {
+            if (
+              !this.selectBodys.some(
+                (selectedItem) => selectedItem.formNm === "비공개"
+              )
+            ) {
+              if (this.selectBodys.length === 1) {
+                this.selectBodys.splice(0, 1);
+              }
+              this.selectBodys.push(item);
+            } else {
+              this.selectBodys.splice(
+                this.selectBodys.findIndex(
+                  (selectedItem) => selectedItem.formNm !== "비공개"
+                ),
+                1,
+                item
+              );
+            }
+          }
+        }
+      } else if (state === "smoke") {
+        /** 흡연 **/
+        if (this.isSelectedSmoke(item)) {
+          this.selectSmokes.splice(this.selectSmokes.indexOf(item), 1);
+        } else {
+          if (this.selectSmokes.length > 0) {
+            this.selectSmokes.splice(0, 1);
+          }
+          this.selectSmokes.push(item);
+        }
+      } else if (state === "drinking") {
+        /** 음주 **/
+        if (this.isSelectedDrinking(item)) {
+          this.selectDrinkings.splice(this.selectDrinkings.indexOf(item), 1);
+        } else {
+          if (this.selectDrinkings.length > 0) {
+            this.selectDrinkings.splice(0, 1);
+          }
+          this.selectDrinkings.push(item);
+        }
+      }
+    },
+
+    /** next btn **/
+    isValidateAndNavigate() {
+      if (this.isValidateForm) {
+        this.goRouter();
+      } else {
+        if (this.selectSmokes.length === 0) {
+          this.warningAlert("흡연여부를 선택하지 않았습니다.");
+        } else if (this.selectDrinkings.length === 0) {
+          this.warningAlert("음주여부를 선택하지 않았습니다.");
+        } else if (this.selectedValue === 139) {
+          this.warningAlert("키를 선택하지 않았습니다.");
+        } else if (this.weightValue === 39) {
+          this.warningAlert("몸무게를 선택하지 않았습니다.");
+        }
+
+        // else if (this.selectBodys.length === 0) {
+        //   this.warningAlert("체형을 선택하지 않았습니다.");
+        // }
+      }
+    },
+
+    /** title bar **/
+    updateProgressBar() {
+      const input = document.querySelector("ion-input");
+      const progressBar = document.querySelector(".progress-bar");
+
+      if (input.value.trim() !== "") {
+        progressBar.style.width = "60%";
+      } else {
+        progressBar.style.width = "45%";
+      }
+    },
+
+    /* 경고 팝업창 */
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    async presentAlertConfirm() {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "이 화면에서 나가면 입력한 내용은 저장되지 않습니다.",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "나가기",
+            handler: () => {
+              this.$router.go(-1);
+            }
+          }
+        ]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>

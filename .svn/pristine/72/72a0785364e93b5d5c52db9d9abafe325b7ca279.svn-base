@@ -1,0 +1,65 @@
+<template>
+  <div  class="icon-rank-badge">
+    <ion-text
+      class="rank-num"
+      v-if="index < 100"
+    >
+      {{ index + 1 }}
+    </ion-text>
+    <!-- TODO : 랭크 UP & DOWN COUNT -->
+    <!--    <div class="rank-cnt">-->
+    <!--      <ion-text color="danger" v-if="true"> -->
+    <!--        1 <ion-icon :icon="caretUpSharp" />-->
+    <!--      </ion-text>-->
+    <!--      <ion-text color="primary" v-else> -->
+    <!--        2 <ion-icon :icon="caretDownSharp" />-->
+    <!--      </ion-text>-->
+    <!--    </div>-->
+  </div>
+</template>
+<script>
+import { caretUpSharp, caretDownSharp } from "ionicons/icons";
+export default {
+  name: ' RankBadge',
+  props: {
+    index: {
+      type: Number
+    }
+  },
+  data() {
+    return {
+      caretUpSharp,
+      caretDownSharp,
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.icon-rank-badge {
+  position: absolute;
+  left: 8px;
+  top: 4px;
+
+  .rank-num {
+    display: block;
+    color: white;
+    font-size: 16px;
+    font-weight: bolder;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 1);
+    line-height:1;
+  }
+  .rank-cnt {
+    font-size: 10px;
+    font-weight: bolder;
+    text-align: center;
+    ion-text {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 1);
+    }
+  }
+}
+</style>

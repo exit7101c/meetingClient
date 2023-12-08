@@ -1,0 +1,852 @@
+<template>
+  <ion-page>
+    <custom-header page-name="소모임"></custom-header>
+    <ion-content>
+      <div class="ion-padding pb-0" v-if="bannerList.length > 0">
+        <!-- 배너 -->
+        <MainBanner :bannerList="bannerList" />
+      </div>
+      <!-- 카테고리 탭 -->
+      <div class="sticky-top">
+        <ion-segment
+          v-model="partitionCd"
+          mode="ios"
+          :scrollable="true"
+          class="segment-chip"
+          value=""
+        >
+          <ion-segment-button
+            value=""
+            @click="partitionBtn('all')"
+            class="shape-round"
+            >전체
+          </ion-segment-button>
+          <ion-segment-button
+            :disabled="false"
+            v-for="item in partitionList"
+            :key="item.id"
+            :value="item.partitionCd"
+            @click="partitionBtn(item)"
+            class="shape-round"
+          >
+            {{ item.partitionNm }}
+          </ion-segment-button>
+        </ion-segment>
+        <div class="sub-category">
+          <ion-segment
+            mode="ios"
+            value=""
+            class="segment-chip category-filter"
+            style="padding: 0 0 14px 18px"
+          >
+            <ion-segment-button
+              value=""
+              @click="this.subCategoryModalOpen = true"
+              class="shape-round"
+            >
+              <ion-row>
+                {{ searchFilterName }}
+                <ion-icon :icon="swapVerticalOutline" />
+              </ion-row>
+            </ion-segment-button>
+            <ion-segment-button
+              value="map"
+              @click="goRouter('map')"
+              class="shape-round segment-map"
+            >
+              <ion-row>
+                지도
+                <ion-icon :icon="locationOutline" />
+              </ion-row>
+            </ion-segment-button>
+          </ion-segment>
+          <ion-segment
+            v-model="subPartitionCd"
+            mode="ios"
+            :scrollable="true"
+            value=""
+            class="segment-chip category-list"
+          >
+            <ion-segment-button
+              value=""
+              @click="partitionSubBtn"
+              class="border-secondary"
+              >전체
+            </ion-segment-button>
+            <template v-if="partitionCd !== ''">
+              <ion-segment-button
+                :disabled="false"
+                v-for="item in partitionSubList"
+                :key="item.id"
+                :value="item.subPartitionCd"
+                class="border-secondary"
+                @click="partitionSubBtn(item)"
+              >
+                {{ item.subPartitionNm }}
+              </ion-segment-button>
+            </template>
+            <!-- 스타일을 잡기위한 더미용 -->
+            <template v-if="!partitionSubList.length || partitionCd === ''">
+              <ion-segment-button
+                v-for="(n, index) in 10"
+                :key="index"
+                class="is-blind"
+              >
+              </ion-segment-button>
+            </template>
+          </ion-segment>
+        </div>
+      </div>
+      <ion-searchbar
+        class="meetingSearch"
+        @keypress="seasearchrchChat($event)"
+        @ionInput="inputStr($event)"
+        placeholder="소모임을 찾아보세요."
+        mode="md"
+        style="color:white;height:35px;width: 80%;float: left;"
+      >
+      </ion-searchbar>
+      <custom-button
+        color="primary"
+        style="margin-top:0px;"
+        @click="searchBtn()"
+      >
+        조회
+      </custom-button>
+      <!-- Refresh -->
+      <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+        <ion-refresher-content
+          refreshing-spinner="circles"
+          :pulling-icon="chevronDownCircleOutline"
+        ></ion-refresher-content>
+      </ion-refresher>
+      <!-- /Refresh -->
+      <div class="ion-padding pt-0">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6" v-for="(item, idx) in openChatList" :key="idx">
+              <OpenChatCardItem
+                :item="item"
+                @event="goOpenChatView(item)"
+                class="openchat-card"
+              />
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-infinite-scroll threshold="100px" @ionInfinite="ionInfinite">
+          <ion-infinite-scroll-content
+            loadingText="Please wait..."
+            loadingSpinner="bubbles"
+          ></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </div>
+    </ion-content>
+
+    <ion-modal
+      ref="modal"
+      :is-open="subCategoryModalOpen"
+      @ionModalDidDismiss="subCategoryModalOpen = false"
+      :initial-breakpoint="0.95"
+      :breakpoints="[0, 0.95]"
+      style="--width: 95%; --height: 350px"
+    >
+      <ion-content class="ion-padding">
+        <ion-toolbar>
+          <ion-title>조회기준 설정</ion-title>
+        </ion-toolbar>
+        <ion-list class="schedule-info">
+          <ion-radio-group
+            value="popular"
+            v-model="searchFilter"
+            class="item-board"
+            @ionChange="confirmFilter"
+          >
+            <div class="row-box">
+              <ion-item lines="none" color="tertiary">
+                <ion-radio
+                  slot="start"
+                  style="margin-left: 10px"
+                  value="popular"
+                />
+                <ion-label class="text-left">
+                  <ion-row class="gap-md ion-align-items-center">
+                    <p>인기순</p>
+                  </ion-row>
+                </ion-label>
+              </ion-item>
+            </div>
+            <div class="row-box">
+              <ion-item lines="none" color="tertiary">
+                <ion-radio
+                  slot="start"
+                  style="margin-left: 10px"
+                  value="time"
+                />
+                <ion-label class="text-left">
+                  <ion-row class="gap-md ion-align-items-center">
+                    <p>최신순</p>
+                  </ion-row>
+                </ion-label>
+              </ion-item>
+            </div>
+            <div class="row-box">
+              <ion-item lines="none" color="tertiary">
+                <ion-radio
+                  slot="start"
+                  style="margin-left: 10px"
+                  value="latlon"
+                />
+                <ion-label class="text-left">
+                  <ion-row class="gap-md ion-align-items-center">
+                    <p>거리순</p>
+                  </ion-row>
+                </ion-label>
+              </ion-item>
+            </div>
+          </ion-radio-group>
+        </ion-list>
+      </ion-content>
+    </ion-modal>
+    <!--  하단 플로팅 버튼 -->
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button
+        fill="clear"
+        @click="getPrivateYnCountCheck"
+        style="padding: 5px"
+      >
+        <!--      <ion-fab-button-->
+        <!--        fill="clear"-->
+        <!--        @click="goOpenChatWrite"-->
+        <!--        style="padding: 5px"-->
+        <!--      >-->
+        <ion-ripple-effect></ion-ripple-effect>
+        <ion-icon :icon="pencilOutline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+    <AlertMessageModal
+      :is-open="alertMessageModal"
+      :title="'NAVY'"
+      :message="alertMessage"
+      :subMessage="alertSubMessage"
+      :btnName="checkRouter == 'Y' ? '이동' : '확인'"
+      :height="220"
+      :disabledCheck="false"
+      @ionModalDidDismiss="alertMessageModal = false"
+      @handleClickBtn="goRouter('store')"
+    />
+    <!--  /하단 플로팅 버튼 -->
+  </ion-page>
+</template>
+
+<script>
+import {
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonRippleEffect,
+  IonRefresher,
+  IonRefresherContent
+} from '@ionic/vue';
+import {
+  chevronBack,
+  calendarClearOutline,
+  pencilOutline,
+  chevronDownCircleOutline,
+  notificationsOutline,
+  storefrontOutline,
+  volumeMediumOutline,
+  personOutline,
+  optionsOutline,
+  mapOutline,
+  locationOutline,
+  swapVerticalOutline
+} from 'ionicons/icons';
+import MainBanner from '@/components/Home/MainBanner.vue';
+import OpenChatCardItem from '@/components/OpenChat/OpenChatCardItem.vue';
+import {
+  getData,
+  openChatViewMapFn,
+  openChatWriteMapFn,
+  openChatMeetMap,
+  openChatMeetMapFn,
+  storeMapFn
+} from '@/assets/js/common';
+import AlertMessageModal from '@/components/Modal/AlertMessageModal';
+
+export default {
+  name: 'OpenChat',
+  inject: ['alertController', 'loadingController'],
+  components: {
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    IonRippleEffect,
+    IonRefresher,
+    IonRefresherContent,
+    MainBanner,
+    OpenChatCardItem,
+    AlertMessageModal
+  },
+  data() {
+    return {
+      locationOutline,
+      swapVerticalOutline,
+      chevronBack,
+      calendarClearOutline,
+      pencilOutline,
+      chevronDownCircleOutline,
+      storefrontOutline,
+      volumeMediumOutline,
+      personOutline,
+      notificationsOutline,
+      optionsOutline,
+      mapOutline,
+      searchFilter: 'popular',
+      searchFilterName: '인기순',
+      partitionList: [],
+      openChatList: [],
+      alwaysYn: false,
+      partitionCd: '',
+      searchStr: '',
+      pageNo: 1,
+      pageSize: 15,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+      imgsLength: 0,
+      loadedImgsLength: 0,
+      bookmarkYn: '',
+
+      partitionSubList: [],
+      subPartitionCd: '',
+      subCategoryModalOpen: false,
+
+      bannerList: [],
+      privateCountCheck: true,
+      checkRouter: '',
+      alertMessageModal: false,
+      alertMessage: '',
+      alertSubMessage: ''
+    };
+  },
+  computed: {
+    ready() {
+      return true;
+      //return this.loadedImgsLength == this.imgsLength;
+    }
+  },
+  ionViewWillEnter() {
+    //시작
+    this.getBannerList();
+    if (this.searchStr.length < 2) {
+      this.searchStr = '';
+    }
+    this.partitionCheck();
+  },
+  ionViewDidLeave() {
+    // 초기화
+  },
+  mounted() {
+    //파티션조회
+    this.getPartitionList();
+    // this.getPartitionSubList();
+  },
+  methods: {
+    /** 글 활성화 갯수 체크 **/
+    getPrivateYnCountCheck() {
+      getData({
+        url: '/getPrivateYnCountCheck',
+        param: {},
+        then: (data) => {
+          if (data.successYn == 'Y') {
+            this.goOpenChatWrite();
+          } else {
+            // this.warningAlert("", data.message);
+            this.alertMessage = data.message;
+            this.alertSubMessage = data.subMessage;
+            this.checkRouter = data.router;
+            this.alertMessageModal = true;
+          }
+        }
+      });
+    },
+    /** 파티션 리스트 조회 **/
+    getPartitionList() {
+      getData({
+        url: '/getPartitionList',
+        param: {},
+        then: (data) => {
+          this.partitionList = data;
+
+          // if (this.partitionCd === "")
+          //   this.partitionCd = data[0]["partitionCd"];
+
+          this.$nextTick(() => {
+            // this.getOpenChatList();
+            this.partitionCheck();
+            this.getPartitionSubList();
+          });
+        }
+      });
+    },
+    partitionCheck() {
+      if (this.partitionCd === 'test3') {
+        this.searchFilter = 'latlon';
+        this.searchFilterName = '거리순';
+      } else if (this.partitionCd === 'test5') {
+        this.searchFilter = 'time';
+        this.searchFilterName = '최신순';
+      } else {
+        this.searchFilter = 'popular';
+        this.searchFilterName = '인기순';
+      }
+    },
+    /** 파티션 리스트 조회 **/
+    getPartitionSubList() {
+      getData({
+        url: '/getPartitionSubList',
+        param: { partitionCd: this.partitionCd },
+        then: (data) => {
+          this.partitionSubList = data;
+
+          this.$nextTick(() => {
+            this.getOpenChatList();
+          });
+        }
+      });
+    },
+    /** 오픈챗 리스트 조회 **/
+    getOpenChatList() {
+      // 초기화
+      this.pageNo = 1; //페이지 넘버
+      this.imgsLength = 0; //전체 이미지수 초기화
+      this.loadedImgsLength = 0; //조회완료된 이미지수
+      this.pageSize = 15;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+      getData({
+        url: '/getOpenChatList',
+        param: {
+          partitionCd: this.partitionCd,
+          subPartitionCd: this.subPartitionCd,
+          sortCd: this.searchFilter,
+          alwaysYn: this.alwaysYn === true ? 'Y' : 'N',
+          str: this.searchStr,
+          pageNo: this.pageNo,
+          pageSize: this.pageSize
+        },
+        then: (data) => {
+          for (let idx in data.result) {
+            data.result[idx]['pageNo'] = data.pageNo;
+          }
+          this.openChatList = data.result;
+          this.totalCount = data.totalCount;
+
+          if (this.partitionCd === '') {
+            this.partitionCd = '';
+          }
+
+          this.$nextTick(() => {
+            this.imgsLength = this.imgsLength + data.result.length;
+          });
+        }
+      });
+    },
+
+    /** 무한스크롤 이벤트 **/
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function () {
+        self.pageNo = self.currentPageNo + 1;
+
+        getData({
+          url: '/getOpenChatList',
+          param: {
+            partitionCd: self.partitionCd !== '' ? self.partitionCd : '',
+            sortCd: self.searchFilter,
+            alwaysYn: self.alwaysYn === true ? 'Y' : 'N',
+            str: self.searchStr,
+            pageNo: self.pageNo,
+            pageSize: self.pageSize
+          },
+          then: (data) => {
+            if (!data.isExist) {
+              return;
+            }
+            for (let i in data.result) {
+              data.result[i]['pageNo'] = data.pageNo;
+              self.openChatList.push(data.result[i]);
+              self.imgsLength++;
+            }
+            self.currentPageNo += 1;
+            self.$nextTick(() => {
+              if (self.openChatList.length === self.totalCount) {
+                self.isEndScroll = true;
+              }
+              //this.loadedImgsLength = 0;
+              //this.imgsLength = this.imgsLength + data.result.length;
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    },
+
+    /** openChatView 전환 **/
+    goOpenChatView(item) {
+      if (item.delYn === 'N') {
+        // openChatViewMapFn({ openChatKey: item.openChatKey, type: 'openChat' });
+        // this.$router.push('/openChatView');
+        openChatMeetMapFn({
+          openChatKey: item.openChatKey,
+          chatroomId: item.chatroomId
+        });
+        openChatViewMapFn(openChatMeetMap);
+        this.$router.push("/openChatMeet");
+      } else {
+        this.warningAlert('❌', '삭제된 게시글입니다.');
+      }
+    },
+
+    /** openChatWrite로 전환 **/
+    goOpenChatWrite() {
+      openChatWriteMapFn({ openChatKey: '', type: 'new' });
+      this.$router.push('/openChatWrite');
+    },
+
+    /** 파티션 선택 이벤트 **/
+    partitionBtn(item) {
+      this.subPartitionCd = '';
+      // if (item) {
+      //   this.partitionCd = item["partitionCd"];
+      // } else {
+      //   this.partitionCd = "";
+      // }
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 15;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      if (item == 'all') {
+        this.partitionCd = '';
+        // this.subPartitionCd = [];
+      } else {
+        this.partitionCd = item['partitionCd'];
+      }
+
+      this.$nextTick(() => {
+        this.getPartitionList();
+        // this.getOpenChatList();
+        // this.getPartitionSubList();
+      });
+    },
+    partitionSubBtn(item) {
+      if (item) {
+        this.subPartitionCd = item['subPartitionCd'];
+      } else {
+        this.subPartitionCd = '';
+      }
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 15;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      this.$nextTick(() => {
+        this.getOpenChatList();
+      });
+    },
+    /** 찜 여부 **/
+    eyeOn(item) {
+      if (this.partitionCd === '') {
+        this.partitionCd = '';
+      }
+      this.showLoading();
+
+      getData({
+        url: '/setOpenChatBookmark',
+        param: {
+          openChatKey: item.openChatKey
+        },
+        then: () => {
+          this.$nextTick(() => {
+            this.getOpenChatList();
+          });
+
+          this.loading.dismiss();
+        }
+      });
+    },
+
+    /** Refresh **/
+    doRefresh(event) {
+      if (!this.ready) {
+        event.target.complete();
+        return;
+      }
+      if (this.partitionCd === '' || this.subPartitionCd === 'map') {
+        this.partitionCd = '';
+        this.subPartitionCd = '';
+      }
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 15;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      this.getOpenChatList(this.partitionCd);
+
+      setTimeout(() => {
+        event.target.complete();
+      }, 500);
+    },
+    /** 모달창 닫기 **/
+    dismiss() {
+      this.$refs.modal.$el.dismiss();
+    },
+
+    /** 임시 검색 필터 버튼 처리 **/
+    confirmFilter() {
+      this.searchFilterName =
+        this.searchFilter === 'time'
+          ? '최신순'
+          : this.searchFilter === 'popular'
+          ? '인기순'
+          : '거리순';
+      this.getOpenChatList(this.partitionCd);
+      this.dismiss();
+    },
+    /** 검색영역 입력 시 searchStr 저장 **/
+    inputStr(e) {
+      this.searchStr = e.target.value.toLowerCase();
+    },
+    seasearchrchChat(event) {
+      /** 엔터키 입력한게 아니라면 return **/
+      if (event.keyCode !== 13) {
+        return;
+      } else {
+        /** 엔터키 입력했다면 실행 (두글자로 조회시 조회가 안됨 쿼리수정필요) **/
+        if (this.searchStr.length === 0) {
+          this.getOpenChatList(this.partitionCd);
+        } else if (this.searchStr.length >= 2) {
+          this.getOpenChatList(this.partitionCd);
+        } else {
+          this.warningAlert('', '2글자 이상 입력해야 합니다.');
+        }
+      }
+    },
+    searchBtn() {
+      this.getOpenChatList(this.partitionCd);
+    },
+    /** 로딩 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: 'Loading...',
+        duration: 0
+      });
+
+      await this.loading.present();
+    },
+    goRouter(type) {
+      if (type === 'map') {
+        this.subPartitionCd = '';
+        openChatViewMapFn({ modal: 'close' });
+        this.$router.push('/openChatMap');
+      } else if (type === 'store') {
+        this.alertMessageModal = false;
+        if (this.checkRouter == 'Y') {
+          storeMapFn({ subscribeYn: 'Y' });
+          this.$router.push('/store');
+        }
+      }
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(title, message) {
+      const alert = await this.alertController.create({
+        header: title,
+        subHeader: '',
+        message: message,
+        buttons: ['OK']
+      });
+      return alert.present();
+    },
+
+    getBannerList() {
+      getData({
+        url: '/getBannerList',
+        param: { bannerType: 'OPENCHAT' },
+        //param: { bannerType: "HOME" },
+        then: (data) => {
+          this.$nextTick(() => {
+            let sampleList = data;
+            this.bannerList = [...sampleList].sort(() => Math.random() - 0.5);
+          });
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+ion-modal {
+  --border-radius: 10px;
+
+  &.custom-modal {
+    --width: 100%;
+    --height: 200px;
+
+    ion-select {
+      margin: 10px 0;
+      padding: 0;
+      font-size: 10px;
+    }
+
+    icon-col {
+      --padding-start: 0;
+      --padding-end: 0;
+    }
+  }
+}
+
+.openChat-item {
+  --border-radius: var(--ion-border-radius);
+  --background-focused: var(--ion-color-secondary);
+
+  &:hover {
+    &::part(native) {
+      background: var(--ion-color-secondary);
+    }
+  }
+
+  ion-text {
+    h2 {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    p {
+      font-size: 12px;
+    }
+  }
+}
+
+.item-board {
+  ion-item {
+    --border-radius: var(--ion-border-radius);
+    --background-focused: var(--ion-color-secondary);
+
+    &:hover {
+      &::part(native) {
+        background: var(--ion-color-secondary);
+      }
+    }
+
+    ion-text {
+      h2 {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      p {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.sticky-top {
+  .sub-category {
+    margin-top: -5px !important;
+
+    display: flex;
+    flex-direction: row;
+
+    .category-filter {
+      border-radius: 0px !important;
+      width: calc(100vw - 55%) !important;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+
+      ion-segment-button {
+        padding: 0px 0px 0px 5px !important;
+        height: 22px;
+      }
+    }
+
+    .category-list {
+      border-radius: 0px !important;
+      padding: 0px 0px 14px 10px !important;
+      margin-top: 1px !important;
+      width: calc(100vw - 40%) !important;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+
+      ion-segment-button {
+        height: 22px;
+
+        &.segment-lg {
+          padding: 4px !important;
+        }
+
+        //&:first-child {
+        //  margin-left: 10px !important;
+        //}
+      }
+    }
+  }
+}
+
+.segment-container {
+  display: flex;
+  align-items: center;
+}
+
+.fixed-buttons,
+.scrollable-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.fixed-buttons {
+  flex-shrink: 0;
+  background: #7974f2;
+  border: #7974f2;
+  margin: 0 5px 0 10px;
+  border-radius: 10px;
+}
+
+.scrollable-buttons {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.scrollable-buttons::-webkit-scrollbar {
+  display: none;
+}
+
+ion-list.openchat-card-list {
+  .openchat-card {
+    margin-right: 10px;
+
+    &:last-child {
+      margin-right: 0px;
+    }
+  }
+}
+
+.ion-color {
+  --ion-color-base: #474c57 !important;
+}
+</style>

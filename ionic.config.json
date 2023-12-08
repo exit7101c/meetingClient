@@ -1,0 +1,8 @@
+{
+  "name": "navy",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+
+}

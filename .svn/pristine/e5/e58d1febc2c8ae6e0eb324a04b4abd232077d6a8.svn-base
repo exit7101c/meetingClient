@@ -1,0 +1,514 @@
+<template>
+
+  <ion-page>
+    <ion-content ref="msgContainer" class="ion-padding important-height">
+      <ion-infinite-scroll threshold="100px" @ionInfinite="messageInfinite" position="top">
+        <ion-infinite-scroll-content
+          loadingText="Please wait..."
+          loadingSpinner="bubbles"
+        ></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <ion-label>
+        <div v-for="item in messageTalkList" v-bind:key="item.messageId">
+          <!--상대방-->
+          <template
+            v-if="
+              this.SS_USER_KEY !== item.regUserKey && item.messageType !== 'Y'
+            "
+          >
+            <MessageTalkItem
+              :item="item"
+              :chatroomType="chatroomType"
+              @zoomImg="openZoomedImage(item.cdnNmImage)"
+            />
+          </template>
+          <template
+            v-if="
+              this.SS_USER_KEY === item.regUserKey && item.messageType !== 'Y'
+            "
+          >
+            <MessageTalkItem
+              :type="true"
+              :item="item"
+              :chatroomType="chatroomType"
+              @zoomImg="openZoomedImage(item.cdnNmImage)"
+            />
+          </template>
+
+          <MessageTalkLabel
+            :message="item.message"
+            v-if="item.messageType === 'Y'"
+          />
+        </div>
+      </ion-label>
+    </ion-content>
+    <ion-footer class="no-padding">
+      <MessageTalkSendForm
+        v-model:value="content"
+        :newimgFileId="imgCdnNm"
+        :newimgViewFileId="imgCdnNm"
+        :emoticonList="emoticonList"
+        @handleAddPhoto="addPhoto()"
+        @sendComment="send('chat')"
+        @emoticonClick="emoticonClick"
+        @handleEmoji="handleEmoji"
+      />
+      <input
+        type="file"
+        @change="onFileChange"
+        ref="photo"
+        class="is-blind"
+      />
+    </ion-footer>
+  </ion-page>
+</template>
+<script>
+import MessageTalkItem from "@/components/MessageTalk/MessageTalkItem.vue";
+import MessageTalkLabel from "@/components/MessageTalk/MessageTalkLabel.vue";
+import MessageTalkSendForm from "@/components/MessageTalk/MessageSendForm.vue";
+import { getData, setFile, SS_USER_KEY } from "@/assets/js/common";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import Hammer from "hammerjs";
+
+export default {
+  name: "OpenChatMeetMessage",
+  components: {
+    MessageTalkItem,
+    MessageTalkLabel,
+    MessageTalkSendForm
+  },
+  props: {
+    chatroomId: {
+      type: String
+    }
+  },
+  computed: {
+    messageTalkList() {
+      return this.$store.state.messageList;
+    }
+  },
+  watch: {
+    messageTalkList: {
+      deep: true,
+      handler() {
+        //computed messageTalkList가 변형될때 실행되는 함수
+        if (this.currentMsgHeightCalc <= 350) {
+          this.scrollToBottom();
+        }
+      }
+    }
+  },
+  data: {
+    SS_USER_KEY,
+    content: "",
+    imgCdnNm: "",
+    emoticonList: [],
+    selectType: "first",
+    nextNo: 0,
+    interval4: null,
+    isFirst: true,
+    chatroomType: "openchat",
+    isZoomed: false
+  },
+
+  mounted() {
+    this.$store.state.messageList = [];
+    this.selectType = "first";
+    this.nextNo = 0;
+
+    this.updateMessageRecept();
+    this.getMessageList();
+    this.scrollToBottom();
+  },
+
+  unmounted() {
+    clearInterval(this.interval4);
+    this.isFirst = true;
+  },
+  methods: {
+    messageInfinite(event) {
+      let self = this;
+
+      if (self.selectType == "first") {
+        self.isEndScroll = true;
+        event.target.complete();
+        return;
+      }
+
+      setTimeout(function() {
+        getData({
+          url: "/messageMain/getMessageList",
+          param: {
+            chatroomId: chatroomId,
+            type: self.selectType,
+            nextNo: self.nextNo
+          },
+          then: (data) => {
+            self.$nextTick(() => {
+              if (self.selectType != "first") {
+                self.$store.state.messageList.unshift(...data);
+              } else {
+                self.$store.state.messageList = data;
+              }
+              self.selectType = "second";
+              if (data.length > 0) {
+                self.nextNo = data[0]["messageId"];
+              }
+              self.isEndScroll = true;
+              event.target.complete();
+
+              self.replaceURL();
+            });
+
+            if (self.interval4 == null) {
+              self.interval4 = setInterval(async () => {
+                const elem = self.$refs.msgContainer.$el;
+                const scrollElement = await elem.getScrollElement();
+                let maxHeight = scrollElement.scrollHeight;
+                let currentHeight = scrollElement.scrollTop + 736;
+                let heightPx = maxHeight - currentHeight;
+
+                self.$store.state.currentMsgHeightCalc = heightPx;
+                self.currentMsgHeightCalc = heightPx;
+              }, 2000);
+            }
+          }
+        });
+      }, 1000);
+    },
+
+    getChatRoomType() {
+      getData({
+        url: "/messageMain/getChatRoomType",
+        param: { chatroomId: chatroomId },
+        then: (data) => {
+          this.chatroomType = data.chatroomType;
+        }
+      });
+    },
+
+    getEmoticonList() {
+      getData({
+        url: "/messageMain/getEmoticonList",
+        param: {},
+        then: (data) => {
+          this.emoticonList = data;
+        }
+      });
+    },
+
+    addPhoto() {
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then(r => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile();
+        });
+
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+      // this.$refs.photo.click();
+    },
+    onFileChange: function onFileChange(e) {
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(e);
+      });
+    },
+    //사진 저장
+    insertFile() {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          this.imgFileId = data.fileId;
+          this.imgCdnNm = data.cdnNm;
+
+          this.loading.dismiss();
+          this.$nextTick(() => {
+            this.send("image");
+          });
+        }
+      });
+    },
+
+    replaceURL() {
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      Array.from(this.messageTalkList).forEach((message, index) => {
+        let _match = message.message.match(regexp);
+        let match = [...new Set(_match)];
+        this.messageTalkList[index]["replaceMessage"] = message.message;
+        Array.from(match).forEach((item) => {
+          if (!item.includes("http")) {
+            this.messageTalkList[index]["replaceMessage"] = this.messageTalkList[index]["replaceMessage"].replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+          } else {
+            this.messageTalkList[index]["replaceMessage"] = this.messageTalkList[index]["replaceMessage"].replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+          }
+        });
+      });
+    },
+
+    send(type) {
+      if (this.isChatBlock) {
+        this.warningAlert("삭제된 소모임입니다.<br />삭제된 글에는 더 이상 채팅을 할 수 없습니다.");
+        return;
+      }
+
+      if (type !== "emoticon" && type !== "image" && (this.content === null || this.content === "")) {
+        this.warningAlert("보낼 메세지를 작성해 주세요");
+        return;
+      }
+
+      if (type !== "image" && type !== "emoticon") {
+        this.imgFileId = "";
+        this.imgCdnNm = "";
+      }
+      getData({
+        url: "/messageMain/sendMessageSingle",
+        param: {
+          chatroomId: chatroomId,
+          message: this.content,
+          type: type,
+          fileId: this.imgFileId
+        },
+        then: (res) => {
+          if (res.successYn == "N") {
+            this.warningAlert(res.message);
+          } else {
+            this.imgFileId = "";
+            this.imgCdnNm = "";
+            this.messageTalkList.push(res);
+            this.scrollToBottom();
+          }
+
+          this.$nextTick(() => {
+            this.replaceURL();
+          });
+        }
+      });
+      this.content = "";
+    },
+
+    emoticonClick(item) {
+      this.content = item.emoticonNm;
+      this.imgFileId = item.fileId;
+
+      this.send("emoticon");
+    },
+
+    handleEmoji() {
+      this.$refs.msgContainer.$el.scrollToBottom(0);
+    },
+
+    getMessageList() {
+      let self = this;
+
+      this.talkUserCnt = 0;
+      if (this.selectType !== "first" && this.nextNo === "0") {
+        alert("시스템오류 관리자에게 문의하세요.");
+        return;
+      }
+
+      clearInterval(this.interval4);
+
+      getData({
+        url: "/messageMain/getMessageList",
+        param: {
+          chatroomId: chatroomId,
+          type: this.selectType,
+          nextNo: this.nextNo
+        },
+        then: (data) => {
+          this.$store.state.messageList = data;
+          if (data.length > 0) {
+            this.selectType = "second";
+            this.nextNo = data[0]["messageId"];
+          }
+          this.$nextTick(() => {
+
+            self.interval4 = setInterval(async () => {
+              const elem = self.$refs.msgContainer.$el;
+              const scrollElement = await elem.getScrollElement();
+              let maxHeight = scrollElement.scrollHeight;
+              let currentHeight = scrollElement.scrollTop + 736;
+              let heightPx = maxHeight - currentHeight;
+
+              self.$store.state.currentMsgHeightCalc = heightPx;
+              self.currentMsgHeightCalc = heightPx;
+            }, 2000);
+
+            self.replaceURL();
+          });
+        }
+      });
+    },
+    updateMessageRecept() {
+      //메시지 읽음처리
+      getData({
+        url: "/messageMain/updateMessageRecept",
+        param: { chatroomId: chatroomId },
+        then: () => {
+        }
+      });
+    },
+
+    scrollToBottom(item) {
+      if (item !== undefined && item !== null) {
+        item.isLoaded = true;
+      }
+
+      setTimeout(() => {
+        this.$refs.msgContainer.$el.scrollToBottom(0);
+      }, 100);
+    },
+    openZoomedImage(data) {
+      this.isZoomed = false;
+      if (!this.isZoomed) {
+        const imageUrl = "https://" + data;
+        const modal = document.createElement("div");
+        const modalImage = document.createElement("img");
+
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.zIndex = "1000";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+
+        modalImage.src = imageUrl;
+        modalImage.style.width = "90%";
+        modalImage.style.height = "auto";
+        modalImage.style.objectFit = "contain";
+        modalImage.style.transformOrigin = "center";
+        modalImage.style.pointerEvents = "auto";
+
+        modal.appendChild(modalImage);
+        document.body.appendChild(modal);
+
+        const hammer = new Hammer(modalImage);
+
+        let currentScale = 1;
+        let posX = 0;
+        let posY = 0;
+        let lastPosX = 0;
+        let lastPosY = 0;
+
+        hammer.get("pinch").set({ enable: true });
+        hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+        hammer.on("pinchin pinchout", (event) => {
+          if (event.type === "pinchin") {
+            currentScale -= 0.02;
+          } else if (event.type === "pinchout") {
+            currentScale += 0.02;
+          }
+
+          currentScale = Math.min(Math.max(currentScale, 0.5), 3);
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panmove", (event) => {
+          posX = lastPosX + event.deltaX;
+          posY = lastPosY + event.deltaY;
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panend", () => {
+          lastPosX = posX;
+          lastPosY = posY;
+        });
+
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+        this.isZoomed = true;
+      } else {
+        this.isZoomed = false;
+      }
+    }
+  }
+};
+
+
+</script>
+<style lang="scss" scoped>
+* {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.important-height {
+  height: 2000px;
+}
+
+.message-talk-info {
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+
+    ion-label {
+      margin-right: 10px;
+    }
+
+    ion-toggle {
+      padding-left: 0;
+    }
+  }
+}
+
+.custom-fixed {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  top: 65px;
+  right: 15px;
+  z-index: 1000;
+  padding: 3px 15px 3px 3px;
+  background: rgba(0, 0, 0, 0.90);
+  border-radius: 25px;
+
+}
+
+.alert-button-block {
+  color: red !important;
+}
+</style>

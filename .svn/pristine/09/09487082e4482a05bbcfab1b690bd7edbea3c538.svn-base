@@ -1,0 +1,123 @@
+<template>
+  <swiper
+    :modules="modules"
+    :space-between="8"
+    :free-mode="true"
+    slides-per-view="auto"
+  >
+    <swiper-slide v-for="(item, index) in itemList" :key="index">
+      <ion-card @click="goUserProfileView(item)" mode="ios">
+        <ion-skeleton-text
+          :animated="true"
+          v-if="!loaded"
+          class="skeleton-img"
+        />
+        <ion-img
+          v-else
+          :src="'https://' + item.cdnThumbNm"
+          @ionError="
+            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+          "
+        />
+        <ion-card-header>
+          <ion-card-title>
+            <ion-skeleton-text :animated="true" v-if="!loaded" />
+            <ion-text color="light" class="text-sm" v-else
+            >{{ item.nick }}
+            </ion-text>
+          </ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </swiper-slide>
+  </swiper>
+</template>
+<script>
+import { calendarClearOutline } from "ionicons/icons";
+import { dailyCardInfoMapFn } from "@/assets/js/common";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { FreeMode, Autoplay, Pagination, Navigation } from "swiper/modules";
+
+export default {
+  name: "MainProfileAdSlider",
+  components: {
+    Swiper,
+    SwiperSlide
+  },
+  props: {
+    itemList: {
+      type: Array
+    },
+    loaded: {
+      type: Boolean
+    }
+  },
+  data() {
+    return {
+      calendarClearOutline,
+      modules: [FreeMode, Autoplay, Pagination, Navigation]
+    };
+  },
+  methods: {
+    goUserProfileView(item) {
+      // dailyCardInfoMapFn({ userKey: item.userKey, type: 'home' });
+      // this.$router.push('/dailyCardInfo');
+      /** 임시텝 - 근처 로 보내기 **/
+      dailyCardInfoMapFn({ userKey: item.userKey, pageType: "home", likeSeq: item.likeSeq, nick: item.nick });
+      this.$router.push("/imsiTapCardDetail");
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+$width: 104px;
+$height: 104px;
+.swiper {
+
+  margin: 0;
+
+  .swiper-slide {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    max-width: $width;
+
+    .item-num {
+      font-size: 28px;
+      padding: 0 8px;
+      -webkit-text-stroke: 1px var(--ion-color-secondary);
+      text-shadow: 0 0 4px rgba(109, 110, 162, 0.5);
+      color: transparent;
+      font-weight: bold;
+    }
+  }
+
+  ion-card {
+    position: relative;
+    margin: 0;
+    background: transparent !important;
+    overflow: visible;
+    contain: inherit;
+
+    ion-img,
+    .skeleton-img {
+      width: $width;
+      height: $height;
+      object-fit: cover;
+      overflow: hidden;
+    }
+
+    ion-card-header {
+      margin-top: 10px;
+      padding: 0;
+      text-align: left;
+
+      ion-card-title {
+        text-align: left;
+        height: auto;
+        line-height: 1;
+        font-size: 0;
+      }
+    }
+  }
+}
+</style>

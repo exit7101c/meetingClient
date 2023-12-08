@@ -1,0 +1,670 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton @event="goRouter" :custom="true" />
+        </ion-buttons>
+        <ion-title>지도로 보기</ion-title>
+      </ion-toolbar>
+      <ion-toolbar class="category-filter">
+        <ion-segment
+          v-model="partitionCd"
+          mode="ios"
+          :scrollable="true"
+          class="segment-chip"
+        >
+          <ion-segment-button
+            value=""
+            @click="partitionBtn()"
+            class="shape-round"
+          >전체
+          </ion-segment-button>
+          <ion-segment-button
+            :disabled="false"
+            v-for="item in partitionList"
+            :key="item.id"
+            :value="item.partitionCd"
+            @click="partitionBtn(item)"
+            class="shape-round"
+          >
+            {{ item.partitionNm }}
+          </ion-segment-button>
+        </ion-segment>
+      </ion-toolbar>
+      <ion-toolbar class="category-filter">
+        <ion-segment
+          v-model="subPartitionCd"
+          mode="ios"
+          :scrollable="true"
+          value=""
+          class="segment-chip"
+        >
+          <ion-segment-button
+            value=""
+            @click="partitionSubBtn"
+            class="border-secondary"
+            >전체
+          </ion-segment-button>
+          <template v-if="partitionCd != ''">
+            <ion-segment-button
+              :disabled="false"
+              v-for="item in partitionSubList"
+              :key="item.id"
+              :value="item.subPartitionCd"
+              class="border-secondary"
+              @click="partitionSubBtn(item)"
+            >
+              {{ item.subPartitionNm }}
+            </ion-segment-button>
+          </template>
+          <!-- 스타일을 잡기위한 더미용 -->
+          <template v-if="!partitionSubList.length || partitionCd == ''">
+            <ion-segment-button
+              v-for="(n, index) in 10"
+              :key="index"
+              class="is-blind"
+            >
+            </ion-segment-button>
+          </template>
+        </ion-segment>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content :fullscreen="true">
+      <PageLoadingCheck
+        v-if="lodingCheck == false"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+          height: 100%;
+        "
+      />
+      <div id="openchatMap" style="width: 100%; height: 100%"></div>
+      <ion-modal
+        :is-open="mapInfoModal"
+        handle-behavior="cycle"
+        @ionModalDidDismiss="mapInfoModal = false"
+        :initial-breakpoint="0.95"
+        :breakpoints="[0, 0.15, 0.5, 0.95]"
+        class="custom-modal bottom-modal"
+      >
+        <ion-content>
+          <CustomModalLayout>
+            <template #header>
+              <OpenChatMapUserInfo
+                :item="modalItem"
+                :thumbnail="cdnThumbNmProfile"
+                @click="modalBtn('openProfile', modalItem)"
+              />
+            </template>
+            <template #content>
+              <div class="row-box">
+                <div class="content">
+                  <h5 class="text-xl text-bold">{{ modalItem.title }}</h5>
+                  <p class="text-md text-bold">
+                    {{ modalItem.content }}
+                  </p>
+                </div>
+              </div>
+            </template>
+            <template #footer>
+              <div class="row-box">
+                <ion-text color="light" class="text-sm">
+                  <ion-icon :icon="locationOutline"></ion-icon>
+                  <ion-label>
+                    <span>{{ modalItem.location }}</span>
+                  </ion-label>
+                </ion-text>
+              </div>
+              <div class="row-box">
+                <ion-button
+                  @click="modalBtn('openView', modalItem)"
+                  color="primary"
+                  shape="round"
+                  expand="block"
+                  size="large"
+                >
+                  게시글 이동
+                </ion-button>
+              </div>
+            </template>
+          </CustomModalLayout>
+        </ion-content>
+      </ion-modal>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import { locationOutline, search } from 'ionicons/icons';
+import { loadingController } from '@ionic/vue';
+import {
+  getData,
+  openChatViewMapFn,
+  dailyCardInfoMapFn,
+  getRecentDate
+} from '@/assets/js/common';
+import OpenChatMapUserInfo from '@/components/OpenChat/OpenChatMapUserInfo.vue';
+import PageLoadingCheck from '@/components/PageLoadingCheck.vue';
+import { MarkerClustering } from '@/assets/js/MarkerClustering';
+
+export default {
+  name: 'OpenChatMap',
+  components: {
+    OpenChatMapUserInfo,
+    PageLoadingCheck
+  },
+  data() {
+    return {
+      locationOutline,
+      search,
+      itemList: [],
+      map: null,
+
+      addrItem: '',
+      currLat: '',
+      currLon: '',
+      mapInfoModal: false,
+      modalItem: '',
+      loading: null,
+
+      partitionCd: '',
+      partitionList: [],
+      subPartitionCd: '',
+      partitionSubList: [
+        { id: 1, subPartitionCd: 'allTime', subPartitionNm: '상시 모집' },
+        { id: 2, subPartitionCd: 'today', subPartitionNm: '오늘' },
+        { id: 3, subPartitionCd: 'tomorrow', subPartitionNm: '내일' },
+        { id: 4, subPartitionCd: 'week', subPartitionNm: '이번주' },
+        { id: 5, subPartitionCd: 'month', subPartitionNm: '이번달' }
+      ],
+
+      mainFileId: '',
+      regUserKey: '',
+      userPhotoId: '',
+      isEndScroll: false,
+
+      ssUserYn: '',
+      attendYn: '',
+      attendChk: '',
+      inviteYn: '',
+      attendRegTime: '',
+      modalHeight: '500px',
+      intervalId: null,
+
+      selectedLat: null, // 클릭한 위치의 위도
+      selectedLng: null, // 클릭한 위치의 경도
+
+      cdnThumbNmProfile: '',
+      lodingCheck: false,
+
+      markers: [],
+      htmlMarker1: {
+        content:
+          "<div class='marker' style='display: flex; align-items: center; justify-content: center; background-color: #191A37; color: #fff; font-size: 20px; font-weight: 700; box-shadow: 6px 6px 10px rgba(color: #000000, alpha: 0.16);'></div>",
+        size: window.naver.maps.Size(40, 40),
+        anchor: window.naver.maps.Point(20, 20)
+      },
+      htmlMarker2: {
+        content:
+          "<div class='marker' style='display: flex; align-items: center; justify-content: center; background-color: #191A37; color: #fff; font-size: 20px; font-weight: 700; box-shadow: 6px 6px 10px rgba(color: #000000, alpha: 0.16);'></div>",
+        size: window.naver.maps.Size(40, 40),
+        anchor: window.naver.maps.Point(20, 20)
+      },
+      htmlMarker3: {
+        content:
+          "<div class='marker' style='display: flex; align-items: center; justify-content: center; background-color: #191A37; color: #fff; font-size: 20px; font-weight: 700; box-shadow: 6px 6px 10px rgba(color: #000000, alpha: 0.16);'></div>",
+        size: window.naver.maps.Size(40, 40),
+        anchor: window.naver.maps.Point(20, 20)
+      },
+      htmlMarker4: {
+        content:
+          "<div class='marker' style='display: flex; align-items: center; justify-content: center; background-color: #191A37; color: #fff; font-size: 20px; font-weight: 700; box-shadow: 6px 6px 10px rgba(color: #000000, alpha: 0.16);'></div>",
+        size: window.naver.maps.Size(40, 40),
+        anchor: window.naver.maps.Point(20, 20)
+      },
+      htmlMarker5: {
+        content:
+          "<div class='marker' style='display: flex; align-items: center; justify-content: center; background-color: #191A37; color: #fff; font-size: 20px; font-weight: 700; box-shadow: 6px 6px 10px rgba(color: #000000, alpha: 0.16);'></div>",
+        size: window.naver.maps.Size(40, 40),
+        anchor: window.naver.maps.Point(20, 20)
+      }
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.lodingCheck = false;
+    this.addrItem = '';
+    this.currLat = '';
+    this.currLon = '';
+    this.getLoginUser();
+    this.getPartitionList();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+    window.naver.maps.Event.clearInstanceListeners(this.map);
+    this.map = null;
+    this.markers = [];
+
+    this.partitionCd = '';
+    this.partitionList = [];
+    this.subPartitionCd = '';
+
+    document.getElementById('openchatMap').replaceChildren();
+  },
+  methods: {
+    /** 오픈챗 최근 활동 멘트 format 함수 **/
+    getRecentDate(args) {
+      const today = new Date();
+      const timeValue = new Date(args);
+
+      const betweenTime = Math.floor(
+        (today.getTime() - timeValue.getTime()) / 1000 / 60
+      );
+      if (betweenTime < 1) return '방금 전';
+      if (betweenTime < 60) {
+        return `${betweenTime}분 전`;
+      }
+
+      const betweenTimeHour = Math.floor(betweenTime / 60);
+      if (betweenTimeHour < 24) {
+        return `${betweenTimeHour}시간 전`;
+      }
+
+      const betweenTimeDay = Math.floor(betweenTime / 60 / 24);
+      if (betweenTimeDay < 365) {
+        return `${betweenTimeDay}일 전`;
+      }
+
+      return `${Math.floor(betweenTimeDay / 365)}년 전`;
+    },
+
+    partitionBtn(item) {
+      this.itemList = [];
+      this.partitionCd = '';
+      this.subPartitionCd = '';
+      if (item) {
+        this.partitionCd = item['partitionCd'];
+      } else {
+        this.partitionCd = '';
+      }
+
+      this.$nextTick(() => {
+        if (this.subPartitionCd != '') {
+          this.subPartitionCd = '';
+        }
+        this.getOpenChatLatLon(this.currLat, this.currLon);
+      });
+
+      // this.$nextTick(() => {
+      //   this.getPartitionList();
+      // });
+    },
+
+    partitionSubBtn(item) {
+      this.itemList = [];
+      if (item) {
+        this.subPartitionCd = item['subPartitionCd'];
+      } else {
+        this.subPartitionCd = '';
+      }
+
+      this.$nextTick(() => {
+        this.getOpenChatLatLon(this.currLat, this.currLon);
+      });
+    },
+
+    getPartitionList() {
+      getData({
+        url: '/getPartitionList',
+        param: {},
+        then: (data) => {
+          this.partitionList = data;
+
+          //if (this.partitionCd == '') this.partitionCd = data[0]['partitionCd'];
+
+          this.$nextTick(() => {
+            this.getOpenChatLatLon(this.currLat, this.currLon);
+          });
+        }
+      });
+    },
+
+    goRouter() {
+      this.$router.push('/openChat');
+    },
+
+    getLoginUser() {
+      getData({
+        url: '/getOpenChatUserAddr',
+        param: {},
+        then: (data) => {
+          this.addrItem = data[0];
+
+          /** 위치업데이트값 null 인경우 기본주소로 **/
+          if (this.addrItem.currLat != null || this.addrItem.currLon != null) {
+            this.currLat = this.addrItem.currLat;
+            this.currLon = this.addrItem.currLon;
+          } else {
+            this.currLat = this.addrItem.lat;
+            this.currLon = this.addrItem.lon;
+          }
+        }
+      });
+    },
+
+    getOpenChatLatLon(currLat, currLon, zoomSize) {
+      getData({
+        url: '/getOpenChatLatLon',
+        param: {
+          partitionCd: this.partitionCd,
+          subPartitionCd: this.subPartitionCd,
+          mapLat: currLat,
+          mapLon: currLon,
+          zoomSize: zoomSize ? zoomSize : ''
+        },
+        then: (data) => {
+          this.itemList = data;
+
+          this.lodingCheck = true;
+
+          this.$nextTick(() => {
+            this.naverMap(this.currLat, this.currLon);
+          });
+        }
+      });
+    },
+
+    modalBtn(type, item) {
+      if (type == 'openView') {
+        openChatViewMapFn({
+          openChatKey: item.openChatKey,
+          type: 'openChatMap',
+          modal: 'open',
+          mpaInfo: item
+        });
+        this.$router.push('/openChatView');
+        this.mapInfoModal = false;
+      } else if (type == 'openProfile') {
+        dailyCardInfoMapFn({
+          userKey: item.regUserKey,
+          type: 'openChatMap'
+        });
+        this.$router.push('/dailyCardInfo');
+        this.mapInfoModal = false;
+      }
+    },
+
+    modalInfo(item) {
+      this.modalItem = item;
+      this.modalItem.ssUserYn = item.ssUserKey == item.regUserKey ? 'Y' : 'N';
+      this.modalItem.inviteYn = item.attenderCancelYn == 'N' ? 'Y' : 'N';
+      this.regUserKey = this.modalItem.regUserKey;
+      this.mainFileId = this.modalItem.fileId;
+      this.mapInfoModal = true;
+
+      this.$nextTick(() => {
+        this.getUserInfo();
+      });
+    },
+
+    getUserInfo() {
+      getData({
+        url: '/getUserInfo',
+        param: {
+          regUserKey: this.regUserKey
+        },
+        then: (data) => {
+          this.userPhotoId = data.userPhotoId;
+          this.cdnThumbNmProfile = data.cdnThumbNm;
+        }
+      });
+    },
+
+    /** naver map **/
+    naverMap(lat, lng) {
+      let self = this;
+      const navermaps = window.naver.maps;
+
+      let mapOptions = {
+        center: new navermaps.LatLng(lat, lng),
+        zoom: this.map != null ? this.map.getZoom() : 15,
+        /** 줌 컨트롤러 **/
+        zoomControl: true,
+        zoomControlOptions: {
+          style: navermaps.ZoomControlStyle.LARGE,
+          position: navermaps.Position.TOP_RIGHT
+        }
+      };
+
+      /** 맵 생성 **/
+      document.getElementById('openchatMap').replaceChildren();
+      this.map = new navermaps.Map('openchatMap', mapOptions);
+
+      /** 마커 클릭시 생성 (start) **/
+      /** 마커 객체를 생성대기 **/
+      // const markerIcon = new navermaps.Marker({
+      //   // selectedLat, selectedLng가 있으면 지도에 추가
+      //   map: this.map,
+      //   // selectedLat, selectedLng가 있으면 해당 위치로
+      //   position: new navermaps.LatLng( lat, lng ),
+      //   icon: {
+      //     url: 'https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png', // 마커의 이미지 URL
+      //     size: new navermaps.Size(30, 47), // 이미지의 원래 크기
+      //     scaledSize: new navermaps.Size(30, 47), // 화면에 표시될 이미지 크기
+      //     origin: new navermaps.Point(0, 0),  // 이미지의 시작점
+      //     anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+      //   }
+      // });
+      /** 마커 객체를 생성 **/
+      // navermaps.Event.addListener(this.map, 'click', (e) => {
+      //   /** 마커 위치변경 **/
+      //   markerIcon.setMap(null);
+      //   markerIcon.setPosition(e.coord);
+      //   markerIcon.setMap(this.map);
+      //
+      //   // 클릭한 위치의 좌표 저장
+      //   this.selectedLat = e.coord.lat();
+      //   this.selectedLng = e.coord.lng();
+      //   console.log("this.selectedLat : : :",this.selectedLat)
+      //   console.log("this.selectedLng : : :",this.selectedLng)
+      //
+      // });
+      /** 마커 클릭시 생성 (end) **/
+
+      // 지도 초기화 후 커스텀 컨트롤 생성
+      navermaps.Event.once(this.map, 'init', () => {
+        /** 현재위치로 이동 버튼 **/
+        let locationBtnHtml = `<a style="
+                z-index: 100;
+                overflow: hidden;
+                display: inline-block;
+                position: absolute;
+                top: 7px;
+                left: 5px;
+                width: 34px;
+                height: 34px;
+                border: 1px solid rgba(58,70,88,.45);
+                border-radius: 2px;
+                background: #fcfcfd;
+                  background-clip: border-box;
+                text-align: center;
+                -webkit-background-clip: padding;
+                background-clip: padding-box;
+              "
+            >
+            <span style="
+                overflow: hidden;
+                display: inline-block;
+                color: transparent !important;
+                vertical-align: top;
+                background: url(https://ssl.pstatic.net/static/maps/m/spr_trff_v6.png) 0 0;
+                background-position-x: 0px;
+                background-position-y: 0px;
+                background-size: auto;
+                background-size: 200px 200px;
+                -webkit-background-size: 200px 200px;
+                width: 20px;
+                height: 20px;
+                margin: 7px 0 0 0;
+                background-position: -153px -31px;
+              ">중심위치</span>
+           </a>`;
+        let customControl = new navermaps.CustomControl(locationBtnHtml, {
+          position: navermaps.Position.TOP_LEFT // 버튼의 위치 설정
+        });
+
+        customControl.setMap(self.map); // 버튼을 지도에 추가
+        /** 현재위치로 이동 버튼 **/
+
+        navermaps.Event.addDOMListener(
+          customControl.getElement(),
+          'click',
+          () => {
+            self.map.setCenter(new navermaps.LatLng(lat, lng)); // 버튼 클릭 시 지도 중심 변경
+          }
+        );
+      });
+
+      // 마커 초기화
+      this.clearMarker();
+      this.markers = [];
+      /** 마커 생성 **/
+      this.itemList.forEach((markerInfo) => {
+        if (Object.keys(markerInfo.recentTime).length > 0) {
+          markerInfo.recentTime = this.getRecentDate(markerInfo.recentTime);
+        }
+
+        const markerLatLng = new navermaps.LatLng(
+          markerInfo.lat,
+          markerInfo.lon
+        );
+
+        const marker = new navermaps.Marker({
+          position: markerLatLng,
+          map: self.map,
+          icon: {
+            // TODO: class marker 추가 => 추후 cluster 작업시 아래와 같은 구조로 작업해주시면 됩니다
+            content: `<div class="marker"><img src="https://${markerInfo.cdnThumbNm}" /></div>`,
+            // url: 'https://' + markerInfo.cdnThumbNm, // 마커의 이미지 URL
+            size: new navermaps.Size(60, 60), // 이미지의 원래 크기
+            scaledSize: new navermaps.Size(60, 60), // 화면에 표시될 이미지 크기
+            origin: new navermaps.Point(0, 0), // 이미지의 시작점
+            anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+          },
+          title: markerInfo.title
+        });
+
+        /** 마커 이벤트 **/
+        navermaps.Event.addListener(marker, "click", () => {
+          this.modalInfo(markerInfo);
+        });
+
+        this.markers.push(marker);
+      });
+
+      navermaps.Event.addListener(self.map, 'zoom_changed', function () {
+        self.updateMarkers();
+      });
+
+      navermaps.Event.addListener(self.map, "dragend", function() {
+        self.updateMarkers();
+      });
+
+      let markerClustering = new MarkerClustering({
+        minClusterSize: 2,
+        maxZoom: 16,
+        map: self.map,
+        markers: self.markers,
+        disableClickZoom: false,
+        gridSize: 50,
+        icons: [self.htmlMarker1, self.htmlMarker2, self.htmlMarker3, self.htmlMarker4, self.htmlMarker5],
+        stylingFunction: function (clusterMarker, count) {
+          const el = clusterMarker.getElement().children[0];
+          el.innerHTML = count;
+        }
+      });
+    },
+    /** 로딩 **/
+    async showLoading() {
+      this.loading = await loadingController.create({
+        message: 'Loading...',
+        duration: 0
+      });
+
+      await this.loading.present();
+    },
+
+    updateMarkers() {
+      // let mapBounds = this.map.getBounds();
+      // let marker, position;
+      //
+      // for (let i = 0; i < this.markers.length; i++) {
+      //   marker = this.markers[i];
+      //   position = marker.getPosition();
+      //
+      //   if (mapBounds.hasLatLng(position)) {
+      //     this.showMarker(marker);
+      //   } else {
+      //     this.hideMarker(marker);
+      //   }
+      // }
+
+      this.currLat = this.map.getCenter().y;
+      this.currLon = this.map.getCenter().x;
+
+      this.getOpenChatLatLon(this.currLat, this.currLon, this.map.zoom);
+    },
+
+    showMarker(marker) {
+      if (marker.setMap()) return;
+      marker.setMap(this.map);
+    },
+
+    hideMarker(marker) {
+      if (!marker.setMap()) return;
+      marker.setMap(null);
+    },
+
+    clearMarker() {
+      for (let i = 0; i < this.markers.length; i++) {
+        this.markers[i].setMap(null);
+      }
+    }
+  },
+  mounted() {}
+};
+</script>
+
+<style lang="scss" scoped>
+ion-modal {
+  --height: 310px;
+}
+
+.category-filter {
+  padding: 5px 5px !important;
+  --min-height: 40px;
+
+  + .category-filter {
+    margin-top: -10px;
+  }
+
+  * {
+    padding: 0px 14px;
+  }
+
+  .toolbar-container {
+    display: flex;
+    justify-content: flex-start !important;
+    align-items: center;
+
+    height: 45px !important;
+  }
+
+  .segment-chip {
+    border-radius: 0px !important;
+  }
+}
+</style>

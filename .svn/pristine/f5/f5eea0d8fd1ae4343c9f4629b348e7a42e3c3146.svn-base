@@ -1,0 +1,107 @@
+<template>
+  <ion-app>
+    <ion-router-outlet />
+  </ion-app>
+</template>
+
+<!--<script setup>
+//:animated="false"
+</script>-->
+<script>
+import { ScreenOrientation } from "@ionic-native/screen-orientation";
+import { IonApp, IonRouterOutlet } from "@ionic/vue";
+import { defineComponent, getCurrentInstance, onMounted } from "vue";
+import { useStorageSQLite } from "vue-data-storage-sqlite-hook/dist";
+import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from "@capacitor-community/sqlite";
+import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
+
+import { Capacitor } from "@capacitor/core";
+
+import { App as CapacitorApp } from "@capacitor/app";
+
+export default defineComponent({
+  name: "App",
+  components: {
+    IonApp,
+    IonRouterOutlet
+  },
+  setup() {
+    const app = getCurrentInstance();
+    onMounted(async () => {
+      const app = getCurrentInstance();
+      if (app != null) {
+        app.appContext.config.globalProperties.$storageSqlite = useStorageSQLite();
+      }
+
+      const sqlite = new SQLiteConnection(CapacitorSQLite);
+      applyPolyfills().then(() => {
+        jeepSqlite(window);
+      });
+      if (Capacitor.getPlatform() === "web") {
+        // Create the 'jeep-sqlite' Stencil component
+        const jeepSqlite = document.createElement("jeep-sqlite");
+        document.body.appendChild(jeepSqlite);
+        await customElements.whenDefined("jeep-sqlite");
+        // Initialize the Web store
+        await sqlite.initWebStore();
+      }
+
+      const ret = await sqlite.checkConnectionsConsistency();
+      const isConn = (await sqlite.isConnection("navy")).result;
+      let db;
+      if (ret.result && isConn) {
+        db = await sqlite.retrieveConnection("navy");
+      } else {
+        db = await sqlite.createConnection("navy", false, "no-encryption", 1);
+      }
+      await db.open();
+      const query = `
+      CREATE TABLE IF NOT EXISTS test (
+        id INTEGER PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL
+      );
+      `;
+
+      const setTable = `
+      CREATE TABLE IF NOT EXISTS SC_MESSAGE (
+        nick TEXT NOT NULL,
+        regUserKey TEXT NOT NULL,
+        regTime TEXT NOT NULL,
+        imageId TEXT NOT NULL,
+        messageType TEXT NOT NULL,
+        regUserId TEXT NOT NULL,
+        messageId TEXT NOT NULL,
+        message TEXT NOT NULL,
+        fileId TEXT NOT NULL,
+        chatroomId TEXT NOT NULL,
+      );
+      `;
+      const res = await db.execute(query);
+      if (res.changes && res.changes.changes && res.changes.changes < 0) {
+        console.log("Error: execute failed (초기설정 오류");
+      }
+
+      await sqlite.closeConnection("navy");
+
+
+      /* Android Back Button 누를 시 종료되는 현상 때문에 추가*/
+      CapacitorApp.addListener("backButton", ({ canGoBack }) => {
+        if (!canGoBack) {
+          CapacitorApp.exitApp();
+        } else {
+          this.$router.go(-1);
+        }
+      });
+
+    });
+  },
+  created() {
+    if (Capacitor.getPlatform() != "web") {
+      // ScreenOrientation.lock(ScreenOrientation.ORIENTATIONS.LANDSCAPE_PRIMARY); // 가로고정
+      ScreenOrientation.lock(ScreenOrientation.ORIENTATIONS.PORTRAIT_PRIMARY); // 세로고정
+    } else {
+      console.log("[개발환경] web에서 화면 세로고정은 활성화 되지 않습니다.");
+    }
+  }
+});
+</script>

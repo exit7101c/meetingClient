@@ -1,0 +1,2820 @@
+<template>
+  <ion-page>
+    <ion-menu side="end" content-id="main-content">
+      <ion-header class="ion-padding pb-0" style="margin-top: 30px">
+        <ion-list lines="full" class="message-talk-info">
+          <ion-item-group>
+            <ion-item>
+              <ion-label>
+                <ion-text
+                  class="text-pink text-bold text-sm"
+                  @click="openUseOpenChatModal"
+                >현재 {{ openchatRank }}위 모임 🔥
+                </ion-text>
+                <h3>
+                  <ion-text color="light" class="text-bold text-xl"
+                  >{{ truncateString(title, 10) }}
+                  </ion-text>
+                </h3>
+                <ion-text
+                  color="light"
+                  class="text-sm"
+                  v-if="this.chatroomType == 'openchat'"
+                >
+                  <ion-label>{{ talkUserCnt }} / {{ totalUserCount }}명</ion-label>
+                </ion-text>
+              </ion-label>
+              <!--              <ion-icon-->
+              <!--                slot="end"-->
+              <!--                color="light"-->
+              <!--                :icon="notificationShakeIcon"-->
+              <!--              />-->
+              <ion-icon
+                slot="end"
+                color="light"
+                :icon="alarmCheck ? notifications : notificationsOff"
+                @click="alarmCheckBtn"
+              />
+            </ion-item>
+            <ion-item v-if="chatroomType != 'anonymous'">
+              <ion-row
+                class="ion-align-items-center ion-justify-content-between gap-sm w-full flex-nowrap"
+              >
+                <ion-buttons>
+                  <ion-button
+                    fill="outline"
+                    shape="round"
+                    color="primary"
+                    class="mt-2 mb-2"
+                    @click="goRouter('map', this.chatroomId)"
+                  >
+                    <ion-icon
+                      slot="start"
+                      color="light"
+                      :icon="mapOutline"
+                      size="small"
+                    />
+                    <ion-text color="light"> 지도에서 보기</ion-text>
+                  </ion-button>
+                </ion-buttons>
+                <div>
+                  <ion-item
+                    lines="none"
+                    v-for="item in this.locationList"
+                    v-show="this.SS_USER_KEY === item.userKey"
+                    :key="item.userKey"
+                    class="ion-align-items-center"
+                  >
+                    <ion-label>
+                      <ion-text color="light" class="text-xs text-bold"
+                      >내 위치공유
+                      </ion-text>
+                    </ion-label>
+                    <ion-toggle
+                      slot="end"
+                      :checked="this.toggleLocation"
+                      class="v-middle"
+                      mode="ios"
+                      @click="setLocationYn"
+                    ></ion-toggle>
+                  </ion-item>
+                </div>
+              </ion-row>
+            </ion-item>
+          </ion-item-group>
+        </ion-list>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <div class="row-box">
+          <ion-list>
+            <MessageTalkAttendList>
+              <template #title>
+                <ion-text>참여자</ion-text>
+              </template>
+              <template #content>
+                <ion-list
+                  v-for="data in userRoomList"
+                  :key="data.userId"
+                  class="pt-0 pb-0"
+                >
+                  <MessageTalkAttendItem
+                    :item="data"
+                    :messageType="chatroomType !== 'openchat'"
+                    :myCheck="this.SS_USER_KEY === data.userKey"
+                    :id="'currentPopoverTrigger' + data.userId"
+                  >
+                  </MessageTalkAttendItem>
+                  <ion-popover
+                    :trigger="'currentPopoverTrigger' + data.userId"
+                    :dismiss-on-select="true"
+                    mode="ios"
+                    v-if="
+                      chatroomType != 'anonymous' ||
+                      this.SS_USER_KEY !== data.userKey
+                    "
+                  >
+                    <ion-content>
+                      <ion-list lines="full">
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('profile', data)"
+                          v-if="chatroomType != 'anonymous'"
+                        >프로필보기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('kick', data)"
+                          v-show="
+                            leaderYn == 'Y' &&
+                            chatroomType == 'openchat' &&
+                            ((this.SS_USER_KEY === data.leaderUserKey &&
+                              this.SS_USER_KEY !== data.userKey &&
+                              data.subLeaderYn === 'N') ||
+                              (data.subLeaderYn === 'N' &&
+                                data.leaderNum === 1))
+                          "
+                        >강퇴하기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('change', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey
+                          "
+                        >방장위임
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('subChange', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey &&
+                            data.subLeaderYn === 'N'
+                          "
+                        >부방장위임
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('subRemoval', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey &&
+                            data.subLeaderYn === 'Y'
+                          "
+                        >부방장해제
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('police', data)"
+                          v-show="this.SS_USER_KEY !== data.userKey"
+                        >신고하기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="setBlock(data)"
+                          v-show="this.SS_USER_KEY !== data.userKey"
+                          v-if="chatroomType == 'openchat'"
+                        >차단하기
+                        </ion-item>
+                      </ion-list>
+                    </ion-content>
+                  </ion-popover>
+                </ion-list>
+              </template>
+            </MessageTalkAttendList>
+          </ion-list>
+        </div>
+        <div class="row-box">
+          <ion-list v-if="leaderYn === 'Y' && chatroomType != 'single'">
+            <MessageTalkAttendList>
+              <template #title>
+                <ion-text>참여 신청자</ion-text>
+                <ion-text class="text-sub01"
+                >{{ attendList.length }}명
+                </ion-text>
+              </template>
+              <template #actions>
+                <!--                <ion-text class="text-link text-sm sub-text01 text-bold"-->
+                <!--                >일괄수락-->
+                <!--                </ion-text>-->
+              </template>
+              <template #content>
+                <ion-list
+                  v-for="data in attendList"
+                  :key="data.userId"
+                  class="pt-0 pb-0"
+                >
+                  <MessageTalkAcceptItem
+                    :item="data"
+                    :id="'currentPopoverTrigger' + data.userId"
+                  >
+                    <template #actions>
+                      <custom-button
+                        fill="outline"
+                        color="success"
+                        size="small"
+                        shape="round"
+                        @click.stop="agreeYn('Y', data.userKey)"
+                      >수락
+                      </custom-button>
+                      <custom-button
+                        fill="outline"
+                        color="danger"
+                        size="small"
+                        shape="round"
+                        @click.stop="agreeYn('N', data.userKey)"
+                      >거절
+                      </custom-button>
+                    </template>
+                  </MessageTalkAcceptItem>
+                  <ion-popover
+                    :trigger="'currentPopoverTrigger' + data.userId"
+                    :dismiss-on-select="true"
+                    mode="ios"
+                  >
+                    <ion-content>
+                      <ion-list lines="full">
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('profile', data)"
+                        >프로필보기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('kick', data)"
+                          v-show="
+                            this.SS_USER_KEY === data.leaderUserKey &&
+                            this.SS_USER_KEY !== data.userKey
+                          "
+                        >강퇴하기
+                        </ion-item>
+                        <ion-item
+                          :button="true"
+                          :detail="false"
+                          @click="goRouter('police', data)"
+                          v-show="this.SS_USER_KEY !== data.userKey"
+                        >신고하기
+                        </ion-item>
+                      </ion-list>
+                    </ion-content>
+                  </ion-popover>
+                </ion-list>
+              </template>
+            </MessageTalkAttendList>
+          </ion-list>
+        </div>
+      </ion-content>
+      <ion-footer>
+        <!-- 업소 홍보 배너 -->
+        <MessageTalkAddBanner @click="goRouter('partnersMap')" />
+        <p class="text-right">
+          <ion-text class="text-link text-sm" color="light" @Click="chatRoomOut"
+          >소모임 나가기
+          </ion-text>
+        </p>
+      </ion-footer>
+    </ion-menu>
+    <ion-page id="main-content">
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <BackButton />
+          </ion-buttons>
+          <ion-title>소모임</ion-title>
+          <ion-buttons slot="end" v-if="mainValue === 'message'">
+            <ion-menu-button @click="menuBtn">
+              <ion-icon :icon="menuIcon" color="light" />
+            </ion-menu-button>
+          </ion-buttons>
+          <ion-buttons slot="end" v-else>
+            <custom-button id="openChat-popover-button">
+              <ion-icon slot="icon-only" :icon="menuIcon" color="light" />
+            </custom-button>
+            <ion-popover
+              trigger="openChat-popover-button"
+              :dismiss-on-select="true"
+              mode="ios"
+            >
+              <ion-content>
+                <ion-list lines="full">
+                  <template v-if="ssUserYn == 'Y'">
+                    <ion-item
+                      :button="true"
+                      :detail="false"
+                      @click="editOpenChat(chatDetailMap)"
+                    >수정
+                    </ion-item>
+                    <ion-item
+                      :button="true"
+                      :detail="false"
+                      @click="presentAlertConfirm()"
+                    >삭제
+                    </ion-item>
+                  </template>
+                  <template v-else>
+                    <ion-item :button="true" :detail="false" @click="policeBtn"
+                    >신고
+                    </ion-item>
+                  </template>
+                </ion-list>
+              </ion-content>
+            </ion-popover>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <OpenChatMeetInfo
+          v-if="mainValue !== 'message'"
+          :recentTime="recentTime"
+          :chatDetailMap="chatDetailMap"
+          :cdnThumbNmProfile="cdnThumbNmProfile"
+          :totalUserCount="totalUserCount"
+          :openchatRank="openchatRank"
+          :bookmarkYn="bookmarkYn"
+          :cntBookmark="cntBookmark"
+          @openUseOpenChatModal="openUseOpenChatModal"
+        />
+        <div class="sticky-top segment-round" style="padding: 0 0px; top: 0px">
+          <ion-segment
+            v-model="mainValue"
+            mode="md"
+            @ionChange="changeMeetMainValue"
+          >
+            <ion-segment-button value="home" @click="getOpenChatDetail">
+              홈
+            </ion-segment-button>
+            <ion-segment-button value="board">
+              게시판
+            </ion-segment-button>
+            <ion-segment-button value="album">
+              사진첩
+            </ion-segment-button>
+            <ion-segment-button value="message">
+              채팅
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <div class="row-box" v-if="mainValue == 'home'" style="margin-top: 0px">
+          <OpenChatHome
+            :recentTime="recentTime"
+            :chatDetailMap="chatDetailMap"
+            :cdnThumbNmProfile="cdnThumbNmProfile"
+            :privateYn="privateYn"
+            :attendInfoList="attendInfoList"
+            :totalUserCount="totalUserCount"
+            :meetList="meetList"
+            :openchatRank="openchatRank"
+            @getMeetList="getOpenChatMeetList"
+            @setCheckPrivateYn="setCheckPrivateYn($event)"
+            @getAttendInfo="getAttendInfo"
+            @openUseOpenChatModal="openUseOpenChatModal"
+            @openAttendUserModal="openMeetUserList"
+          />
+        </div>
+
+        <div class="row-box" v-if="mainValue == 'board'">
+          <div class="sticky-top">
+            <ion-segment
+              v-model="categoryCd"
+              mode="ios"
+              :scrollable="true"
+              class="segment-chip"
+              @ionChange="changeMeetCategory"
+              v-if="categoryList != null"
+            >
+              <ion-segment-button
+                class="shape-round"
+                v-for="item in categoryList"
+                :value="item.categoryCd"
+                :key="item.categoryCd"
+                @click="categoryBtn(item)"
+              >
+                {{ item.categoryNm }}
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+          <ion-list lines="none" style="margin-bottom: 20px;">
+            <template v-if="categoryCd == 'MEET_GROUP'">
+              <div class="layout-container" v-if="meetList.length > 0">
+                <OpenChatMeetItem
+                  v-for="item in meetList"
+                  :key="item"
+                  :item="item"
+                  :btnDisabled="btnDisabled"
+                  @btnAdd="btnHandle(item, 'add')"
+                  @btnCancel="btnHandle(item, 'delete')"
+                  @btnAttend="openMeetUserList(item)"
+                />
+              </div>
+              <div class="layout-container" v-else>
+                <CardBox>
+                  <p class="text-center">
+                    <ion-text color="light">생성된 모임이 없습니다.</ion-text>
+                  </p>
+                </CardBox
+                >
+              </div>
+            </template>
+            <template v-if="categoryCd == 'NOTICE'">
+              <div class="layout-container" v-if="noticeList.length > 0">
+                <ion-grid v-for="item in noticeList" :key="item">
+                  <div class="info" style="height: 35px">
+                    <div>
+                      <div style="display: flex; align-items: center">
+                        <ion-avatar
+                          style="margin-top: 0px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >
+                          <img
+                            v-if="item.cdnThumbNm != null"
+                            :src="'https://' + item.cdnThumbNm"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                          <ion-img
+                            v-else-if="item.cdnThumbNm == null"
+                            :src="'https://cmdg.speedycdn.net/202308/20230807145058_a09c4c1d-0775-4559-bb58-e1926296b702.jpeg'"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                        </ion-avatar>
+                        <span
+                          style="color: #fff; font-size: 14px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >{{ item.nick }}</span
+                        >
+                      </div>
+                      <p class="date">
+                        <ion-icon :icon="calendarCheck" class="sub-text01" />
+                        <ion-text class="sub-text01">{{
+                            item.createdDt
+                          }}
+                        </ion-text>
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="content"
+                    style="margin-top: 20px"
+                    @click="goView(item)"
+                  >
+                    <p class="something" style="display: table-row">
+                      <ion-chip color="light">제목</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.title, 20) }}
+                      </ion-text
+                      >
+                    </p>
+                    <p
+                      class="something"
+                      style="display: inline-flex; margin-top: 0px"
+                    >
+                      <ion-chip color="light">내용</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.content, 50) }}
+                      </ion-text
+                      >
+                    </p>
+                  </div>
+                </ion-grid>
+              </div>
+              <div class="layout-container" v-else>
+                <CardBox>
+                  <p class="text-center">
+                    <ion-text color="light">생성된 공지가 없습니다.</ion-text>
+                  </p>
+                </CardBox
+                >
+              </div>
+            </template>
+            <template v-if="categoryCd == 'JOIN_GREETING'">
+              <div class="layout-container" v-if="greetingList.length > 0">
+                <ion-grid v-for="item in greetingList" :key="item">
+                  <div class="info" style="height: 35px">
+                    <div>
+                      <div style="display: flex; align-items: center">
+                        <ion-avatar
+                          style="margin-top: 0px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >
+                          <img
+                            v-if="item.cdnThumbNm != null"
+                            :src="'https://' + item.cdnThumbNm"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                          <ion-img
+                            v-else-if="item.cdnThumbNm == null"
+                            :src="'https://cmdg.speedycdn.net/202308/20230807145058_a09c4c1d-0775-4559-bb58-e1926296b702.jpeg'"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                        </ion-avatar>
+                        <span
+                          style="color: #fff; font-size: 14px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >{{ item.nick }}</span
+                        >
+                      </div>
+                      <p class="date">
+                        <ion-icon :icon="calendarCheck" class="sub-text01" />
+                        <ion-text class="sub-text01">{{
+                            item.createdDt
+                          }}
+                        </ion-text>
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="content"
+                    style="margin-top: 20px"
+                    @click="goView(item)"
+                  >
+                    <p class="something" style="display: table-row">
+                      <ion-chip color="light">제목</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.title, 20) }}
+                      </ion-text
+                      >
+                    </p>
+                    <p
+                      class="something"
+                      style="display: inline-flex; margin-top: 0px"
+                    >
+                      <ion-chip color="light">내용</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.content, 50) }}
+                      </ion-text
+                      >
+                    </p>
+                  </div>
+                </ion-grid>
+              </div>
+              <div class="layout-container" v-else>
+                <CardBox>
+                  <p class="text-center">
+                    <ion-text color="light">생성된 가입인사가 없습니다.</ion-text>
+                  </p>
+                </CardBox
+                >
+              </div>
+            </template>
+            <template v-if="categoryCd == 'REVIEW'">
+              <div class="layout-container" v-if="reviewList.length > 0">
+                <ion-grid v-for="item in reviewList" :key="item">
+                  <div class="info" style="height: 35px">
+                    <div>
+                      <div style="display: flex; align-items: center">
+                        <ion-avatar
+                          style="margin-top: 0px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >
+                          <img
+                            v-if="item.cdnThumbNm != null"
+                            :src="'https://' + item.cdnThumbNm"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                          <ion-img
+                            v-else-if="item.cdnThumbNm == null"
+                            :src="'https://cmdg.speedycdn.net/202308/20230807145058_a09c4c1d-0775-4559-bb58-e1926296b702.jpeg'"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                        </ion-avatar>
+                        <span
+                          style="color: #fff; font-size: 14px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >{{ item.nick }}</span
+                        >
+                      </div>
+                      <p class="date">
+                        <ion-icon :icon="calendarCheck" class="sub-text01" />
+                        <ion-text class="sub-text01">{{
+                            item.createdDt
+                          }}
+                        </ion-text>
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="content"
+                    style="margin-top: 20px"
+                    @click="goView(item)"
+                  >
+                    <p class="something" style="display: table-row">
+                      <ion-chip color="light">제목</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.title, 20) }}
+                      </ion-text
+                      >
+                    </p>
+                    <p
+                      class="something"
+                      style="display: inline-flex; margin-top: 0px"
+                    >
+                      <ion-chip color="light">내용</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.content, 50) }}
+                      </ion-text
+                      >
+                    </p>
+                  </div>
+                </ion-grid>
+              </div>
+              <div class="layout-container" v-else>
+                <CardBox>
+                  <p class="text-center">
+                    <ion-text color="light">생성된 후기가 없습니다.</ion-text>
+                  </p>
+                </CardBox
+                >
+              </div>
+            </template>
+            <template v-if="categoryCd == 'CALCULATE'">
+              <div class="layout-container" v-if="calculateList.length > 0">
+                <ion-grid v-for="item in calculateList" :key="item">
+                  <div class="info" style="height: 35px">
+                    <div>
+                      <div style="display: flex; align-items: center">
+                        <ion-avatar
+                          style="margin-top: 0px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >
+                          <img
+                            v-if="item.cdnThumbNm != null"
+                            :src="'https://' + item.cdnThumbNm"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                          <ion-img
+                            v-else-if="item.cdnThumbNm == null"
+                            :src="'https://cmdg.speedycdn.net/202308/20230807145058_a09c4c1d-0775-4559-bb58-e1926296b702.jpeg'"
+                            @ionError="
+                            $event.srcElement.src = require('../../assets/img/Loading_icon.gif')
+                          "
+                          />
+                        </ion-avatar>
+                        <span
+                          style="color: #fff; font-size: 14px"
+                          @click="goDailyCardInfo(item.userKey)"
+                        >{{ item.nick }}</span
+                        >
+                      </div>
+                      <p class="date">
+                        <ion-icon :icon="calendarCheck" class="sub-text01" />
+                        <ion-text class="sub-text01">{{
+                            item.createdDt
+                          }}
+                        </ion-text>
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="content"
+                    style="margin-top: 20px"
+                    @click="goView(item)"
+                  >
+                    <p class="something" style="display: table-row">
+                      <ion-chip color="light">제목</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.title, 20) }}
+                      </ion-text
+                      >
+                    </p>
+                    <p
+                      class="something"
+                      style="display: inline-flex; margin-top: 0px"
+                    >
+                      <ion-chip color="light">내용</ion-chip>
+                      <ion-text color="light" class="sub-text05">
+                        {{ truncateString(item.content, 50) }}
+                      </ion-text
+                      >
+                    </p>
+                  </div>
+                </ion-grid>
+              </div>
+              <div class="layout-container" v-else>
+                <CardBox>
+                  <p class="text-center">
+                    <ion-text color="light">생성된 정산내역이 없습니다.</ion-text>
+                  </p>
+                </CardBox
+                >
+              </div>
+            </template>
+          </ion-list>
+        </div>
+
+        <div class="row-box" v-if="mainValue == 'album'">
+          <ion-list lines="none">
+            <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+              <ion-refresher-content
+                refreshing-spinner="circles"
+                :pulling-icon="chevronDownCircleOutline"
+              ></ion-refresher-content>
+            </ion-refresher>
+            <ion-row>
+              <ion-col size="4" v-for="(item, index) in albumList" :key="index">
+                <OpenChatMeetAlbumList
+                  :item="item"
+                  @event="openZoomedImage(item.cdnNm)"
+                />
+              </ion-col>
+            </ion-row>
+            <ion-infinite-scroll
+              :disabled="isEndScroll"
+              threshold="100px"
+              @ionInfinite="ionInfinite"
+            >
+              <ion-infinite-scroll-content></ion-infinite-scroll-content>
+            </ion-infinite-scroll>
+          </ion-list>
+        </div>
+        <div class="row-box" v-if="mainValue == 'message'">
+          <OpenChatMeetMessage :chatroomId="chatroomId" />
+        </div>
+        <ion-fab slot="fixed" vertical="bottom" horizontal="end" v-if="checkBtn">
+          <ion-fab-button
+            fill="clear"
+            @click="goWriteOpenChatMeet('new')"
+            style="padding: 5px"
+          >
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-icon :icon="pencilOutline"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      </ion-content>
+
+      <ion-footer class="no-padding" v-if="mainValue == 'message'">
+        <MessageTalkSendForm
+          v-model:value="content"
+          :newimgFileId="imgCdnNm"
+          :newimgViewFileId="imgCdnNm"
+          :emoticonList="emoticonList"
+          @handleAddPhoto="addPhoto()"
+          @sendComment="send('openChatMessage')"
+          @emoticonClick="emoticonClick"
+          @handleEmoji="handleEmoji"
+        />
+        <input
+          type="file"
+          @change="onFileChange"
+          ref="photo"
+          class="is-blind"
+        />
+      </ion-footer>
+
+      <ion-footer v-if="mainValue == 'home'" class="pl-1 pr-1">
+        <ion-row>
+          <ion-col size="2">
+            <custom-button
+              @click="eyeOn"
+              size="large"
+              expand="block"
+              color="light"
+              shape="round"
+              :disabled="!bookmarkCheckDisabled"
+              style=""
+            >
+              <ion-icon
+                :icon="bookmarkYn !== 'Y' ? starOutline : star"
+                size="large"
+                color="primary"
+              ></ion-icon>
+            </custom-button>
+          </ion-col>
+          <ion-col size="10">
+            <custom-button
+              v-if="ssUserYn == 'Y'"
+              @click="joinIn"
+              size="large"
+              expand="block"
+              color="primary"
+              shape="round"
+              :disabled="!joinInCheckDisabled"
+            >
+              대화하기
+            </custom-button>
+            <custom-button
+              v-else-if="attendChk == 'ATTEND'"
+              @click="joinIn"
+              size="large"
+              expand="block"
+              color="primary"
+              shape="round"
+              :disabled="!joinInCheckDisabled"
+            >
+              대화하기
+            </custom-button>
+            <custom-button
+              class="footerBtn1"
+              v-else-if="
+              inviteYn == 'Y' &&
+              attendRegTime != '' &&
+              attendChk == 'NOTATTEND' &&
+              attendYn != 'N'
+            "
+              @click="joinIn"
+              size="large"
+              expand="block"
+              color="danger"
+              :disabled="!joinInCheckDisabled"
+            >
+              취소할래요
+            </custom-button>
+            <custom-button
+              v-else
+              @click="joinIn"
+              size="large"
+              expand="block"
+              color="secondary"
+              :disabled="!joinInCheckDisabled"
+            >
+              참여하기
+            </custom-button>
+          </ion-col>
+        </ion-row>
+      </ion-footer>
+
+      <CustomBoostModal
+        :is-open="boostModal"
+        :isBuffYn="isBuffYn"
+        :coupon="coupon"
+        :openchatRank="openchatRank"
+        :totalRoom="totalRoom"
+        :useCnt="useCnt"
+        :calTimeStr="calTimeStr"
+        @ionModalDidDismiss="boostModalClose"
+        @close="boostModalClose"
+        @event="useOpenChatBoost"
+      />
+      <ion-modal
+        ref="modal"
+        :is-open="meetUserModal"
+        @ionModalDidDismiss="meetUserModal = false"
+        :initial-breakpoint="1.0"
+        :breakpoints="[0, 0.5, 1.0]"
+      >
+        <ion-page>
+          <ion-header>
+            <ion-toolbar class="text-left">
+              <ion-title>참여자 목록</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content>
+            <ion-list class="ion-padding" lines="none">
+              <OpenChatMeetProfile
+                v-for="(item, index) in meetUserList"
+                :thumbnail="item.cdnNm"
+                :key="index"
+                @click="goDailyCardInfo(item.userKey)"
+              >
+                <template #content>
+                  <h3>
+                    <ion-text color="light" class="text-bold text-lg">
+                      <ion-label>{{ item.nick }}</ion-label>
+                    </ion-text>
+                  </h3>
+                </template>
+              </OpenChatMeetProfile>
+            </ion-list>
+          </ion-content>
+        </ion-page>
+      </ion-modal>
+    </ion-page>
+
+    <UserKickModal
+      :is-open="modalMessage"
+      @ionModalDidDismiss="modalMessage = false"
+      @ok="modalBtn('save')"
+      @cancel="modalBtn('cancel')"
+    />
+
+    <CustomBoostModal
+      :is-open="boostModal"
+      :isBuffYn="isBuffYn"
+      :coupon="coupon"
+      :openchatRank="openchatRank"
+      :totalRoom="totalRoom"
+      :useCnt="useCnt"
+      :calTimeStr="calTimeStr"
+      @ionModalDidDismiss="boostModalClose"
+      @close="boostModalClose"
+      @event="useOpenChatBoost"
+    />
+    <MessageModal
+      :is-open="messageOpen"
+      :title="'한줄소개'"
+      :maxlength="10"
+      @ionModalDidDismiss="messageOpen = false"
+      @input="limitMessage($event)"
+      @handleSendMessage="handleSendMessage"
+    />
+    <AlertMessageModal
+      :is-open="messageTalkModal"
+      :title="'채팅방 나가기'"
+      :message="
+        chatRoomLeaderYn == 'Y' && leaderCanOutYn == 'N'
+          ? '방장은 혼자 남은 경우에만 나갈 수 있습니다.'
+          : '나가기를 하면 대화내용이 모두 삭제되고 채팅목록에서도 삭제됩니다.'
+      "
+      :subMessage="''"
+      :btnName="'나가기'"
+      :height="210"
+      :disabledCheck="chatRoomLeaderYn == 'Y' && leaderCanOutYn == 'N'"
+      @ionModalDidDismiss="messageTalkModal = false"
+      @handleClickBtn="roomExit"
+    />
+  </ion-page>
+</template>
+
+<script>
+import {
+  openChatMeetMap,
+  getData, setFile,
+  openChatMeetViewMapFn,
+  openChatMeetWriteMapFn,
+  dailyCardInfoMapFn,
+  openChatViewMap,
+  openChatWriteMapFn,
+  policeMapFn,
+  SS_USER_KEY, messageTalkMapFn
+} from "@/assets/js/common";
+import {
+  pencilOutline,
+  chevronDownCircleOutline,
+  star,
+  starOutline, mapOutline
+} from "ionicons/icons";
+import OpenChatMeetAlbumList from "@/components/OpenChatMeet/OpenChatMeetAlbumItem.vue";
+import OpenChatMeetProfile from "@/components/OpenChatMeet/OpenChatMeetProfile.vue";
+import OpenChatMeetMessage from "@/components/OpenChatMeet/OpenChatMeetMessage";
+import OpenChatMeetInfo from "@/components/OpenChatMeet/OpenChatMeetInfo.vue";
+import OpenChatMeetItem from "@/components/OpenChatMeet/OpenChatMeetItem.vue";
+import OpenChatHome from "@/views/page/OpenChatHome.vue";
+import CustomBoostModal from "@/components/Custom/CustomBoostModal.vue";
+import Hammer from "hammerjs";
+import IconCalCheck from "@/assets/img/icon/icon_cal_check.svg";
+import IconMenu from "@/assets/img/icon/icon_menu.svg";
+import { alertController, IonMenu, IonMenuButton, IonToggle } from "@ionic/vue";
+
+import MessageTalkAttendItem from "@/components/MessageTalk/MessageTalkAttendItem.vue";
+import MessageTalkAcceptItem from "@/components/MessageTalk/MessageTalkAcceptItem.vue";
+import MessageTalkAddBanner from "@/components/MessageTalk/MessageTalkAddBanner.vue";
+import UserKickModal from "@/components/Modal/UserKickModal.vue";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal.vue";
+import MessageModal from "@/components/Modal/MessageModal.vue";
+
+import IconNotificationShake from "@/assets/img/icon/icon_notification_shake.svg";
+import IconNotifications from "@/assets/img/icon/icon_notifications.svg";
+import IconNotificationsOff from "@/assets/img/icon/icon_notifications_off.svg";
+import MessageTalkAttendList from "@/components/MessageTalk/MessageTalkAttendList";
+
+
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+
+import MessageTalkSendForm from "@/components/MessageTalk/MessageSendForm.vue";
+
+export default {
+  name: "OpenChatMeet",
+  inject: ["alertController", "loadingController"],
+  components: {
+    OpenChatMeetInfo,
+    OpenChatMeetItem,
+    OpenChatMeetAlbumList,
+    OpenChatMeetProfile,
+    OpenChatHome,
+    OpenChatMeetMessage,
+    CustomBoostModal,
+    MessageTalkAttendList,
+    MessageTalkAttendItem,
+    MessageTalkAcceptItem,
+    MessageTalkAddBanner,
+    IonMenu,
+    IonToggle,
+    IonMenuButton,
+    UserKickModal,
+    AlertMessageModal,
+    MessageTalkSendForm,
+    MessageModal
+  },
+  data() {
+    return {
+      menuIcon: IconMenu,
+      calendarCheck: IconCalCheck,
+      notificationShakeIcon: IconNotificationShake,
+      notifications: IconNotifications,
+      notificationsOff: IconNotificationsOff,
+      mapOutline,
+      SS_USER_KEY,
+      star,
+      starOutline,
+      chevronDownCircleOutline,
+      pencilOutline,
+      openChatId: "",
+      mainValue: "home",
+      categoryList: [],
+      categoryCd: "MEET_GROUP",
+      categoryNm: "",
+      meetList: [],
+      noticeList: [],
+      greetingList: [],
+      reviewList: [],
+      calculateList: [],
+      meetUserModal: false,
+      meetUserList: [],
+
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+      albumList: [],
+      btnDisabled: false,
+      showUserList: false,
+      showProfileOptions: false,
+      currentNick: "",
+      leaderYn: "",
+      title: "",
+      talkUserCnt: 0,
+
+      loading: null,
+      isZoomed: false,
+
+      chatroomType: "openchat",
+
+      /** 소모임 HOME */
+      chatDetailMap: {},
+      bookmarkYn: "",
+      cntBookmark: 0,
+      msg: "",
+      dueDate: "",
+      inviteYn: "",
+      ssUserYn: "",
+      mainFileId: "",
+      isPopover: false,
+      regUserKey: "",
+      attendYn: "",
+      chatroomId: "",
+      attendChk: "",
+      leaderConfirmYn: "",
+      attendRegTime: "",
+      recentTime: "",
+      cdnThumbNmProfile: null,
+      bookmarkCheckDisabled: true, // 북마크 활성화여부 체크
+      joinInCheckDisabled: true, // 참여버튼 활성화여부 체크
+      loadingTime: 500, // 버튼 로딩지연
+      privateYn: true,
+      attendInfoList: [],
+      totalUserCount: 100,
+      userPhotoId: "",
+
+      interval: null,
+      interval2: null,
+      interval3: null,
+      interval4: null,
+      coupon: "",
+      boostModal: false,
+      isBuffYn: "N",
+      totalRoom: "",
+      openchatRank: "",
+      calTimeStr: "00:00:00",
+      useCnt: "0",
+      useType: "",
+      remainingTime: "",
+      remainingTimeStr: "",
+
+      openchatDelYn: "N",
+
+      openChatKey: "",
+
+      modalMessage: false,
+      locationList: "",
+      currentMsgHeightCalc: 0,
+      targetUserKey: "",
+      targetUserType: "",
+      toggleLocation: false,
+      alarmCheck: true,
+      emoticonList: [],
+      emojiCheck: false,
+
+      messageTalkModal: false,
+      chatRoomLeaderYn: "N",
+      leaderCanOutYn: "N",
+      isChatBlock: false,
+
+      userRoomList: [],
+      attendList: [],
+      choiceYn: "N",
+
+      content: "",
+      imgCdnNm: "",
+      imgFileId: "",
+      Attachfiles: [],
+
+      messageOpen: false,
+      messageTextSend: ""
+    };
+  },
+  ionViewWillEnter() {
+    this.selectType = "first";
+    this.nextNo = 0;
+    this.isEndScroll = false;
+    this.chatRoomLeaderYn = "N";
+    this.leaderCanOutYn = "N";
+
+    if (openChatMeetMap.chatroomId != undefined) {
+      this.chatroomId = openChatMeetMap.chatroomId;
+    }
+    this.getOpenChatId();
+    this.getOpenChatDetail();
+
+    if (this.$route.params.routerType === "doRefresh") {
+      this.beforeReset();
+    }
+
+    this.getCategoryList();
+
+    this.chatBlock();
+
+    this.getLocationListCheck();
+    this.getLocationYn();
+    this.checkChoiceYn();
+  },
+  ionViewDidLeave() {
+    this.$store.state.currentChatroomId = 0;
+    this.$store.state.currentMeetMainTab = null;
+  },
+  mounted() {
+    this.openchatDelYn = "N";
+    if (openChatMeetMap.type == "openChatMessage") {
+      this.getOpenChatId("mount");
+    } else {
+      this.mainValue = "home";
+    }
+
+
+    this.getEmoticonList();
+  },
+  beforeUnmount() {
+  },
+  computed: {
+    checkBtn() {
+      if (this.mainValue == "board") {
+        if (
+          (this.categoryCd == "MEET_GROUP" || this.categoryCd == "NOTICE") &&
+          this.leaderYn != "Y"
+        ) {
+          return false;
+        }
+        return true;
+      }
+      return false;
+    }
+  },
+  methods: {
+
+    limitMessage(e) {
+      const text = e.target.value;
+      this.messageTextSend = text;
+    },
+    handleSendMessage() {
+      // this.messageOpen = false;
+
+      getData({
+        url: "/getOpenChatSendMessage",
+        param: {
+          openChatId: this.openChatId,
+          message: this.messageTextSend
+        },
+        then: (data) => {
+          console.log(data);
+        }
+      });
+    },
+    addPhoto() {
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then(r => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile();
+        });
+
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+      // this.$refs.photo.click();
+    },
+    onFileChange: function onFileChange(e) {
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(e);
+      });
+    },
+    //사진 저장
+    insertFile() {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          this.imgFileId = data.fileId;
+          this.imgCdnNm = data.cdnNm;
+
+          this.loading.dismiss();
+          this.$nextTick(() => {
+            this.send("image");
+          });
+        }
+      });
+    },
+    send(type) {
+      if (this.isChatBlock) {
+        this.warningAlert("삭제된 소모임입니다.<br />삭제된 글에는 더 이상 채팅을 할 수 없습니다.");
+        return;
+      }
+
+      if (type !== "emoticon" && type !== "image" && (this.content === null || this.content === "")) {
+        this.warningAlert("보낼 메세지를 작성해 주세요");
+        return;
+      }
+
+      if (type !== "image" && type !== "emoticon") {
+        this.imgFileId = "";
+        this.imgCdnNm = "";
+      }
+      getData({
+        url: "/messageMain/sendMessageSingle",
+        param: {
+          chatroomId: this.chatroomId,
+          message: this.content,
+          type: type,
+          fileId: this.imgFileId
+        },
+        then: (res) => {
+          if (res.successYn == "N") {
+            this.warningAlert(res.message);
+          } else {
+            this.imgFileId = "";
+            this.imgCdnNm = "";
+            //this.$store.state.messageList.push(res);
+
+
+            let regexp = /(?:http(s?)?|www)\S+\w/g;
+            let _match = res.message.match(regexp);
+            let match = [...new Set(_match)];
+            res["replaceMessage"] = res.message;
+            Array.from(match).forEach((item) => {
+              if (!item.includes("http")) {
+                res["replaceMessage"] = res[
+                  "replaceMessage"
+                  ].replaceAll(
+                  item,
+                  `<a href="http://${item}" target="_blank">${item}</a>`
+                );
+              } else {
+                res["replaceMessage"] = res[
+                  "replaceMessage"
+                  ].replaceAll(
+                  item,
+                  `<a href="${item}" target="_blank">${item}</a>`
+                );
+              }
+            });
+
+            this.$store.commit("addMessage", res);
+
+            this.scrollToBottom();
+          }
+
+          /*this.$nextTick(() => {
+            this.replaceURL();
+          });*/
+        }
+      });
+      this.content = "";
+    },
+    getEmoticonList() {
+      getData({
+        url: "/messageMain/getEmoticonList",
+        param: {},
+        then: (data) => {
+          this.emoticonList = data;
+        }
+      });
+    },
+    scrollToBottom(item) {
+      if (item !== undefined && item !== null) {
+        item.isLoaded = true;
+      }
+
+      /*setTimeout(() => {
+        if(this.$refs.meetMsgContainer != null){
+          this.$refs.meetMsgContainer.$el.scrollToBottom(0);
+        }
+      }, 100);*/
+    },
+
+    emoticonClick(item) {
+      this.content = item.emoticonNm;
+      this.imgFileId = item.fileId;
+
+      this.send("emoticon");
+    },
+
+    handleEmoji() {
+      //this.$refs.meetMsgContainer.$el.scrollToBottom(0);
+    },
+    checkChoiceYn() {
+      getData({
+        url: "/choiceYnCheck",
+        param: {},
+        then: (data) => {
+          this.choiceYn = data.choiceYn;
+        }
+      });
+    },
+    chatRoomOut() {
+      if (this.chatroomType == "openchat") {
+        console.log(1);
+        if (this.chatRoomLeaderYn == "Y") {
+          console.log(2);
+          if (this.userRoomList.length <= 1) {
+            console.log(3);
+            this.leaderCanOutYn = "Y";
+          } else {
+            console.log(4);
+            this.leaderCanOutYn = "N";
+          }
+        }
+      } else {
+        console.log(6);
+        this.leaderCanOutYn = "Y";
+      }
+      console.log(7);
+
+      this.messageTalkModal = true;
+    },
+
+    roomLeaderExit() {
+      getData({
+        url: "/messageMain/setDropOutLeader",
+        param: {
+          chatroomId: this.chatroomId
+        },
+        then: (data) => {
+          // this.$router.push("message");
+          this.messageTalkModal = false;
+          this.$router.go(-1);
+        }
+      });
+    },
+
+    chatBlock() {
+      getData({
+        url: "/messageMain/chatBlock",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.isChatBlock = data.isBlock == "Y" ? true : false;
+        }
+      });
+    },
+
+    alarmCheckBtn() {
+      getData({
+        url: "/messageMain/getChatRoomAlarm",
+        param: { alarmCheck: this.alarmCheck, chatroomId: this.chatroomId },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.getChatRoomAlarmList();
+          }
+        }
+      });
+    },
+
+    getChatRoomAlarmList() {
+      getData({
+        url: "/messageMain/getChatRoomAlarmList",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.alarmCheck = data.val === "Y" ? true : false;
+        }
+      });
+    },
+
+    menuBtn() {
+      this.getUserList();
+      this.getAttendList();
+      this.getChatroomTitle();
+      this.getChatRoomAlarmList();
+    },
+
+    modalBtn(type) {
+      if (type === "save") {
+        this.getKickUser();
+      } else {
+        this.modalMessage = false;
+      }
+    },
+
+    openProfile(userId, userNick) {
+      this.currentNick = userNick;
+      this.showProfileOptions = true;
+    },
+    roomExit() {
+      if (this.chatRoomLeader == "Y" && this.leaderCanOutYn == "Y") {
+        this.roomLeaderExit();
+      } else if (this.chatRoomLeader == "Y" && this.leaderCanOutYn == "N") {
+        // 해당 경우는 없어야 정상
+        this.warningAlert(
+          "소모임에서 방장은 혼자 남은 경우에만 나갈 수 있습니다."
+        );
+      } else {
+        this.targetUserKey = this.SS_USER_KEY;
+        this.targetUserType = "self";
+        this.getKickUser();
+      }
+    },
+
+    getKickUser() {
+      getData({
+        url: "/messageMain/setDropOutUser",
+        param: {
+          chatroomId: this.chatroomId,
+          userKey: this.targetUserKey,
+          type: this.targetUserType
+        },
+        then: (data) => {
+          if (data.successYn === "Y") {
+            if (this.targetUserType === "kick") {
+              this.userRoomList = data.roomUserList;
+
+              this.getUserList();
+              this.getAttendList();
+              this.modalMessage = false;
+            } else if (this.targetUserType === "self") {
+              this.messageTalkModal = false;
+              this.$router.go(-1);
+            }
+          } else {
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+
+    getUserList() {
+      getData({
+        url: "/messageMain/getRoomUserList",
+        param: {
+          chatroomId: this.chatroomId
+        },
+        then: (data) => {
+          this.userRoomList = data;
+          this.talkUserCnt = data.length;
+
+          this.$nextTick(() => {
+            this.getAttendList();
+          });
+        }
+      });
+    },
+
+    getLocationListCheck() {
+      getData({
+        url: "/messageMain/getLocationListCheck",
+        param: {
+          chatroomId: this.chatroomId
+        },
+        then: (data) => {
+          this.locationList = data;
+        }
+      });
+    },
+
+    getLocationYn() {
+      getData({
+        url: "/messageMain/getLocationYn",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.toggleLocation = data.locationYn == "Y" ? true : false;
+          }
+        }
+      });
+    },
+
+    setLocationYn() {
+      getData({
+        url: "/messageMain/setLocationYn",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          if (data.successYn === "N") {
+            this.warningAlert(data.message);
+          } else {
+            this.toggleLocation = data.updatedValue === "Y" ? true : false;
+          }
+          this.getUserList();
+        }
+      });
+    },
+    /** 챗방 신청유저리스트 **/
+    getAttendList() {
+      getData({
+        url: "/messageMain/getAttendList",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.attendList = data;
+        }
+      });
+    },
+
+    getChatroomTitle() {
+      getData({
+        url: "/messageMain/getChatroomTitle",
+        param: { chatroomId: this.chatroomId },
+        then: (data) => {
+          this.title = data.title ? data.title : "대화상대가 없습니다.";
+          this.openchatRank = data.openchatRank;
+          this.openChatKey = data.openChatKey;
+          this.chatRoomLeaderYn = data.leaderYn;
+        }
+      });
+    },
+
+    goRouter(type, item) {
+      if (type === "profile") {
+        dailyCardInfoMapFn({ userKey: item.userKey, type: "messageTalk" });
+        this.$router.push("/dailyCardInfo");
+      } else if (type === "police") {
+        policeMapFn({
+          type: "message",
+          targetKey: item.userKey,
+          targetId: item.chatroomId
+        });
+        this.$router.push("/police");
+      } else if (type === "kick") {
+        if (item.subLeaderYn === "Y") {
+          this.warningAlert(
+            "부방장은 강퇴할수없습니다. 부방장에서 해제시킨후 강퇴할수있습니다."
+          );
+          return;
+        }
+        this.targetUserKey = item.userKey;
+        this.targetUserType = "kick";
+        this.modalMessage = true;
+      } else if (type === "back") {
+        // if (messageTalkMap.type === "police") {
+        this.$router.push("/message");
+        // } else {
+        //   this.$router.go(-1);
+        // }
+      } else if (type === "map") {
+        messageTalkMapFn({ chatroomId: item, title: this.title });
+        this.$router.push("/messageMap");
+      } else if (type == "partnersMap") {
+        this.$router.push("/partnersMap");
+      } else if (type === "change") {
+        // 방장위임
+        //console.log("방장위임");
+        // return;
+        this.confirmBtn(item, "master");
+      } else if (type === "subChange") {
+        this.confirmBtn(item, "subMaster");
+      } else if (type === "subRemoval") {
+        this.confirmBtn(item, "subRemoval");
+      }
+    },
+    setBlock(item) {
+      this.presentAlertConfirm(item);
+      // //이미 차단되어 있는지확인
+      // let localStorageNoticeList = JSON.parse(
+      //   localStorage.getItem(this.openChatKey)
+      // );
+      //
+      // let isExist = false;
+      // for(let idx in localStorageNoticeList){
+      //   if(localStorageNoticeList[idx]['userId'] == item.userId){
+      //     isExist = true;
+      //   }
+      // }
+      //
+      // if(isExist){
+      //   //차단해제
+      //   this.blockCancelConfirmBtn(item);
+      // } else {
+      //   //차단
+      //   this.blockConfirmBtn(item);
+      // }
+    },
+    async blockCancelConfirmBtn(item) {
+      const alert = await alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "이미 차단되어 있습니다. 차단을 해제 하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "해제",
+            cssClass: "alert-button-block",
+            handler: () => {
+              //해당사용자 세션에 추가하여 메시지 걸러냄
+              let localStorageBlockList = JSON.parse(
+                localStorage.getItem(this.openChatKey)
+              );
+
+              console.log(localStorageBlockList);
+
+              for (let i in localStorageBlockList) {
+                if (localStorageBlockList[i]["userId"] == item.userId) {
+                  localStorageBlockList.splice(i, 1);
+                }
+              }
+
+              //체크된
+              if (
+                localStorageBlockList == null &&
+                typeof localStorageBlockList !== "array"
+              ) {
+                localStorageBlockList = [];
+              }
+
+              //최종 결과물 저장
+              localStorage.setItem(
+                this.openChatKey,
+                JSON.stringify(localStorageBlockList)
+              );
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    async blockConfirmBtn(item) {
+      const alert = await alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message:
+          "이 사용자의 메시지를 채팅에서 더 이상 보지 않습니다. 계속 하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "차단",
+            cssClass: "alert-button-block",
+            handler: () => {
+              //해당사용자 세션에 추가하여 메시지 걸러냄
+              let localStorageBlockList = JSON.parse(
+                localStorage.getItem(this.openChatKey)
+              );
+
+              //체크된
+              if (
+                localStorageBlockList == null &&
+                typeof localStorageBlockList !== "array"
+              ) {
+                localStorageBlockList = [];
+              }
+              localStorageBlockList.push({ userId: item.userId });
+
+              //최종 결과물 저장
+              localStorage.setItem(
+                this.openChatKey,
+                JSON.stringify(localStorageBlockList)
+              );
+
+              this.blockFinishBtn();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    async blockFinishBtn(item) {
+      const alert = await alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "사용자가 차단되어 메시지를 받지 않게됩니다.",
+        buttons: [
+          {
+            text: "확인",
+            role: "cancel",
+            handler: () => {
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    async confirmBtn(item, type) {
+      let message, url, btnText;
+      if (type === "master") {
+        message = "정말 방장을 위임 하시겠습니까? 되돌릴 수 없습니다.";
+        url = "/messageMain/setRoomMasterChange";
+        btnText = "위임";
+      } else if (type === "subMaster") {
+        message = "부방장으로 위임 하시겠습니까?";
+        url = "/messageMain/setSubRoomMasterChange";
+        btnText = "위임";
+      } else if (type === "subRemoval") {
+        message = "부방장을 해제 하시겠습니까?";
+        url = "/messageMain/setSubRoomMasterRemoval";
+        btnText = "해제";
+      }
+      const alert = await alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: message,
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: btnText,
+            handler: () => {
+              getData({
+                url: url,
+                param: {
+                  chatroomId: item.chatroomId,
+                  targetUserId: item.userId,
+                  subLeaderYn: item.subLeaderYn
+                },
+                then: (data) => {
+                  this.warningAlert(data.message);
+
+                  this.getUserList();
+                }
+              });
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    changeMeetMainValue() {
+
+      this.$store.state.currentMeetMainTab = this.mainValue;
+      if (this.openchatDelYn == "Y" && this.mainValue != "message") {
+        this.warningAlert("이미 삭제 된 소모임입니다.");
+        this.$router.go(-1);
+      }
+
+      this.$nextTick(() => {
+        this.mainBtn(this.mainValue);
+      });
+    },
+
+    goDailyCardInfo(userKey) {
+      this.meetUserModal = false;
+      dailyCardInfoMapFn({ userKey: userKey, type: "openChatMeet" });
+      this.$router.push("/dailyCardInfo");
+    },
+    getOpenChatId(state) {
+      getData({
+        url: "/getOpenchatId",
+        param: openChatMeetMap,
+        then: (data) => {
+          this.openChatId = data;
+
+          if (state == "mount") {
+            this.mainBtn("messageCheck");
+          }
+          // this.getOpenChatMeetList();
+        }
+      });
+    },
+
+    /** 방장 or 부방장 체크 **/
+    getLeaderCheck() {
+      let chatroomId;
+      if (
+        openChatMeetMap.chatroomId == null ||
+        openChatMeetMap.chatroomId == undefined
+      ) {
+        chatroomId = this.chatroomId;
+      } else {
+        chatroomId = openChatMeetMap.chatroomId;
+      }
+      getData({
+        url: "/getLeaderCheck",
+        param: {
+          chatroomId: chatroomId,
+          openChatKey: openChatMeetMap.openChatKey
+        },
+        then: (data) => {
+          this.leaderYn = data.leaderYn;
+        }
+      });
+    },
+
+    goHome() {
+      // openChatViewMapFn(openChatMeetMap);
+      // this.$router.push("/openchatView");
+    },
+
+    getCategoryList() {
+      getData({
+        url: "/getOpenChatMeetCategory",
+        param: {},
+        then: (data) => {
+          this.categoryList = data;
+          if (this.categoryCd == "MEET_GROUP") {
+            this.categoryCd = data[0].categoryCd;
+            this.categoryNm = data[0].categoryNm;
+          }
+        }
+      });
+    },
+
+    getAlbumList() {
+      this.pageNo = 1;
+      this.pageSize = 30;
+      this.currentPageNo = 1;
+      this.albumList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getAlbumList",
+        param: {
+          openChatKey: openChatMeetMap.openChatKey,
+          chatroomId: openChatMeetMap.chatroomId,
+          pageNo: this.pageNo,
+          pageSize: this.pageSize
+        },
+        then: (data) => {
+          if (data.successYn == "Y") {
+            this.albumList = data.result;
+          } else {
+            this.warningAlert(data.message);
+            this.mainValue = "home";
+          }
+        }
+      });
+    },
+    /** 무한 스크롤 **/
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        self.pageNo = self.currentPageNo + 1;
+
+        let url = "/getAlbumList";
+
+        getData({
+          url: url,
+          param: {
+            openChatKey: openChatMeetMap.openChatKey,
+            chatroomId: openChatMeetMap.chatroomId,
+            pageNo: self.pageNo,
+            pageSize: self.pageSize
+          },
+          then: (data) => {
+            for (let i in data.result) {
+              self.albumList.push(data.result[i]);
+            }
+            self.currentPageNo += 1;
+            self.$nextTick(() => {
+              if (self.albumList.length == self.totalCount)
+                self.isEndScroll = true;
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    },
+
+    /** Refresh */
+    doRefresh(e) {
+      setTimeout(() => {
+        e.target.complete();
+      }, 500);
+    },
+
+    getMeetUserList(item) {
+      getData({
+        url: "/getMeetUserList",
+        param: {
+          meetId: item.meetId,
+          openChatId: item.openchatId
+        },
+        then: (data) => {
+          this.meetUserList = data;
+        }
+      });
+    },
+
+    changeMeetCategory() {
+      this.categoryNm = this.categoryList.find(
+        (v) => v.categoryCd == this.categoryCd
+      ).categoryNm;
+    },
+
+    categoryBtn(item) {
+      if (this.categoryCd != item.categoryCd) {
+        this.categoryCd = item.categoryCd;
+        this.categoryNm = item.categoryNm;
+
+        this.getOpenChatMeetList();
+      }
+    },
+    boostModalClose() {
+      clearInterval(this.interval2);
+      this.boostModal = false;
+    },
+    openUseOpenChatModal() {
+      this.getBuffUsingInfo();
+      this.getUserCouponDataOne();
+      clearInterval(this.interval2);
+      this.interval2 = setInterval(() => {
+        this.getBuffUsingInfo();
+        this.getUserCouponDataOne();
+      }, 10000);
+      this.boostModal = true;
+    },
+    /** useOpenChatBoost 사용 로직 **/
+    useOpenChatBoost() {
+      let msg = "사용하시겠습니까?";
+      if (this.coupon.quantity === 0) {
+        this.boostModal = false;
+        this.$router.push("/store");
+      } else {
+        const useOpenChatBoost = () => {
+          getData({
+            url: "/useOpenChatBoost",
+            param: {
+              couponCd: "CU008",
+              useType: this.useType, // 'COUPON', 'HEART'
+              itemCd: this.useType === "HEART" ? "IT008_01" : "", // useType
+              pointCd: this.useType === "HEART" ? "BUY" : "", // useType
+              openChatKey: openChatMeetMap.openChatKey
+            },
+            then: (data) => {
+              if (
+                data.successYn === "N" ||
+                data.successYn === "NH" ||
+                data.successYn === "NE"
+              ) {
+                this.warningAlertNH(data.message);
+              } else {
+                this.warningAlert(data.message);
+
+                this.getBuffUsingInfo();
+                this.getUserCouponDataOne();
+
+                clearInterval(this.interval2);
+                this.interval2 = setInterval(() => {
+                  this.getBuffUsingInfo();
+                  this.getUserCouponDataOne();
+                }, 10000);
+              }
+            }
+          });
+        };
+        this.warningConfirm(msg, useOpenChatBoost);
+      }
+    },
+    async warningConfirm(message, callback) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "아니요",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              callback();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 보유현황 **/
+    getUserCouponDataOne() {
+      let couponCd = "CU008";
+      getData({
+        url: "/getUserCouponDataOne",
+        param: { couponCd: couponCd },
+        then: (data) => {
+          this.coupon = data;
+
+          if (this.coupon.quantity > 0) {
+            this.useType = "COUPON";
+          } else {
+            this.useType = "HEART";
+          }
+        }
+      });
+    },
+    getBuffUsingInfo() {
+      getData({
+        url: "/getBuffUsingInfo",
+        param: {
+          couponCd: "CU008",
+          openChatKey: openChatMeetMap.openChatKey
+        },
+        then: (data) => {
+          this.isBuffYn = data.isBuffYn;
+          this.remainingTime = data.remainingTime;
+          this.remainingTimeStr = data.remainingTimeStr;
+          this.useCnt = data.useCnt;
+          this.openchatRank = data.openchatRank;
+          this.totalRoom = data.totalRoom;
+
+          this.$nextTick(() => {
+            clearInterval(this.interval);
+            this.timeCal();
+            this.interval = setInterval(() => {
+              if (this.isBuffYn === "Y") {
+                this.timeCal();
+              }
+            }, 1000);
+          });
+        }
+      });
+    },
+    timeCal() {
+      let hour, min, sec;
+
+      hour = parseInt(this.remainingTime / 3600);
+      min = parseInt((this.remainingTime % 3600) / 60);
+      sec = this.remainingTime % 60;
+
+      if (hour.toString().length === 1) hour = "0" + hour;
+      if (min.toString().length === 1) min = "0" + min;
+      if (sec.toString().length === 1) sec = "0" + sec;
+
+      if (this.remainingTime > 0) {
+        this.remainingTime = this.remainingTime - 1;
+      } else {
+        this.remainingTime = 0;
+        clearInterval(this.interval);
+        this.isBuffYn = "N";
+      }
+      this.calTimeStr = hour + ":" + min + ":" + sec;
+    },
+    getOpenChatMeetList() {
+      getData({
+        url: "/getOpenChatMeetList",
+        param: {
+          openChatId: this.openChatId,
+          openChatKey: openChatMeetMap.openChatKey,
+          categoryCd: this.categoryCd
+        },
+        then: (data) => {
+          if (data.successYn == "Y") {
+            switch (this.categoryCd) {
+              case "MEET_GROUP":
+                this.meetList = data.resultList;
+                break;
+              case "NOTICE":
+                this.noticeList = data.resultList;
+                break;
+              case "JOIN_GREETING":
+                this.greetingList = data.resultList;
+                break;
+              case "REVIEW":
+                this.reviewList = data.resultList;
+                break;
+              case "CALCULATE":
+                this.calculateList = data.resultList;
+                break;
+              default:
+                break;
+            }
+          } else {
+            if (this.mainValue != "home") {
+              this.warningAlert(data.message);
+              this.mainValue = "home";
+            } else {
+              this.meetList = data.resultList;
+            }
+          }
+        }
+      });
+    },
+    goWriteOpenChatMeet(state, item) {
+      if (state == "new") {
+        openChatMeetWriteMapFn({
+          openChatKey: openChatMeetMap.openChatKey,
+          chatroomId: openChatMeetMap.chatroomId,
+          categoryList: this.categoryList,
+          categoryCd: this.categoryCd,
+          categoryNm: this.categoryNm,
+          openChatId: this.openChatId,
+          leaderYn: this.leaderYn,
+          state: "new"
+        });
+        this.$router.push("/openChatMeetWrite");
+      } else if (state == "edit") {
+        openChatMeetWriteMapFn({
+          openChatKey: openChatMeetMap.openChatKey,
+          chatroomId: openChatMeetMap.chatroomId,
+          categoryList: this.categoryList,
+          categoryCd: this.categoryCd,
+          categoryNm: this.categoryNm,
+          openChatId: this.openChatId,
+          leaderYn: this.leaderYn,
+          meetId: item.meetId,
+          state: "edit"
+        });
+        this.$router.push("/openChatMeetWrite");
+      }
+    },
+
+    mainBtn(type) {
+      this.getLeaderCheck();
+      //if (this.mainValue != type) {
+      if (type == "board") {
+        this.getOpenChatMeetList();
+      } else if (type == "album") {
+        this.getAlbumList();
+      } else if (type == "messageCheck") {
+        this.getOpenChatAttendCheck();
+      }
+      this.$store.state.currentMeetMainTab = type;
+      //}
+    },
+
+    getOpenChatAttendCheck() {
+      getData({
+        url: "/getOpenChatAttendCheck",
+        param: {
+          openChatId: this.openChatId
+        },
+        then: (data) => {
+          if (data.successYn == "N") {
+            this.warningAlert(data.message);
+            this.mainValue = "home";
+          } else if (data.successYn == "Y") {
+            this.mainValue = "message";
+          }
+        }
+      });
+    },
+
+    openMeetUserList(item) {
+      this.meetUserModal = true;
+
+      this.getMeetUserList(item);
+    },
+
+    btnHandle(item, state) {
+      setTimeout(() => {
+        this.btnDisabled = false;
+      }, 500);
+      /** 참여자 */
+      if (state == "add") {
+        this.btnDisabled = true;
+        getData({
+          url: "/addMeetUser",
+          param: {
+            meetId: item.meetId,
+            openChatId: item.openchatId
+          },
+          then: (data) => {
+            this.warningAlert(data.message);
+            this.getOpenChatMeetList();
+          }
+        });
+      } else if (state == "delete") {
+        /** 참여 취소 */
+        this.btnDisabled = true;
+        getData({
+          url: "/deleteMeetUser",
+          param: {
+            meetId: item.meetId,
+            openChatId: item.openchatId
+          },
+          then: (data) => {
+            this.warningAlert(data.message);
+            this.getOpenChatMeetList();
+          }
+        });
+      }
+    },
+
+    goView(item) {
+      openChatMeetViewMapFn({
+        openChatId: item.openchatId,
+        meetId: item.meetId,
+        categoryCd: this.categoryCd,
+        categoryNm: this.categoryNm,
+        openChatKey: openChatMeetMap.openChatKey,
+        chatroomId: openChatMeetMap.chatroomId
+      });
+      this.$router.push("/openChatMeetView");
+    },
+
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+
+    /** 소모임 HOME **/
+    getOpenChatDetail() {
+      //세션스토리지에 내가 본 게시글을 저장하고 처음보는거면 조회수를 증가시킨다.
+      //viewList = [{articleId: 1}, {articleId:2}]
+
+      let isExist = false;
+      let viewList = sessionStorage.getItem("articleViewList");
+      let time = new Date();
+      let currTime = new Date();
+
+      if (!viewList) {
+        viewList = [];
+      } else {
+        viewList = JSON.parse(viewList);
+      }
+
+      for (let idx in viewList) {
+        if (viewList[idx]["openChatKey"] == openChatMeetMap.openChatKey) {
+          //이미있음
+          isExist = true;
+        }
+
+        //하루가 경과했으면 삭제한다.
+        let diffTime =
+          (currTime.getTime() - new Date(viewList[idx]["time"]).getTime()) /
+          (60 * 1000);
+        if (diffTime > 1440) {
+          viewList.splice(idx, 1);
+        }
+      }
+
+      //없으면 조회이력을 추가한다.
+      if (!isExist) {
+        viewList.push({ openChatKey: openChatMeetMap.openChatKey, time: time });
+        sessionStorage.setItem("articleViewList", JSON.stringify(viewList));
+      }
+
+      getData({
+        url: "/getOpenChatDetail",
+        param: {
+          openChatKey: openChatMeetMap.openChatKey,
+          viewAddYn: isExist ? "Y" : "N"
+        },
+        then: (data) => {
+          if (data.successYn == "Y") {
+            this.itemList = data;
+            this.dueDate = data.dueDateStr;
+
+            this.inviteYn = data.attenderCancelYn == "N" ? "Y" : "N";
+            this.bookmarkYn = data.bookmarkYn;
+            this.chatDetailMap = data;
+            this.ssUserYn = data.ssUserKey == data.regUserKey ? "Y" : "N";
+            this.regUserKey = data.regUserKey;
+            this.mainFileId = data.mainFileId;
+            this.attendYn = data.attendYn;
+            this.chatroomId = data.chatroomId;
+            this.$store.state.currentChatroomId = data.chatroomId;
+
+            this.attendChk = data.attendChk;
+            this.leaderConfirmYn = data.leaderConfirmYn;
+            this.attendRegTime = data.attendRegTime;
+
+            this.cntBookmark = data.cntBookmark;
+            this.openchatRank = data.openchatRank;
+            this.totalRoom = data.totalRoom;
+            // this.useCnt = data.useCnt;
+            // this.cdnNm = data.cdnNm;
+            // this.cdnThumbNm = data.cdnThumbNm;
+            this.privateYn = data.privateYn == "Y" ? true : false;
+            this.recentTime = this.getRecentDate(data.recentTime);
+            this.totalUserCount = data.totalUserCount;
+
+            this.$nextTick(() => {
+              this.getUserInfo();
+              if (data.regUserKey == data.ssUserKey) {
+                this.getAttendInfo();
+              }
+              this.getLeaderCheck();
+              this.getOpenChatMeetList();
+              this.replaceURL();
+            });
+          } else {
+            this.openchatDelYn = "Y";
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+    getAttendInfo() {
+      getData({
+        url: "/getAttendInfo",
+        param: {
+          openChatKey: openChatMeetMap.openChatKey
+        },
+        then: (data) => {
+          this.attendInfoList = data;
+
+          this.$nextTick(() => {
+            this.getUserInfo();
+          });
+        }
+      });
+    },
+    agreeYn(type, userKey) {
+      this.showLoading();
+      /** 수락/거절 이벤트
+       * param으로 참여신청자ID, 오픈챗ID, 타입 **/
+      getData({
+        url: "/updateOpenChatAttendYn",
+        param: {
+          openChatKey: openChatMeetMap.openChatKey,
+          userKey: userKey,
+          type: type,
+          fileId: 0
+        },
+        then: (data) => {
+          if (data.successYn == "Y") {
+            if (data.confirmYn == "Y") {
+              this.warningAlert("수락 처리 되었습니다");
+            } else {
+              this.warningAlert("거절 처리 되었습니다");
+            }
+          } else {
+            this.warningAlert(data.message);
+          }
+          this.loading.dismiss();
+          this.$nextTick(() => {
+            this.getUserList();
+            this.getAttendInfo();
+          });
+        }
+      });
+    },
+    getUserInfo() {
+      getData({
+        url: "/getUserInfo",
+        param: {
+          regUserKey: this.regUserKey
+        },
+        then: (data) => {
+          this.userPhotoId = data.userPhotoId;
+          this.cdnThumbNmProfile = data.cdnThumbNm;
+
+          // this.openChatLodingCheck = true;
+
+          this.$nextTick(() => {
+          });
+        }
+      });
+    },
+    /** 오픈챗 최근 활동 멘트 format 함수 **/
+    getRecentDate(args) {
+      const today = new Date();
+      const timeValue = new Date(args);
+      const betweenTime = Math.floor(
+        (today.getTime() - timeValue.getTime()) / 1000 / 60
+      );
+      if (betweenTime < 1) return "방금 전";
+      if (betweenTime < 60) {
+        return `${betweenTime}분 전`;
+      }
+      const betweenTimeHour = Math.floor(betweenTime / 60);
+      if (betweenTimeHour < 24) {
+        return `${betweenTimeHour}시간 전`;
+      }
+      const betweenTimeDay = Math.floor(betweenTime / 60 / 24);
+      if (betweenTimeDay < 365) {
+        return `${betweenTimeDay}일 전`;
+      }
+      return `${Math.floor(betweenTimeDay / 365)}년 전`;
+    },
+
+    joinIn() {
+
+      if (this.choiceYn == "Y") {
+
+        if (this.attendYn == "Y" || this.ssUserYn == "Y") {
+          // messageTalkMapFn({ chatroomId: this.chatroomId, type: "openChat" });
+          // this.$router.push("/messageTalk");
+          this.getOpenChatAttendCheck();
+        } else {
+          this.showLoading();
+          this.messageOpen = true;
+          this.joinInCheckDisabled = false;
+          getData({
+            url: "/setOpenChatInvite",
+            param: {
+              openChatKey: openChatMeetMap.openChatKey
+            },
+            then: (data) => {
+              this.inviteYn = data.inviteYn;
+              this.handleSendMessage();
+              setTimeout(() => {
+                this.loading.dismiss();
+                this.joinInCheckDisabled = true;
+              }, this.loadingTime);
+            }
+          });
+        }
+
+      } else {
+        this.warningAlert("프로필이 완성되지 않았어요! 참여하려면 프로필설정을 완료해주세요. (필수사진등록)");
+      }
+
+    },
+    editOpenChat(item) {
+      openChatWriteMapFn({
+        openChatKey: openChatMeetMap.openChatKey,
+        type: "edit",
+        item: item
+      });
+      this.$router.push("/openChatWrite");
+    },
+    async presentAlertConfirm() {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "삭제하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "삭제",
+            handler: () => {
+              getData({
+                url: "/setOpenChatDel",
+                param: {
+                  openChatKey: openChatMeetMap.openChatKey
+                },
+                then: () => {
+                }
+              });
+
+              this.presentAlert("삭제되었습니다.");
+
+              // this.$router.go(-1);
+              this.$router.push("/openChat");
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    // 알림창
+    async presentAlert(msg) {
+      const alert = await this.alertController.create({
+        header: "",
+        message: msg,
+        buttons: [
+          {
+            text: "OK",
+            role: "Okay",
+            handler: () => {
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    policeBtn() {
+      let regUserKey = this.chatDetailMap.regUserKey;
+      policeMapFn({
+        targetId: regUserKey,
+        type: "openChatView",
+        targetKey: openChatMeetMap.openChatKey
+      });
+      this.$router.push("/police");
+    },
+    eyeOn() {
+      this.showLoading();
+      this.bookmarkCheckDisabled = false;
+      getData({
+        url: "/setOpenChatBookmark",
+        param: {
+          openChatKey: openChatMeetMap.openChatKey
+        },
+        then: (data) => {
+          this.bookmarkYn = data.bookmarkYn;
+          this.cntBookmark = data.cntBookmark;
+          this.msg = data.message;
+
+          setTimeout(() => {
+            this.loading.dismiss();
+            this.bookmarkCheckDisabled = true;
+          }, this.loadingTime);
+        }
+      });
+    },
+
+    setCheckPrivateYn() {
+      this.showLoading();
+      getData({
+        url: "/setCheckPrivateYn",
+        param: {
+          openChatKey: openChatMeetMap.openChatKey,
+          privateYn: this.privateYn
+        },
+        then: (data) => {
+          if (data.successYn == "N") {
+            this.getOpenChatDetail();
+            this.warningAlert(data.message);
+            this.privateYn = !this.privateYn;
+          } else {
+            this.privateYn = data.privateYn == "Y" ? true : false;
+          }
+          setTimeout(() => {
+            this.loading.dismiss();
+          }, 500);
+        }
+      });
+    },
+
+    replaceURL() {
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      let _match = this.chatDetailMap.content.match(regexp);
+      let match = [...new Set(_match)];
+      this.chatDetailMap.replaceContent = this.chatDetailMap.content;
+      Array.from(match).forEach((item) => {
+        if (!item.includes("http")) {
+          this.chatDetailMap.replaceContent =
+            this.chatDetailMap.replaceContent.replaceAll(
+              item,
+              `<a href="http://${item}" target="_blank">${item}</a>`
+            );
+        } else {
+          this.chatDetailMap.replaceContent =
+            this.chatDetailMap.replaceContent.replaceAll(
+              item,
+              `<a href="${item}" target="_blank">${item}</a>`
+            );
+        }
+      });
+    },
+
+    /** 이미지 확대, 이동**/
+    openZoomedImage(data) {
+      this.isZoomed = false;
+      if (!this.isZoomed) {
+        const imageUrl = "https://" + data;
+        const modal = document.createElement("div");
+        const modalImage = document.createElement("img");
+
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.zIndex = "1000";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+
+        modalImage.src = imageUrl;
+        modalImage.style.width = "90%";
+        modalImage.style.height = "auto";
+        modalImage.style.objectFit = "contain";
+        modalImage.style.transformOrigin = "center";
+        modalImage.style.pointerEvents = "auto";
+
+        modal.appendChild(modalImage);
+        document.body.appendChild(modal);
+
+        const hammer = new Hammer(modalImage);
+
+        let currentScale = 1;
+        let posX = 0;
+        let posY = 0;
+        let lastPosX = 0;
+        let lastPosY = 0;
+
+        hammer.get("pinch").set({ enable: true });
+        hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+        hammer.on("pinchin pinchout", (event) => {
+          if (event.type == "pinchin") {
+            currentScale -= 0.02;
+          } else if (event.type == "pinchout") {
+            currentScale += 0.02;
+          }
+
+          currentScale = Math.min(Math.max(currentScale, 0.5), 3);
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panmove", (event) => {
+          posX = lastPosX + event.deltaX;
+          posY = lastPosY + event.deltaY;
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panend", () => {
+          lastPosX = posX;
+          lastPosY = posY;
+        });
+
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+        this.isZoomed = true;
+      } else {
+        this.isZoomed = false;
+      }
+    },
+    beforeReset() {
+      this.chatDetailMap = {};
+      this.userPhotoId = "";
+      this.mainFileId = "";
+
+      clearInterval(this.interval);
+      clearInterval(this.interval2);
+      this.isBuffYn = "N";
+      this.remainingTime = "";
+      this.remainingTimeStr = "";
+      this.calTimeStr = "00:00:00";
+      this.openchatRank = "";
+      this.totalRoom = "";
+      this.useCnt = "0";
+    },
+    /** 로딩 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+      await this.loading.present();
+    },
+    truncateString(str, maxLength) {
+      if (Object.keys(str).length > maxLength) {
+        return str.slice(0, maxLength - 3) + "...";
+      } else {
+        return str;
+      }
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+ion-modal {
+  --max-height: 60%;
+  padding: 0 18px;
+}
+
+ion-avatar {
+  width: 25px;
+  height: 25px;
+  //object-fit: cover;
+  border-radius: 50%;
+  //overflow: hidden;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+ion-grid {
+  /* background-color: rgba($color: white, $alpha: 0.5); */
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--ion-border-radius);
+  padding: 1rem;
+
+  + ion-grid {
+    margin-top: 1rem;
+  }
+
+  .info {
+    color: white;
+
+    .date {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 10px;
+      margin: 0.5rem 0 0;
+    }
+  }
+
+  .content {
+    margin: 0.5rem 0 0;
+
+    .message {
+      background-color: #272847;
+      border-radius: var(--ion-border-radius);
+      font-size: 14px;
+      padding: 0.75rem 1rem;
+      color: white;
+      border-top-left-radius: 0;
+    }
+
+    .something {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      margin: 1rem 0 0;
+
+      ion-chip {
+        font-weight: bold;
+      }
+
+      ion-text {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+ion-footer {
+  ion-button {
+    &::part(native) {
+      padding: 0;
+    }
+  }
+}
+</style>

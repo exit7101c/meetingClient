@@ -1,0 +1,112 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>계정 관리</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="row-box">
+        <CardBox padding="sm" shadow="light">
+          <ion-list lines="none">
+            <MyPageNavItem title="휴면 관리" @click="hyumyeonMessage = true" />
+            <MyPageNavItem title="회원 탈퇴" @click="modalMessage = true" />
+          </ion-list>
+        </CardBox>
+      </div>
+    </ion-content>
+    <UserSecessionModal
+      :is-open="modalMessage"
+      @ionModalDidDismiss="ionModalDidDismiss"
+      @userSecession="userSecession"
+    />
+    <!-- :message="'※ 탈퇴하기 버튼을 누르면 NAVY 계정의 정보가 삭제되며, 삭제된 정보는 다시 복구할수 없습니다.'" -->
+    <AlertMessageModal
+      :is-open="userSecessionSave"
+      :title="'회원탈퇴'"
+      :message="'※ 탈퇴하기 버튼을 누르면 NAVY 계정의 정보가 삭제됩니다.'"
+      :subMessage="'※ 회원 탈퇴를 하신 날로부터 30일 이내에는 재가입이 어렵습니다. 구독중인 경우 구독해지와 동시에 회원탈퇴 처리됩니다.'"
+      :btnName="'탈퇴하기'"
+      :disabledCheck="false"
+      :height="240"
+      @ionModalDidDismiss="userSecessionSave = false"
+      @handleClickBtn="saveUserSecession"
+    />
+    <AlertMessageModal
+      :is-open="hyumyeonMessage"
+      :title="'휴면 관리'"
+      :message="'※ 휴면계정 상태가 아닙니다.'"
+      :subMessage="'※ 휴면계정은 365일 (1년) 동안 접속이력이 없을시 자동으로 전환됩니다.'"
+      :btnName="'확인'"
+      :height="210"
+      :disabledCheck="false"
+      @ionModalDidDismiss="hyumyeonMessage = false"
+      @handleClickBtn="hyumyeonMessage = false"
+    />
+  </ion-page>
+</template>
+
+<script>
+import { defineComponent } from "vue";
+import CardBox from "@/components/CardBox.vue";
+import MyPageNavItem from "@/components/MyPage/MyPageNavItem.vue";
+import UserSecessionModal from "@/components/Modal/UserSecessionModal.vue";
+import AlertMessageModal from "@/components/Modal/AlertMessageModal.vue";
+import { getData } from "@/assets/js/common";
+
+export default defineComponent({
+  inject: ["alertController"],
+  name: "SettingAccount",
+  components: {
+    CardBox,
+    MyPageNavItem,
+    UserSecessionModal,
+    AlertMessageModal
+  },
+  data() {
+    return {
+      modalMessage: false,
+      hyumyeonMessage: false,
+      userSecessionSave: false
+    };
+  },
+  methods: {
+    saveUserSecession() {
+      getData({
+        url: "/setUserSecession",
+        param: {},
+        then: (data) => {
+          if (data.successYn) {
+            this.userSecessionSave = false;
+            this.$router.push("/login");
+            this.warningAlert(data.message);
+          } else {
+            this.warningAlert(data.message);
+          }
+        }
+      });
+    },
+    userSecession() {
+      this.modalMessage = false;
+      this.userSecessionSave = true;
+    },
+    ionModalDidDismiss() {
+      this.modalMessage = false;
+    },
+    /** 경고 alert창 **/
+    async warningAlert(title, message) {
+      const alert = await this.alertController.create({
+        header: title,
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+});
+</script>
+<style scoped></style>

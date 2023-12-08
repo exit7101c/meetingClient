@@ -1,0 +1,871 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>{{ categoryNm }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content ref="myContent" v-if="lodingCheck !== false">
+      <ion-item-group class="ion-padding">
+        <div>
+          <div class="row-box" style="display: flex; flex-direction: row; align-items: center;">
+            <OpenChatMeetViewUserInfo
+              :thumbnail="BoardDetail.cdnThumbNm"
+              :detail="BoardDetail"
+            />
+          </div>
+          <div class="row-box">
+            <ion-text color="light" class="text-lg text-bold">{{ BoardDetail.title }}</ion-text>
+            <p>
+              <ion-text color="light" class="text-md" v-html="BoardDetail.replaceContent"></ion-text>
+            </p>
+          </div>
+        </div>
+      </ion-item-group>
+      <!--  댓글 -->
+      <CommentList :item-list="commentList">
+        <CommentItem v-for="(data, index) in commentList" :key="index">
+          <template #avatar>
+            <CommentAvatar :thumbnail="data.cdnThumbNm" />
+          </template>
+          <template #content>
+            <CommentContent
+              :isReply="true"
+              :data="data"
+              @updateComment="commentReBtn('update', data)"
+              @deleteComment="presentAlertConfirm('comment', data)"
+              @policeComment="policeBtn('comment', data)"
+              @replyComment="commentReBtn('re', data)"
+              @zoomImg="openZoomedImage(data.cdnNm)"
+              :disabled="!commentUpDownCheckDisabled"
+            />
+            <!--             댓글 수정 폼-->
+            <div
+              class="row-box"
+              v-if="updateComment === data && reType === 'update'"
+            >
+              <CommentReplyForm
+                v-model:value="data.contents"
+                :reimgFileId="reimgFileId"
+                :reimgViewFileId="reimgViewFileId"
+                @deleteImg="imgDelete('reComment')"
+                @addPhoto="addPhoto('reComment')"
+                @input="limitComment($event)"
+                @sendComment="commentBtn('update', data)"
+                @handelFocus="emptyBox=true"
+                @handelBlur="emptyBox=false"
+              />
+            </div>
+          </template>
+          <template v-if="reComment === data && reType === 're'">
+            <!-- 대댓글 작성 폼 -->
+            <div class="row-box">
+              <CommentReplyForm
+                v-model:value="childComment"
+                :reimgFileId="reimgFileId"
+                :reimgViewFileId="reimgViewFileId"
+                @addPhoto="addPhoto('reComment')"
+                @input="limitComment($event)"
+                @sendComment="commentBtn('child', data, data.commentKey)"
+                @handelFocus="handeEmptyBox('f')"
+                @handelBlur="handeEmptyBox('b')"
+              />
+            </div>
+            <!--             대댓글 목록 -->
+          </template>
+          <ion-item-group>
+            <CommentItem
+              v-for="data2 in data.childCommentList"
+              :key="data2.commentKey"
+            >
+              <template #avatar>
+                <CommentAvatar :thumbnail="data2.cdnThumbNm" />
+              </template>
+              <template #content>
+                <CommentContent
+                  :data="data2"
+                  @updateComment="commentReBtn('reUpdate', data2)"
+                  @deleteComment="presentAlertConfirm('comment', data2)"
+                  @policeComment="policeBtn('comment', data2)"
+                  @zoomImg="openZoomedImage(data2.cdnNm)"
+                />
+                <!--                 댓글 수정 -->
+                <div
+                  class="row-box"
+                  v-if="reUpdateComment === data2 && reType === 'reUpdate'"
+                >
+                  <CommentReplyForm
+                    v-model:value="data2.contents"
+                    :reimgFileId="reimgFileId"
+                    :reimgViewFileId="reimgViewFileId"
+                    @deleteImg="imgDelete('reComment')"
+                    @addPhoto="addPhoto('reComment')"
+                    @input="limitComment($event)"
+                    @sendComment="commentBtn('reUpdate', data2)"
+                    @handelFocus="handeEmptyBox('f')"
+                    @handelBlur="handeEmptyBox('b')"
+                  />
+                </div>
+              </template>
+            </CommentItem>
+          </ion-item-group>
+        </CommentItem>
+      </CommentList>
+      <div style="height: 100px; z-index: -1" />
+      <EmptyBox :is-open="emptyBox" />
+    </ion-content>
+    <ion-content v-if="lodingCheck === false">
+      <PageLoadingCheck
+        style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+              height: 100%;
+            "
+      />
+    </ion-content>
+    <ion-footer class="no-padding">
+      <CommunityViewSendComment
+        v-model:value="commentText"
+        :newimgFileId="newimgFileId"
+        :newimgViewFileId="newimgViewFileId"
+
+        @input="limitComment($event)"
+        @sendComment="commentBtn('new', commentText)"
+      >
+        <!--
+          @deleteImg="imgDelete('newComment')"
+          @addPhoto="addPhoto('newComment')"
+        -->
+        <input
+          type="file"
+          @change="onFileChange"
+          ref="photo"
+          class="is-blind"
+        />
+      </CommunityViewSendComment>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import {
+  bookmark,
+  bookmarkOutline,
+  imageOutline,
+  chatboxOutline,
+  chatboxEllipsesOutline
+} from "ionicons/icons";
+
+import {
+  getData,
+  setFile,
+  SS_USER_KEY,
+  policeMapFn,
+  openChatMeetViewMap
+} from "@/assets/js/common";
+
+import Hammer from "hammerjs";
+import CommentList from "@/components/Comment/CommentList.vue";
+import CommentItem from "@/components/Comment/CommentItem.vue";
+import CommentReplyForm from "@/components/Comment/CommentReplyForm.vue";
+import CommentAvatar from "@/components/Comment/CommentAvatar.vue";
+import CommentContent from "@/components/Comment/CommentContent.vue";
+import PageLoadingCheck from "@/components/PageLoadingCheck.vue";
+import EmptyBox from "@/components/EmptyBox.vue";
+import CommunityViewSendComment from "@/components/CommunityView/CommunityViewSendComment.vue";
+import OpenChatMeetViewUserInfo from "@/components/OpenChatMeet/OpenChatMeetViewUserInfo.vue";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+
+export default {
+  name: "OpenChatMeetView",
+  inject: ["alertController", "loadingController"],
+  components: {
+    CommentList,
+    CommentItem,
+    CommentReplyForm,
+    CommentAvatar,
+    CommentContent,
+    PageLoadingCheck,
+    EmptyBox,
+    CommunityViewSendComment,
+    OpenChatMeetViewUserInfo
+  },
+  data() {
+    return {
+      chatboxEllipsesOutline,
+      bookmark,
+      bookmarkOutline,
+
+      imageOutline,
+      chatboxOutline,
+      SS_USER_KEY,
+
+      categoryNm: openChatMeetViewMap.categoryNm,
+
+      BoardDetail: {},
+      commentList: [],
+
+      commentText: "",
+
+      reComment: null, // 답글
+      updateComment: null, // 댓글 수정
+      reUpdateComment: null, // 대댓글 수정
+      childComment: "",
+      mainFileId: null,
+      Attachfiles: [],
+      imgFileId: "",
+      newimgFileId: null,
+      reimgFileId: null,
+      newimgViewFileId: null,
+      reimgViewFileId: null,
+      addPhotoType: "",
+
+      reType: "",
+
+      showReplyForm: false,
+      dynamicRow: 0,
+      prevText: "",
+
+      loading: null,
+      lodingCheck: false,
+
+      commentUpDownCheckDisabled: true, // 댓글 UpDown 활성화여부 체크
+      loadingTime: 500, // 버튼 로딩지연
+      emptyBox: false,
+
+      checkDisabled: true,
+      searchType: "first",
+
+      isEndScroll: false
+    };
+  },
+  ionViewWillEnter() {
+    this.getBoardDetail();
+  },
+  ionViewDidLeave() {
+    // 초기화
+    this.beforeReset();
+  },
+  mounted() {
+  },
+  methods: {
+    handeEmptyBox(type) {
+      if (type === "f") {
+        this.emptyBox = true;
+      } else {
+        this.emptyBox = false;
+      }
+    },
+    imgDelete(state) {
+      if (state === "reComment") {
+        this.reimgViewFileId = null;
+        this.reimgFileId = null;
+        this.imgFileId = "";
+      } else if (state === "newComment") {
+        this.newimgViewFileId = null;
+        this.newimgFileId = null;
+        this.imgFileId = "";
+      }
+    },
+    beforeReset() {
+      this.BoardDetail = {};
+      this.mainFileId = null;
+      this.commentList = [];
+      this.commentText = "";
+      this.dynamicRow = 0;
+      this.reType = "";
+      this.childComment = ""; // 댓글작성완료후 input 초기화
+      this.reComment = null; // 대댓글 입력창 닫기
+      this.reimgFileId = null; // 댓글 이미지 닫기
+      this.imgFileId = ""; // 담겨있는 이미지 지우기
+    },
+    limitComment(e) {
+      const text = e.target.value;
+      const rows = (text.match(/\n/g) || []).length + 1;
+      if (rows > 10) {
+        if (e.inputType !== "deleteContentBackward") {
+          e.preventDefault(); // 줄바꿈을 막는다
+          this.warningAlert("줄바꿈은 10줄까지만 가능합니다");
+          return;
+        }
+      }
+      if (text !== this.prevText) {
+        // 이전에 입력된 텍스트와 비교하여 변경된 경우에만 행 수를 계산하도록 수정
+        this.dynamicRow = rows;
+      }
+      this.prevText = text; // 현재 입력된 텍스트를 저장하여 다음 비교 시 사용
+    },
+
+    getBoardDetail(isScroll = false) {
+      let isExist = false;
+      getData({
+        url: "/getOpenChatCommentList",
+        param: {
+          openChatId: openChatMeetViewMap.openChatId,
+          meetId: openChatMeetViewMap.meetId
+        },
+        then: (data) => {
+          this.BoardDetail = data.contentMap;
+          this.commentList = data.commentList;
+
+          this.lodingCheck = true;
+
+          this.replaceContentURL();
+          this.replaceCommentURL();
+
+          if (this.commentList.length > 0) {
+            this.searchType = "second";
+          }
+        }
+      });
+    },
+
+    replaceContentURL() {
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      let _match = this.BoardDetail.content.match(regexp);
+      let match = [...new Set(_match)];
+      this.BoardDetail.replaceContent = this.BoardDetail.content;
+      Array.from(match).forEach((item) => {
+        if (!item.includes("http")) {
+          this.BoardDetail.replaceContent = this.BoardDetail.replaceContent.replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+        } else {
+          this.BoardDetail.replaceContent = this.BoardDetail.replaceContent.replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+        }
+      });
+    },
+
+    replaceCommentURL() {
+      let regexp = /(?:http(s?)?|www)\S+\w/g;
+      Array.from(this.commentList).forEach((comment, index) => {
+        let _match = comment.contents.match(regexp);
+        let match = [...new Set(_match)];
+        this.commentList[index]["replaceContents"] = comment.contents;
+        Array.from(match).forEach((item) => {
+          if (!item.includes("http")) {
+            this.commentList[index]["replaceContents"] = this.commentList[index]["replaceContents"].replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+          } else {
+            this.commentList[index]["replaceContents"] = this.commentList[index]["replaceContents"].replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+          }
+        });
+        if (comment.childCommentList.length > 0) {
+          Array.from(comment.childCommentList).forEach((childComment, commentIndex) => {
+            let _commentMatch = childComment.contents.match(regexp);
+            let commentMatch = [...new Set(_commentMatch)];
+            this.commentList[index]["childCommentList"][commentIndex]["replaceContents"] = childComment.contents;
+            Array.from(commentMatch).forEach((item) => {
+              if (!item.includes("http")) {
+                this.commentList[index]["childCommentList"][commentIndex]["replaceContents"] = this.commentList[index]["childCommentList"][commentIndex]["replaceContents"].replaceAll(item, `<a href="http://${item}" target="_blank">${item}</a>`);
+              } else {
+                this.commentList[index]["childCommentList"][commentIndex]["replaceContents"] = this.commentList[index]["childCommentList"][commentIndex]["replaceContents"].replaceAll(item, `<a href="${item}" target="_blank">${item}</a>`);
+              }
+            });
+          });
+        }
+      });
+    },
+
+    /** 댓글 선택값 **/
+    commentReBtn(state, item) {
+      this.$refs.myContent.$el.scrollByPoint(0, 200);
+      switch (state) {
+        case "re":
+          this.reComment = this.reComment === item ? null : item;
+          this.reType = "re";
+          // this.scrollToBottom();
+          if (this.reComment === null) {
+            this.getBoardDetail(false, true);
+          }
+          break;
+        case "update":
+          this.$refs.myContent.$el.scrollByPoint(0, 100);
+          this.updateComment = this.updateComment === item ? null : item;
+          this.reType = "update";
+          this.reimgViewFileId = this.updateComment.cdnNm;
+          if (this.updateComment === null) {
+            this.reimgFileId = null;
+            this.showLoading();
+            this.getBoardDetail(false, true);
+          }
+          break;
+        case "reUpdate":
+          this.$refs.myContent.$el.scrollByPoint(0, 200);
+          this.reUpdateComment = this.reUpdateComment === item ? null : item;
+          this.reType = "reUpdate";
+          this.reimgViewFileId = this.reUpdateComment.cdnNm;
+          if (this.reUpdateComment === null) {
+            this.reimgFileId = null;
+            this.showLoading();
+            this.getBoardDetail(false, true);
+          }
+          break;
+      }
+    },
+
+    /** 댓글 버튼 핸들러 **/
+    commentBtn(state, item, parentCommentId) {
+      if (this.dynamicRow >= 10) {
+        this.warningAlert("줄바꿈은 10줄까지만 가능합니다. 다시 확인해주세요.");
+        return;
+      } else {
+        const enterCnt = (this.commentText.match(/\n/g) || []).length + 1;
+        if (enterCnt > 10) {
+          this.warningAlert("줄바꿈은 10줄까지만 가능합니다");
+          return;
+        }
+      }
+      if (state === "new") {
+        if (!this.commentText && !this.imgFileId) {
+          this.warningAlert("내용을 입력하거나 이미지를 선택해주세요.");
+          return;
+        }
+
+        this.showLoading();
+        /** 댓글등록 **/
+        getData({
+          url: "/addMeetComment",
+          param: {
+            openChatId: openChatMeetViewMap.openChatId,
+            meetId: openChatMeetViewMap.meetId,
+            categoryCd: openChatMeetViewMap.categoryCd,
+            contents: this.commentText
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail(true, true);
+              //this.warningAlert(data.message);
+              this.commentText = ""; // 댓글작성완료후 input 초기화
+              this.newimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+              this.dynamicRow = 0; // 줄바꿈 초기화
+            }
+            this.loading.dismiss();
+          }
+        });
+        this.newimgViewFileId = null;
+      } else if (state === "child") {
+        if (!this.childComment && !this.imgFileId) {
+          this.warningAlert("내용을 입력하거나 이미지를 선택해주세요.");
+          return;
+        }
+
+        // this.showLoading();
+        /** 대댓글 등록**/
+        getData({
+          url: "/addMeetComment",
+          param: {
+            openChatId: openChatMeetViewMap.openChatId,
+            meetId: openChatMeetViewMap.meetId,
+            categoryCd: openChatMeetViewMap.categoryCd,
+            contents: this.childComment,
+            parentCommentId: parentCommentId,
+            isChild: "Y"
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail(false, true);
+              //this.warningAlert(data.message);
+              this.childComment = ""; // 댓글작성완료후 input 초기화
+              this.reComment = null; // 대댓글 입력창 닫기
+              this.reimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+            }
+
+            this.loading.dismiss();
+          }
+        });
+      } else if (state === "update") {
+        if (!this.updateComment.contents) {
+          this.warningAlert("내용을 입력해주세요.");
+          return;
+        }
+        /** 댓글 수정 **/
+        this.showLoading();
+        getData({
+          url: "/updateMeetComment",
+          param: {
+            openChatId: openChatMeetViewMap.openChatId,
+            meetId: openChatMeetViewMap.meetId,
+            contents: this.commentText,
+            commentId: item.commentKey
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail();
+              this.warningAlert(data.message);
+              this.reimgFileId = null;
+              this.loading.dismiss();
+              this.updateComment = null; // 수정창 닫기
+              this.newimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+            }
+
+            this.loading.dismiss();
+          }
+        });
+      } else if (state === "reUpdate") {
+        if (!this.reUpdateComment) {
+          this.warningAlert("내용을 입력해주세요.");
+          return;
+        }
+        /** 대댓글 수정 **/
+        this.showLoading();
+        getData({
+          url: "/updateMeetComment",
+          param: {
+            openChatId: openChatMeetViewMap.openChatId,
+            meetId: openChatMeetViewMap.meetId,
+            contents: this.commentText,
+            commentId: item.commentKey
+          },
+          then: (data) => {
+            if (data.successYn === "N") {
+              this.warningAlert(data.message);
+            } else {
+              this.getBoardDetail();
+              this.warningAlert(data.message);
+              this.reUpdateComment = null; // 대댓글 수정창 닫기
+              this.reimgFileId = null; // 댓글 이미지 닫기
+              this.imgFileId = ""; // 담겨있는 이미지 지우기
+            }
+            this.loading.dismiss();
+          }
+        });
+      }
+    },
+
+    async presentAlertConfirm(state, e) {
+      if (this.reType !== "") {
+        this.warningAlert("댓글 수정 중에는 삭제할수 없습니다.");
+        return;
+      }
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "삭제하시겠습니까?",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "삭제",
+            handler: () => {
+              if (state === "comment") {
+                /** 댓글 삭제 **/
+                getData({
+                  url: "/setCommunityCommentDel",
+                  param: {
+                    articleKey: communityViewMap.article,
+                    commentKey: e.commentKey
+                  },
+                  then: (data) => {
+                    if (data.successYn === "N") {
+                      this.presentAlert(data.message);
+                    } else {
+                      this.presentAlert(data.message);
+                      this.getBoardDetail();
+                    }
+                  }
+                });
+              } else if (state === "main") {
+                getData({
+                  url: "/setCommunityDel",
+                  param: {
+                    articleKey: communityViewMap.article
+                  },
+                  then: (data) => {
+                    if (data.successYn === "N") {
+                      this.presentAlert(data.message);
+                    } else {
+                      this.$router.push("/community");
+                      this.presentAlert(data.message);
+                    }
+                  }
+                });
+              }
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    /** 사진 업로드 **/
+    addPhoto(e) {
+      this.addPhotoType = e;
+
+      /** 사진첩 호출 & 파일객체 변환 **/
+      Camera.getPhoto({
+        allowEditing: false, //사진수정여부 (안드로이드만 가능, IOS는 카메라 촬영시만 수정)
+        source: CameraSource.Photos, //사진첨, 촬영, 등 설정
+        resultType: CameraResultType.Uri //사진 result Type
+      }).then(async (photo) => {
+        let blob = await fetch(photo.webPath).then(r => r.blob());
+        const file = new File([blob], "fileName." + photo.format, {
+          lastModified: new Date(),
+          type: blob.type
+        });
+
+        this.Attachfiles.push(file);
+        this.$nextTick(() => {
+          this.insertFile();
+        });
+
+      });
+      /** //사진첩 호출 & 파일객체 변환 **/
+
+      // this.$refs.photo.click();
+    },
+
+    onFileChange: function onFileChange(e) {
+      // TODO : 첨부 파일 개수 제한
+      const files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpg",
+        "image/jpeg",
+        "image/png",
+        "image/gif"
+      ]; // 허용할 이미지 파일 확장자 목록
+      const file = files[0];
+      if (!allowedTypes.includes(file.type)) {
+        // 선택한 파일이 허용된 이미지 파일 확장자 목록에 포함되지 않는 경우
+        this.warningAlert("이미지 파일만 업로드 가능해요"); // 사용자에게 알림 메시지 출력
+        return;
+      }
+      this.Attachfiles.push(files[0]);
+
+      this.$nextTick(() => {
+        this.insertFile(e);
+      });
+    },
+    //사진 저장
+    insertFile() {
+      this.showLoading();
+      //이미지 확장자 용량 체크
+      setFile({
+        url: "/setImage",
+        param: {},
+        file: this.Attachfiles,
+        then: (data) => {
+          //초기화
+          this.Attachfiles = [];
+          this.imgFileId = data.fileId;
+
+          switch (this.addPhotoType) {
+            case "newComment":
+              this.newimgFileId = data.fileId;
+              this.newimgViewFileId = data.cdnNm;
+              break;
+            case "reComment":
+              this.reimgFileId = data.fileId;
+              this.reimgViewFileId = data.cdnNm;
+              break;
+          }
+
+          this.loading.dismiss();
+        }
+      });
+    },
+
+    // 알림창
+    async presentAlert(msg) {
+      const alert = await this.alertController.create({
+        header: "",
+        message: msg,
+        buttons: [
+          {
+            text: "OK",
+            role: "Okay",
+            handler: () => {
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    /** 팝업참 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    /** 로딩창 **/
+    async showLoading() {
+      this.loading = await this.loadingController.create({
+        message: "Loading...",
+        duration: 0
+      });
+      await this.loading.present();
+    },
+
+    policeBtn(type, item) {
+      let targetKey = this.BoardDetail.articleKey;
+      if (type === "comment") {
+        policeMapFn({
+          targetKey: targetKey,
+          type: "comment",
+          targetId: item.commentKey
+        });
+        this.$router.push("/police");
+      } else if (type === "commentRe") {
+        policeMapFn({
+          targetKey: targetKey,
+          type: "commentRe",
+          targetId: item.commentKey
+        });
+        this.$router.push("/police");
+      }
+    },
+    /** 이미지 확대, 이동**/
+    openZoomedImage(data) {
+      if (!this.isZoomed) {
+        const imageUrl = "https://" + data;
+        const modal = document.createElement("div");
+        const modalImage = document.createElement("img");
+
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.zIndex = "1000";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+
+        modalImage.src = imageUrl;
+        modalImage.style.width = "90%";
+        modalImage.style.height = "auto";
+        modalImage.style.objectFit = "contain";
+        modalImage.style.transformOrigin = "center";
+        modalImage.style.pointerEvents = "auto";
+
+        modal.appendChild(modalImage);
+        document.body.appendChild(modal);
+
+        const hammer = new Hammer(modalImage);
+
+        let currentScale = 1;
+        let posX = 0;
+        let posY = 0;
+        let lastPosX = 0;
+        let lastPosY = 0;
+
+        hammer.get("pinch").set({ enable: true });
+        hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+        hammer.on("pinchin pinchout", (event) => {
+          if (event.type === "pinchin") {
+            currentScale -= 0.02;
+          } else if (event.type === "pinchout") {
+            currentScale += 0.02;
+          }
+
+          currentScale = Math.min(Math.max(currentScale, 0.5), 3);
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panmove", (event) => {
+          posX = lastPosX + event.deltaX;
+          posY = lastPosY + event.deltaY;
+          modalImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+        });
+
+        hammer.on("panend", () => {
+          lastPosX = posX;
+          lastPosY = posY;
+        });
+
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+        this.isZoomed = true;
+      } else {
+        this.isZoomed = false;
+      }
+    },
+    /** 경고 컨펌창 **/
+    async warningConfirm(message, callBack) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: [
+          {
+            text: "아니요",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              callBack();
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    /** 무한스크롤 이벤트 **/
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+
+        // if (self.searchType == "second") {
+        //   getData({
+        //     url: "/getContestReplyInfinite",
+        //     param: {
+        //       articleKey: communityViewMap.article
+        //     },
+        //     then: (data) => {
+        //
+        //       self.$nextTick(() => {
+        //         for (let i in data) {
+        //           self.commentList.push(data[i]);
+        //         }
+        //         self.isEndScroll = true;
+        //
+        //         self.replaceCommentURL();
+        //       });
+        //
+        //     }
+        //   });
+        // } else {
+        self.isEndScroll = true;
+        // }
+        event.target.complete();
+      }, 1000);
+    }
+  }
+};
+</script>
+
+<style scoped></style>

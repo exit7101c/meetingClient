@@ -1,0 +1,281 @@
+<template>
+  <div class="choice-profile-info">
+    <div class="layout-container">
+      <!--      <div class="choice-profile-chips">-->
+      <!--        <ion-chip>-->
+      <!--          <ion-avatar>-->
+      <!--            <img-->
+      <!--              alt="Silhouette of a person's head"-->
+      <!--              src="https://ionicframework.com/docs/img/demos/avatar.svg"-->
+      <!--            />-->
+      <!--          </ion-avatar>-->
+      <!--          <ion-label>심사합격</ion-label>-->
+      <!--        </ion-chip>-->
+      <!--        <ion-chip>-->
+      <!--          <ion-avatar>-->
+      <!--            <img-->
+      <!--              alt="Silhouette of a person's head"-->
+      <!--              src="https://ionicframework.com/docs/img/demos/avatar.svg"-->
+      <!--            />-->
+      <!--          </ion-avatar>-->
+      <!--          <ion-label>자산인증</ion-label></ion-chip-->
+      <!--        >-->
+      <!--        <ion-chip>-->
+      <!--          <ion-avatar>-->
+      <!--            <img-->
+      <!--              alt="Silhouette of a person's head"-->
+      <!--              src="https://ionicframework.com/docs/img/demos/avatar.svg"-->
+      <!--            />-->
+      <!--          </ion-avatar>-->
+      <!--          <ion-label>직업인증</ion-label></ion-chip-->
+      <!--        >-->
+      <!--      </div>-->
+      <div class="choice-profile-chips">
+        <ion-chip
+          v-if="item.connectionYn == 'Y'"
+          style="background-color: #75ed91; color: black; font-size: 16px"
+        >
+          <ion-label>접속중</ion-label>
+        </ion-chip>
+        <ion-chip
+          v-if="item.aroundYn == 'Y'"
+          style="background-color: #37776d; color: white; font-size: 16px"
+        >
+          <ion-icon
+            :icon="locationOutline"
+            size="small"
+            style="color: white; font-size: 10px"
+          ></ion-icon>
+          <ion-label>근처</ion-label>
+        </ion-chip>
+      </div>
+      <div class="choice-profile-info-detail">
+        <ion-label>
+          <ion-row>
+            <ion-text color="light">
+              <h3>{{ item.nick }} {{ item.age }}</h3>
+            </ion-text>
+            <ion-avatar v-if="item.cdnThumbNm">
+              <ion-img
+                :src="'https://' + item.cdnThumbNm"
+                @ionError="
+                  $event.srcElement.src = require('@/assets/img/Loading_icon.gif')
+                "
+              />
+            </ion-avatar>
+          </ion-row>
+          <ion-row style="background-color: var(--ion-color-primary)">
+            <ion-icon :icon="locationOutline" style="color: white"></ion-icon>
+            <ion-text color="light">
+              <h3 style="font-size: 16px">{{ item.distanceKm }}</h3>
+            </ion-text>
+          </ion-row>
+          <p>
+            <ion-text color="light">
+              {{ item.introduce }}
+            </ion-text>
+          </p>
+          <p>
+            <ion-text
+              color="secondary"
+              class="text-link"
+              @click="btnDailyCardInfo"
+              >프로필보기
+            </ion-text>
+          </p>
+        </ion-label>
+      </div>
+      <div class="choice-profile-info-btn-group">
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button
+            @click="btnSuperLike"
+            class="btn-superlike"
+            id="open-choice-modal"
+          >
+            <ion-icon :icon="choiceSuperlike"></ion-icon>
+          </ion-fab-button>
+          <ion-chip class="chip-superlike">SUPER like</ion-chip>
+        </div>
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnLike" class="btn-like">
+            <ion-icon :icon="choiceLike"></ion-icon>
+          </ion-fab-button>
+        </div>
+        <div class="choice-profile-info-btn-item">
+          <ion-fab-button @click="btnNope">
+            <ion-icon :icon="choiceNope"></ion-icon>
+            <!-- TODO : 추후 이미지로 교체시 -->
+            <!-- <ion-img
+              :src="require('@/assets/img/choice/choice_nope.svg')"
+            ></ion-img> -->
+          </ion-fab-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import IconChoiceBack from '@/assets/img/choice/choice_back.svg';
+import IconChoiceSuperike from '@/assets/img/choice/choice_superlike.svg';
+import IconChoiceLike from '@/assets/img/choice/choice_like.svg';
+import IconChoiceSkip from '@/assets/img/choice/choice_skip.svg';
+import IconChoiceNope from '@/assets/img/choice/choice_nope.svg';
+
+import { locationOutline } from 'ionicons/icons';
+
+export default {
+  name: 'ChoiceProfileInfo',
+  props: {
+    item: {
+      type: Object
+    },
+    type: {
+      type: String
+    }
+  },
+  data() {
+    return {
+      choiceBack: IconChoiceBack,
+      choiceSuperlike: IconChoiceSuperike,
+      choiceLike: IconChoiceLike,
+      choiceHoney: IconChoiceSkip,
+      choiceNope: IconChoiceNope,
+      locationOutline
+    };
+  },
+  methods: {
+    btnDailyCardInfo() {
+      this.$emit('btnDailyCardInfo');
+    },
+    btnSuperLike() {
+      this.$emit('btnSuperLike');
+    },
+    btnLike() {
+      this.$emit('btnLike');
+    },
+    btnNope() {
+      this.$emit('btnNope');
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.choice-profile-info {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: transparent;
+  z-index: 10;
+  text-align: left;
+  padding: 0 0 40px;
+
+  .layout-container {
+    position: relative;
+  }
+
+  .choice-profile-chips {
+    margin-bottom: 10px;
+  }
+
+  .choice-profile-info-detail {
+    ion-text {
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+    }
+
+    ion-label {
+      ion-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+
+        h3 {
+          font-size: 22px;
+          font-weight: bold;
+          margin: 0;
+        }
+
+        ion-avatar {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+      }
+
+      p {
+        font-size: 14px;
+        line-height: 1.5;
+        display: -webkit-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+      }
+    }
+  }
+
+  .choice-profile-info-btn-group {
+    display: flex;
+    justify-content: space-between;
+    width: 210px;
+    margin: 0 auto;
+    align-items: center;
+    color: #fff;
+    margin-top: 20px;
+
+    .choice-profile-info-btn-item {
+      position: relative;
+
+      &:first-of-type,
+      &:last-of-type {
+        transform: scale(0.85);
+      }
+
+      ion-fab-button {
+        --background: transparent;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+
+        ion-icon,
+        ion-img {
+          width: 100%;
+          height: 100%;
+        }
+
+        &.btn-superlike {
+          background: linear-gradient(180deg, #f5cb6b 0%, #e5a049 100%);
+        }
+
+        &.btn-like {
+          background: linear-gradient(180deg, #eb7a82 0%, #e1547a 100%);
+        }
+
+        &.btn-skip {
+          background: linear-gradient(180deg, #6ce4bf 0%, #6be2ae 100%);
+        }
+      }
+
+      .chip-superlike {
+        position: absolute;
+        background: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 0 4px;
+        margin: 0;
+        left: 50%;
+        bottom: -14px;
+        transform: translateX(-50%);
+        line-height: 1;
+        white-space: nowrap;
+        color: #ff6578;
+        height: 20px;
+        border: 1px solid #ff6578;
+      }
+    }
+  }
+}
+</style>

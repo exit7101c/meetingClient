@@ -1,0 +1,364 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar class="join-toolbar">
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>개정 생성</ion-title>
+      </ion-toolbar>
+      <ProgressBar :currIdx="isValidateForm ? 2 : 1"></ProgressBar>
+    </ion-header>
+    <ion-content>
+      <div class="layout-container">
+        <JoinTitle>
+          <template v-slot:title>
+            계정 생성을 위해<br />
+            간단한 정보<br />
+            몇 개만 물어볼게요!
+          </template>
+        </JoinTitle>
+        <ion-list>
+          <ion-item lines="none" ref="nick" counter="true" class="input-field">
+            <ion-label position="stacked" class="input-label join-label"
+            >이메일 ID
+            </ion-label
+            >
+            <ion-input
+              placeholder="이메일을 입력해 주세요."
+              :value="email"
+              @focusout="validateEmail"
+              @ionFocus="emptyBox=true"
+              @ionBlur="emptyBox=false"
+            />
+            <ion-text
+              class="validation-message"
+              v-if="emailLenCheck"
+              :class="{
+                impossible:
+                  emailValidationMessage == '중복된 이메일입니다.'
+              }"
+            >
+              {{ emailValidationMessage }}
+            </ion-text>
+          </ion-item>
+          <ion-item
+            lines="none"
+            ref="nick"
+            counter="true"
+            :counterFormatter="COUNTE_FORMAT"
+            class="input-field"
+          >
+            <ion-label position="stacked" class="input-label join-label"
+            >비밀번호
+            </ion-label
+            >
+            <ion-input
+              maxlength="16"
+              minlength="8"
+              type="password"
+              placeholder="8~16자리 이내 영문자, 숫자"
+              v-model="password"
+              style="margin-bottom: 0"
+              @keyup="validateCheckPassword"
+              @ionFocus="emptyBox=true"
+              @ionBlur="emptyBox=false"
+            />
+          </ion-item>
+
+          <ion-item
+            lines="none"
+            ref="nick"
+            counter="true"
+            @keyup="validateCheckPassword"
+            :counterFormatter="COUNTE_FORMAT"
+            class="input-field"
+          >
+            <ion-label position="stacked" class="input-label join-label"
+            >비밀번호 확인
+            </ion-label
+            >
+            <ion-input
+              type="password"
+              maxlength="16"
+              minlength="8"
+              placeholder="8~16자리 이내 영문자, 숫자"
+              v-model="passwordCheck"
+              style="margin-bottom: 0"
+              :disabled="password == ''"
+              @ionFocus="emptyBox=true"
+              @ionBlur="emptyBox=false"
+            />
+            <!--        @keyup="validateCheckPassword"      @focusout="validateCheckPassword"-->
+            <!--            />-->
+            <ion-text
+              class="validation-message"
+              v-if="passwordCheck != ''"
+              :class="{
+                impossible:
+                  passwordValidationMessage == '비밀번호가 일치하지 않습니다.' ||
+                  passwordValidationMessage == '비밀번호 자리수를 확인해 주세요.(8자리 이상 16자리 이하)'
+              }"
+            >
+              {{ passwordValidationMessage }}
+            </ion-text>
+          </ion-item>
+        </ion-list>
+      </div>
+      <EmptyBox :is-open="emptyBox" />
+    </ion-content>
+    <ion-footer class="join-footer">
+      <div class="layout-container">
+        <div class="btn-group">
+          <custom-button
+            fill="outline"
+            color="primary"
+            size="large"
+            expand="block"
+            shape="round"
+            :disabled="!checkDisabled"
+            @click="validateAndNavigate"
+          >
+            다음으로
+          </custom-button>
+        </div>
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import { alertController } from "@ionic/core";
+import { chevronBack, eyeOutline, eyeOffOutline } from "ionicons/icons";
+import {
+  getData,
+  COM_VALIDATION,
+  COUNTE_FORMAT
+} from "@/assets/js/common";
+import BackButton from "@/components/BackButton.vue";
+import JoinTitle from "@/components/JoinTitle.vue";
+import ProgressBar from "@/components/ProgressBar.vue";
+import EmptyBox from "@/components/EmptyBox";
+
+export default {
+  name: "Join",
+  props: {
+    params: Object
+  },
+  components: {
+    EmptyBox,
+    BackButton,
+    JoinTitle,
+    ProgressBar
+  },
+
+  data() {
+    return {
+      COM_VALIDATION,
+      COUNTE_FORMAT,
+      chevronBack,
+      eyeOutline,
+      eyeOffOutline,
+
+      email: "",
+      password: "",
+      passwordCheck: "",
+
+      showAlert: false,
+      showIdPwAlert: false,
+
+      showPassword: false,
+      showPasswordCheck: false,
+
+      emailValidationMessage: "",
+      passwordValidationMessage: "",
+      successYn: "N",
+
+      joinCurrIdx: 0, // 누적 count
+      joinTotalIdx: 10, // 총 count
+
+      emailLenCheck: false,
+      emptyBox: false
+      // emailRegExp: "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+
+    };
+  },
+  computed: {
+    // PUB
+    isValidateForm() {
+      return (
+        this.email != "" && this.password != "" && this.passwordCheck != ""
+      );
+    },
+    checkDisabled() {
+      return (
+        this.email != "" &&
+        this.password.length > 7 &&
+        this.passwordCheck.length > 7 &&
+        this.password == this.passwordCheck
+      );
+    }
+    // passwordValidationMessage() {
+    //   if (this.password.toString().length >= 8 && this.passwordCheck.toString().length <= 16) {
+    //     if (this.password == this.passwordCheck) {
+    //       return "비밀번호가 일치합니다.";
+    //     } else {
+    //       return "비밀번호가 일치하지 않습니다.";
+    //     }
+    //   } else {
+    //     return "비밀번호 자리수를 확인해 주세요.(8자리 이상 16자리 이하)";
+    //   }
+    // }
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.email = "";
+    this.password = "";
+    this.passwordCheck = "";
+
+
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+    this.emailLenCheck = false;
+    this.emailValidationMessage = "";
+  },
+  created() {
+  },
+
+  mounted() {
+  },
+
+  methods: {
+    getResult() {
+      let resultObj = {};
+      resultObj.email = this.email;
+      resultObj.pw = this.password;
+
+      return resultObj;
+    },
+
+    goRouter() {
+      // tempMap.item = {
+      //   email: this.email,
+      //   pw: this.password
+      // };
+      this.$store.state.joinMap["email"] = this.email;
+      this.$store.state.joinMap["pw"] = this.password;
+
+      this.$router.push("/joinConditions");
+    },
+
+    /** 이메일 중복 체크 **/
+    validateEmail(e) {
+      let _email = e.target.value;
+      if (Object.keys(_email).length > 0) {
+        this.emailLenCheck = true;
+      }
+      // let regex = new RegExp(this.emailRegExp);
+      // if (regex.test(_email)) {
+      getData({
+        url: "/join/getCheckEmail",
+        param: { email: _email },
+        then: (data) => {
+          this.successYn = data.successYn;
+          if (data.successYn == "N") {
+            this.emailValidationMessage = "중복된 이메일입니다.";
+          } else if (data.successYn == "Y") {
+            this.emailValidationMessage = "사용가능";
+            this.email = _email;
+          }
+        }
+      });
+      // } else {
+      //   this.emailValidationMessage = "이메일 형식이 아닙니다.";
+      // }
+    },
+    validateCheckPassword() {
+      if (this.password.toString().length >= 8 && this.passwordCheck.toString().length <= 16) {
+        if (this.password == this.passwordCheck) {
+          this.passwordValidationMessage = "비밀번호가 일치합니다.";
+        } else {
+          this.passwordValidationMessage = "비밀번호가 일치하지 않습니다.";
+        }
+      } else {
+        this.passwordValidationMessage = "비밀번호 자리수를 확인해 주세요.(8자리 이상 16자리 이하)";
+      }
+
+
+      // if (this.password == "") {
+      //   this.passwordCheck = "";
+      //   this.passwordValidationMessage = "";
+      // }
+      // if (this.passwordCheck == "") {
+      //   this.passwordValidationMessage = "";
+      // }
+      // if (this.password != e.target.value) {
+      //   this.passwordValidationMessage = "비밀번호가 일치하지 않습니다.";
+      // } else {
+      //   this.passwordValidationMessage = "비밀번호가 일치합니다.";
+      // }
+    },
+    /** 비밀빈호 눈알 **/
+    toggleShowPassword() {
+      this.showPassword = !this.showPassword;
+    },
+    /** 비밀빈호 확인 눈알 **/
+    toggleShowPasswordCheck() {
+      this.showPasswordCheck = !this.showPasswordCheck;
+    },
+
+    isNextButtonEnabled() {
+    },
+
+    /** next btn input 값 입력 체크 **/
+    validateAndNavigate() {
+      if (
+        this.email.trim() != "" &&
+        this.password.trim() != "" &&
+        this.passwordCheck.trim() != ""
+      ) {
+        // 비밀번호 8자리이상인지 체크
+        if (
+          this.password.trim().length >= 8 &&
+          this.passwordCheck.trim().length >= 8
+        ) {
+          // 비밀번호와 비밀번호 확인 동일한지 체크
+          if (this.password.trim() == this.passwordCheck.trim()) {
+            // 이메일 중복체크
+            if (this.successYn == "Y") {
+              // let regex = new RegExp(this.emailRegExp);
+              // if (regex.test(this.email)) {
+              this.goRouter();
+              // } else {
+              //   this.warningAlert("이메일이 아닙니다.");
+              // }
+            } else {
+              this.warningAlert("중복된 이메일입니다.");
+            }
+          } else {
+            this.warningAlert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+          }
+        } else {
+          this.warningAlert("비밀번호는 8자리이상 16자리 이하로 입력해야합니다.");
+        }
+      } else {
+        this.warningAlert("필수항목을 입력하지 않았습니다.");
+      }
+    },
+
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style scoped></style>

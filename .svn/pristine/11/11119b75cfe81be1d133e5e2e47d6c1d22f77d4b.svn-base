@@ -1,0 +1,105 @@
+<template lang="">
+  <ion-chip class="text-sm text-bold" @click="onClickDetailBadgeInfo">
+    <!-- <ion-img :src="'https://' + item.icon" /> -->
+    <!-- TODO : fontawesome 아이콘 샘플 -->
+    <font-awesome-icon :icon="computedIcon" />
+    {{ item.badgeNm }}
+  </ion-chip>
+  <ion-modal class="custom-modal" :is-open="isOpenModal">
+    <ion-content>
+      <ion-toolbar>
+        <ion-buttons slot="end">
+          <ion-text @click="isOpenModal = false">
+            <font-awesome-icon :icon="['fas', 'xmark']" />
+          </ion-text>
+        </ion-buttons>
+      </ion-toolbar>
+      <div class="layout-container">
+        <ion-chip class="text-sm text-bold">
+          <!-- <ion-img :src="'https://' + item.icon" /> -->
+          <!-- TODO : fontawesome 아이콘 샘플 -->
+          <font-awesome-icon :icon="computedIcon" />
+          {{ item.badgeNm }}
+        </ion-chip>
+        <h5>
+          <ion-text color="light" class="text-lg">{{ item.badgeNm }}</ion-text>
+        </h5>
+        <p>
+          <ion-text color="secondary" class="text-md">
+            {{ item.badgeDescription }}
+          </ion-text>
+        </p>
+      </div>
+    </ion-content>
+  </ion-modal>
+</template>
+<script>
+export default {
+  name: 'CertificationBadgeItem',
+  props: {
+    item: {
+      type: Object
+    }
+  },
+  computed: {
+    computedIcon() {
+      switch (this.item.badgeCd) {
+        case '3': // 전문직
+          return ['fas', 'id-badge'];
+        case '4': // 사업가
+          return ['fas', 'building'];
+        case '5': // 사업가
+          return ['fas', 'wallet'];
+        case '6': //  셀럽
+          return ['fas', 'universal-access'];
+        case '7': // 핫피플
+          return ['fas', 'circle-h'];
+        case '8': // 명문대
+          return ['fas', 'user-graduate'];
+        default:
+          break;
+      }
+      return '';
+    }
+  },
+  data() {
+    return {
+      isOpenModal: false
+    };
+  },
+  methods: {
+    onClickDetailBadgeInfo() {
+      this.isOpenModal = true;
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+ion-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  background-color: #212121;
+  color: #00d967;
+  border-radius: var(--ion-border-radius-sm);
+  vertical-align: middle;
+  height: 26px;
+
+  ion-img {
+    width: 1.25rem;
+  }
+  svg {
+    font-size: 1rem;
+  }
+}
+
+ion-modal {
+  --max-width: 345px;
+  --height: 240px;
+  ion-content {
+    text-align: center;
+  }
+}
+</style>

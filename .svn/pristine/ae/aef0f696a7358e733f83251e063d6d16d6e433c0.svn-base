@@ -1,0 +1,667 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>모임 생성하기</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-list lines="none">
+        <div class="row-box">
+          <div class="btn-tab-group">
+            <ion-button @click.stop="openModal('category')" fill="outline">
+              <span v-if="categoryCd == ''">카테고리 선택하기</span>
+              <span v-else>{{ categoryNm }}</span>
+            </ion-button>
+          </div>
+        </div>
+        <div class="row-box">
+          <ion-list>
+            <ion-item
+              ref="title"
+              counter="true"
+              :counterFormatter="COUNTE_FORMAT"
+              class="input-field"
+            >
+              <ion-input
+                type="text"
+                maxlength="20"
+                placeholder="모임 제목은 최대 20자까지 가능해요"
+                v-model="title"
+                @ionChange="COM_VALIDATION(title, 'title', this)"
+                @input="handleInput"
+              />
+            </ion-item>
+            <ion-item
+              ref="content"
+              lines="none"
+              counter="true"
+              :counterFormatter="COUNTE_FORMAT"
+              class="input-field"
+            >
+              <ion-textarea
+                v-model="content"
+                :rows="15"
+                maxlength="2000"
+                @ionChange="COM_VALIDATION(content, 'content', this)"
+                placeholder="매너를 지켜주세요.&#10;특정인이나 집단을 비하하거나 저격하는 행위,&#10;욕설 및 비방글은 삭제됩니다."
+              />
+            </ion-item>
+          </ion-list>
+        </div>
+        <div class="row-box" v-if="categoryCd == 'MEET_GROUP'">
+          <CustomCardItem>
+            <ion-label class="text-left">
+              <ion-row class="gap-md ion-align-items-center">
+                <ion-icon :icon="calendarCheck" color="light"></ion-icon>
+                <ion-datetime-button
+                  datetime="datetime"
+                  class="d-inline btn-datetime"
+                ></ion-datetime-button>
+              </ion-row>
+            </ion-label>
+            <ion-modal :keep-contents-mounted="true" class="datetimeModal">
+              <ion-datetime
+                id="datetime"
+                mode="md"
+                presentation="date"
+                :show-default-buttons="true"
+                v-model="dueDate"
+                datetime="datetime"
+                :min="getCurrentDate()"
+              ></ion-datetime>
+            </ion-modal>
+          </CustomCardItem>
+          <CustomCardItem @click="openModal('address')" style="margin-top: 20px; width: 100%;">
+            <ion-row class="gap-md ion-align-items-center" style="width: 100%;">
+              <ion-icon :icon="locationOutline" color="light" />
+              <ion-text>모임장소를 정해 주세요 !</ion-text>
+              <ion-input
+                type="text"
+                placeholder="주소를 입력해주세요."
+                class="address-field"
+                v-model="location"
+                readonly
+                style="padding-right: 10px !important; text-align: right"
+              />
+            </ion-row>
+          </CustomCardItem>
+          <CustomCardItem style="margin-top: 20px; width: 100%;">
+            <ion-row class="gap-md ion-align-items-center" style="width: 100%;">
+              <ion-input color="light" type="text" placeholder="상세주소를 입력해 주세요" :value="meetAddrDetail" />
+            </ion-row>
+          </CustomCardItem>
+          <CustomCardItem style="margin-top: 20px; width: 100%;">
+            <ion-row class="gap-md ion-align-items-center" style="width: 100%;">
+              <ion-text color="light">모임 정원을 지정해주세요.</ion-text>
+              <ion-input type="number" color="light"
+                         style="text-align: center; border: 0.5px solid #fff; height: 30px;"
+                         v-model="meetRange"
+              />
+            </ion-row>
+          </CustomCardItem>
+          <CustomCardItem style="margin-top: 20px; width: 100%;">
+            <ion-row class="gap-md ion-align-items-center" style="width: 100%;">
+              <ion-text color="light">회비를 설정해주세요</ion-text>
+              <ion-input type="number" color="light"
+                         style="text-align: center; border: 0.5px solid #fff; height: 30px;"
+                         v-model="meetCost"
+              />
+            </ion-row>
+          </CustomCardItem>
+        </div>
+      </ion-list>
+      <ion-modal
+        ref="modal"
+        :is-open="categoryModalOpen"
+        @ionModalDidDismiss="categoryModalOpen = false"
+        :initial-breakpoint="0.7"
+        :breakpoints="[0, 0.15, 0.5, 1.0]"
+      >
+        <ion-page>
+          <ion-header>
+            <ion-toolbar class="text-left">
+              <ion-title>카테고리를 선택해 주세요</ion-title>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content>
+            <ion-list class="ion-padding">
+              <SelectMeetCategoryItem
+                class="row-box"
+                v-for="(item, index) in categoryList"
+                :key="index"
+                :item="item"
+                @click="closeCategory(item)"
+              />
+            </ion-list>
+          </ion-content>
+        </ion-page>
+      </ion-modal>
+      <ion-modal
+        class="location-modal"
+        :is-open="modalOpen"
+        @ionModalDidDismiss="saveLocationBtn"
+        @ionModalDidPresent="mapOpen"
+        :initial-breakpoint="1"
+        :breakpoints="[0, 1]"
+      >
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button @click="saveLocationBtn()">
+                <ion-icon slot="icon-only" :icon="chevronBack" />
+              </ion-button>
+            </ion-buttons>
+            <ion-title>지도에서 위치 확인</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <div id="openChatMeetMap" style="width: 100%; height: 80%" />
+        </ion-content>
+        <ion-footer
+          class="location-modal-footer"
+          style="height: 110px; background-color: #191a39; padding: 10px"
+        >
+          <div class="layout-container">
+            <ion-grid style="padding: 0 10px 0 10px">
+              <ion-row class="ion-align-items-end ion-justify-content-between">
+                <ion-text color="light">
+                  {{ locationView }}
+                </ion-text>
+                <ion-text color="light" @click="jibunGuCheck">
+                  <ion-icon
+                    :icon="swapHorizontalOutline"
+                    class="v-middle"
+                  ></ion-icon>
+                  <span class="v-middle">{{ checkBtnText }}</span>
+                </ion-text>
+              </ion-row>
+            </ion-grid>
+            <div class="btn-group">
+              <ion-button
+                color="primary"
+                size="large"
+                expand="block"
+                shape="round"
+                @click="saveLocationBtn"
+              >
+                <ion-ripple-effect></ion-ripple-effect>
+                이 위치로 주소 설정
+              </ion-button>
+            </div>
+          </div>
+        </ion-footer>
+      </ion-modal>
+    </ion-content>
+    <ion-footer>
+      <div class="layout-container">
+        <ion-button
+          color="primary"
+          shape="round"
+          expand="block"
+          size="large"
+          @click="checkBth(this.state)"
+          :disabled="!checkDisabledBtn"
+        >
+          {{ categoryNm }} {{ state == "new" ? "생성하기" : "수정하기" }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import {
+  getData,
+  COUNTE_FORMAT,
+  COM_VALIDATION,
+  openChatMeetMap, openChatMeetMapFn
+} from "@/assets/js/common";
+import SelectMeetCategoryItem from "@/components/OpenChat/SelectMeetCategoryItem.vue";
+import { Geolocation } from "@capacitor/geolocation";
+import { locationOutline, mapOutline, swapHorizontalOutline, chevronBack } from "ionicons/icons";
+import IconCalCheck from "@/assets/img/icon/icon_cal_check.svg";
+import CustomCardItem from "@/components/Custom/CustomCardItem";
+
+export default {
+  name: "OpenChatMeetWrite",
+  inject: ["alertController"],
+  components: {
+    CustomCardItem,
+    SelectMeetCategoryItem
+  },
+  computed: {
+    validate() {
+      return this.COM_VALIDATION([
+        { value: this.title, type: "title" },
+        { value: this.content, type: "content" },
+        { value: this.categoryNm, type: "select" }
+      ]);
+    },
+    checkDisabledBtn() {
+      return (
+        this.title != "" && this.content != ""
+      );
+    }
+  },
+  data() {
+    return {
+      mapOutline,
+      locationOutline,
+      swapHorizontalOutline,
+      chevronBack,
+      calendarCheck: IconCalCheck,
+      COUNTE_FORMAT,
+      COM_VALIDATION,
+      state: openChatMeetMap.state,
+      categoryList: openChatMeetMap.categoryList,
+      openChatId: openChatMeetMap.openChatId,
+      categoryModalOpen: false,
+      categoryCd: "",
+      categoryNm: "",
+      title: "",
+      content: "",
+      location: "",
+      locationView: "",
+      meetAddr: "",
+      meetAddrDetail: "",
+      meetDate: "",
+      meetTime: "",
+      modalOpen: false,
+      selectedAddressGu: "",
+      selectedroadAddressDong: "",
+      checkBtn: "",
+      checkBtnText: "",
+      showMap: false,
+      inputType: "",
+      addrItem: {},
+      currLat: 37.541,
+      currLon: 126.986,
+      dueDate: "",
+      dueTime: "",
+      meetRange: 0,
+      meetPush: "Y",
+      meetCost: 0
+    };
+  },
+  ionViewWillEnter() {
+  },
+  methods: {
+    getCurrentDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
+    openModal(type) {
+      if (type == "address") {
+        this.modalOpen = true;
+        this.getGps();
+        this.inputType = type;
+      } else if (type == "category") {
+        this.categoryModalOpen = true;
+      }
+    },
+    closeCategory(item) {
+      this.categoryModalOpen = false;
+      this.categoryCd = item.categoryCd;
+      this.categoryNm = item.categoryNm;
+    },
+    handleInput() {
+      if (this.title.length > 20) {
+        this.title = this.title.slice(0, 20);
+      }
+    },
+    checkBth(type) {
+      if (this.partitionCd === "") {
+        this.warningAlert("카테고리를 선택해주세요.");
+        return;
+      }
+
+      if (this.validate) {
+        //검수 통과
+        this.confirmBtn(type);
+      } else {
+        this.warningAlert("잘못된 항목이 있습니다. 내용을 다시 확인해주세요.");
+      }
+    },
+    async confirmBtn(type) {
+      let rawDate = new Date(this.dueDate);
+      let formatDate = rawDate
+        .toLocaleString("sv-SE", {
+          timeZone: "Asia/Seoul",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        })
+        .replace(/\D/g, "-");
+      const alert = await this.alertController.create({
+        header: "",
+        message:
+          type == "edit"
+            ? "입력한 내용대로 수정 할까요?"
+            : this.categoryNm + "을/를 생성합니다.",
+        buttons: [
+          {
+            text: "아니오",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "네",
+            handler: () => {
+              if (this.state == "new") {
+                let self = this;
+                getData({
+                  url: "/createOpenChatMeet",
+                  param: {
+                    openChatId: openChatMeetMap.openChatId,
+                    categoryCd: this.categoryCd,
+                    title: this.title,
+                    content: this.content,
+                    meetDate: formatDate,
+                    // meetTime: this.dueTime,
+                    meetAddr: this.locationView,
+                    meetAddrDetail: this.meetAddrDetail,
+                    meetRange: this.meetRange,
+                    lat: this.selectedLat,
+                    lon: this.selectedLng,
+                    meetPush: this.meetPush,
+                    meetCost: this.meetCost
+                  },
+                  then: (data) => {
+                    this.openChatId = data.openChatId;
+                    this.$nextTick(() => {
+                      openChatMeetMapFn({
+                        openChatId: openChatMeetMap.openChatId
+                      });
+                      if (data.successYn == "Y") {
+                        this.warningAlert(data.message);
+                        this.$router.push("/openChatMeet");
+                      } else {
+                        this.warningAlert(data.message);
+                        return;
+                      }
+                    });
+                  }
+                });
+              } else if (type == "edit") {
+                getData({
+                  url: "/updateOpenChatMeet",
+                  param: {
+                    categoryCd: this.categoryCd,
+                    title: this.title,
+                    content: this.content,
+                    meetDate: this.dueDate,
+                    // meetTime: this.dueTime,
+                    meetAddr: this.locationView,
+                    meetAddrDetail: this.meetAddrDetail,
+                    meetRange: this.meetRange,
+                    lat: this.selectedLat,
+                    lon: this.selectedLng,
+                    openChatId: openChatMeetMap.openChatId,
+                    meetPush: this.meetPush,
+                    meetCost: this.meetCost
+                  },
+                  then: (data) => {
+                    openChatMeetMapFn({
+                      openChatKey: data.openChatKey
+                    });
+                    if (data.successYn == "Y") {
+                      this.warningAlert(data.message);
+                      this.$router.push("/openChatMeet");
+                    } else {
+                      this.warningAlert(data.message);
+                      return;
+                    }
+                  }
+                });
+              }
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+    mapOpen() {
+      this.lodingCheck = true;
+      this.$nextTick(() => {
+        if (this.selectedLat != null || this.selectedLng != null) {
+          // this.$nextTick(() => {
+          this.naverMap(this.selectedLat, this.selectedLng);
+          // });
+        } else {
+          this.getLoginUser();
+        }
+      });
+    },
+    getLoginUser() {
+      getData({
+        url: "/getOpenChatUserAddr",
+        param: {},
+        then: (data) => {
+          this.addrItem = data[0];
+          if (this.addrItem.currLat != null || this.addrItem.currLon != null) {
+            this.currLat = this.addrItem.currLat;
+            this.currLon = this.addrItem.currLon;
+          } else {
+            this.currLat = this.addrItem.lat;
+            this.currLon = this.addrItem.lon;
+          }
+          this.naverMap(this.currLat, this.currLon);
+        }
+      });
+    },
+    /** gps **/
+    async getGps() {
+      await Geolocation.getCurrentPosition().then((position) => {
+        this.gpsLat = position.coords.latitude;
+        this.gpsLon = position.coords.longitude;
+      });
+    },
+
+    /** naver map **/
+    naverMap(lat, lng) {
+      const mapEl = document.getElementById("openChatMeetMap");
+      if (mapEl == null) {
+        this.lodingCheck = false;
+        return;
+      }
+      this.lodingCheck = false;
+      const navermaps = window.naver.maps;
+
+      /** 맵 초기 설정 **/
+      let mapOptions = {
+        center: new navermaps.LatLng(lat, lng),
+        zoom: 17,
+        /** 줌 컨트롤러 **/
+        zoomControl: true,
+        zoomControlOptions: {
+          style: navermaps.ZoomControlStyle.LARGE,
+          position: navermaps.Position.TOP_RIGHT
+        }
+      };
+
+      /** 맵 생성 **/
+      const NAVER_MAP = new navermaps.Map(mapEl, mapOptions);
+      this.reverseGeocodes(mapOptions.center);
+
+      // 마커 객체 생성
+      const marker = new navermaps.Marker({
+        position: NAVER_MAP.getCenter(), // 중심 좌표에 마커 설정
+        map: NAVER_MAP, // 지도에 마커 추가
+        icon: {
+          url: "https://navermaps.github.io/maps.js.ncp/docs/img/example/pin_default.png", // 마커의 이미지 URL
+          size: new navermaps.Size(24, 37), // 이미지의 원래 크기
+          scaledSize: new navermaps.Size(24, 37), // 화면에 표시될 이미지 크기
+          origin: new navermaps.Point(0, 0), // 이미지의 시작점
+          anchor: new navermaps.Point(12, 37) // 마커를 지도에 고정시킬 위치
+        }
+      });
+
+      navermaps.Event.addListener(NAVER_MAP, "drag", () => {
+        marker.setPosition(NAVER_MAP.getCenter()); // 마커 위치 변경
+      });
+
+      // 지도 초기화 후 커스텀 컨트롤 생성
+      navermaps.Event.once(NAVER_MAP, "init", () => {
+        /** 현재위치로 이동 버튼 **/
+        let locationBtnHtml = `<a style="
+                z-index: 100;
+                overflow: hidden;
+                display: inline-block;
+                position: absolute;
+                top: 7px;
+                left: 5px;
+                width: 34px;
+                height: 34px;
+                border: 1px solid rgba(58,70,88,.45);
+                border-radius: 2px;
+                background: #fcfcfd;
+                  background-clip: border-box;
+                text-align: center;
+                -webkit-background-clip: padding;
+                background-clip: padding-box;
+              "
+            >
+            <span style="
+                overflow: hidden;
+                display: inline-block;
+                color: transparent !important;
+                vertical-align: top;
+                background: url(https://ssl.pstatic.net/static/maps/m/spr_trff_v6.png) 0 0;
+                background-position-x: 0px;
+                background-position-y: 0px;
+                background-size: auto;
+                background-size: 200px 200px;
+                -webkit-background-size: 200px 200px;
+                width: 20px;
+                height: 20px;
+                margin: 7px 0 0 0;
+                background-position: -153px -31px;
+              ">중심위치</span>
+           </a>`;
+        let customControl = new navermaps.CustomControl(locationBtnHtml, {
+          position: window.naver.maps.Position.TOP_LEFT
+        });
+
+        customControl.setMap(NAVER_MAP);
+
+        window.naver.maps.Event.addDOMListener(
+          customControl.getElement(),
+          "click",
+          () => {
+            NAVER_MAP.setCenter(new navermaps.LatLng(lat, lng));
+            marker.setPosition(NAVER_MAP.getCenter());
+          }
+        );
+      });
+
+      navermaps.Event.addListener(NAVER_MAP, "dragend", (e) => {
+        this.selectedLat = NAVER_MAP.getCenter().y;
+        this.selectedLng = NAVER_MAP.getCenter().x;
+
+        let latlng = new window.naver.maps.LatLng(
+          NAVER_MAP.getCenter().y,
+          NAVER_MAP.getCenter().x
+        );
+        this.reverseGeocodes(latlng);
+      });
+    },
+
+    /** 좌표값 주소로 변환 **/
+    reverseGeocodes(latlng) {
+      let self = this;
+
+      const navermaps = window.naver.maps;
+      navermaps.Service.reverseGeocode(
+        {
+          coords: latlng,
+          orders: [
+            navermaps.Service.OrderType.ADDR,
+            navermaps.Service.OrderType.ROAD_ADDR
+          ].join(",")
+        },
+        function(status, response) {
+          if (status === navermaps.Service.Status.ERROR) {
+            return alert("Something Wrong!");
+          }
+
+          let idx = response.v2.results.length > 1 ? 1 : 0;
+          // 지번 주소 구까지
+          self.selectedAddressGu =
+            response.v2.results[idx].region.area1.name +
+            " " +
+            response.v2.results[idx].region.area2.name;
+
+          // 지번 주소 동까지
+          self.selectedjibunAddressDong =
+            response.v2.results[idx].region.area1.name +
+            " " +
+            response.v2.results[idx].region.area2.name +
+            " " +
+            response.v2.results[idx].region.area3.name;
+
+          // 도로명 주소
+          self.selectedroadAddressDong =
+            response.v2.results[idx].region.area1.name +
+            " " +
+            response.v2.results[idx].region.area2.name +
+            " " +
+            response.v2.results[idx].land.name;
+
+          if (self.checkBtn === "dong") {
+            self.locationView = self.selectedjibunAddressDong;
+          } else {
+            self.locationView = self.selectedAddressGu;
+          }
+        }
+      );
+    },
+    saveLocationBtn() {
+      this.location = this.locationView;
+
+      if (this.locationView != "") {
+        this.showMap = true;
+      } else {
+        this.showMap = false;
+      }
+      this.modalOpen = false;
+    },
+    jibunGuCheck() {
+      if (this.checkBtn == "dong") {
+        if (this.selectedAddressGu != null) {
+          this.locationView = this.selectedAddressGu;
+        }
+        this.checkBtnText = "동까지 표시";
+        this.checkBtn = "gu";
+      } else {
+        if (this.selectedroadAddressDong != null) {
+          this.locationView = this.selectedjibunAddressDong;
+        }
+        this.checkBtnText = "구까지 표시";
+        this.checkBtn = "dong";
+      }
+    },
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+
+</style>

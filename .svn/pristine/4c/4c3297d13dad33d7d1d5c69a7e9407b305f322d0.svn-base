@@ -1,0 +1,44 @@
+<template>
+  <ion-card :class="`padding-${padding} shadow-${shadow}`">
+    <slot></slot>
+  </ion-card>
+</template>
+<script>
+export default {
+  name: 'CardBox',
+  props: {
+    padding: {
+      type: String
+    },
+    shadow: {
+      type: String
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+$blur: 5px;
+ion-card {
+  --color: white;
+  border-radius: var(--ion-border-radius);
+  border: 1px solid var(--ion-border-color);
+  padding: 18px;
+  line-height: 1.5;
+  font-size: 12px;
+  margin: 0;
+  + ion-card {
+    margin-top: 10px;
+  }
+
+  &.shadow-gold {
+    border: 1px solid rgba(242, 226, 130, 1);
+  }
+
+  &.padding-sm {
+    padding: 8px;
+  }
+  &.padding-none {
+    padding: 0;
+  }
+}
+</style>

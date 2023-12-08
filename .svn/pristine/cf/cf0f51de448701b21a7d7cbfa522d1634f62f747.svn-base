@@ -1,0 +1,191 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar class="join-toolbar">
+        <ion-buttons slot="start">
+          <BackButton />
+        </ion-buttons>
+        <ion-title>공지사항</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-refresher slot="fixed" @ionRefresh="doRefresh($event)">
+        <ion-refresher-content
+          refreshing-spinner="circles"
+          :pulling-icon="chevronDownCircleOutline"
+        ></ion-refresher-content>
+      </ion-refresher>
+      <!-- 공지/안내 -->
+      <ion-accordion-group>
+        <CustomAccordion v-for="item in dataList" :key="item.id" @itemClick="modalAnn(item)">
+          <template #header>
+            <ion-label>
+              <h4>
+                <ion-text color="light" class="text-bold text-lg">
+                  {{ item.title }}
+                </ion-text>
+              </h4>
+              <ion-text color="light" class="text-sm">
+                {{ item.createdDtStr }}
+              </ion-text>
+            </ion-label>
+          </template>
+          <!--        <CustomAccordion v-for="item in dataList" :key="item.id">-->
+          <!--          <template #header>-->
+          <!--            <ion-label>-->
+          <!--              <h4>-->
+          <!--                <ion-text color="light" class="text-bold text-lg">-->
+          <!--                  {{ item.title }}-->
+          <!--                </ion-text>-->
+          <!--              </h4>-->
+          <!--              <ion-text color="light" class="text-sm">-->
+          <!--                {{ item.createdDtStr }}-->
+          <!--              </ion-text>-->
+          <!--            </ion-label>-->
+          <!--          </template>-->
+          <!--          <template #content>-->
+          <!--            &lt;!&ndash; TODO : 본문 내용 &ndash;&gt;-->
+          <!--            <ion-text color="light">-->
+          <!--              {{ item }}-->
+          <!--            </ion-text>-->
+          <!--          </template>-->
+        </CustomAccordion>
+      </ion-accordion-group>
+      <NotificationModal
+        :is-open="notificationModal"
+        :item="modalItem"
+        :contentType="modalItem.contentType"
+        :type="'announcement'"
+        @ionModalDidDismiss="notificationModal = false"
+      />
+
+      <!-- 공지/안내 -->
+
+      <ion-infinite-scroll
+        :disabled="isEndScroll"
+        threshold="100px"
+        @ionInfinite="ionInfinite"
+      >
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script>
+import { chevronDownCircleOutline } from "ionicons/icons";
+import {
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent
+} from "@ionic/vue";
+import { getData } from "@/assets/js/common.js";
+import CustomAccordion from "@/components/Custom/CustomAccordion.vue";
+import NotificationModal from "@/components/Modal/NotificationModal";
+
+export default {
+  name: "NotificationAnnouncement",
+  inject: ["alertController"],
+  components: {
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent,
+    CustomAccordion,
+    NotificationModal
+  },
+  data() {
+    return {
+      chevronDownCircleOutline,
+      dataList: [],
+      pageNo: 1,
+      pageSize: 30,
+      currentPageNo: 1,
+      totalCount: 0,
+      isEndScroll: false,
+      notificationModal: false,
+      modalItem: ""
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.getNoticeList();
+  },
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  methods: {
+    modalAnn(data) {
+      this.modalItem = data;
+      this.notificationModal = true;
+    },
+    /** 경고 팝업창 **/
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+    //공지사항 조회
+    getNoticeList() {
+      // 초기화
+      this.pageNo = 1;
+      this.pageSize = 9;
+      this.currentPageNo = 1;
+      this.openChatList = [];
+      this.totalCount = 0;
+      this.isEndScroll = false;
+
+      getData({
+        url: "/getNoticeList",
+        param: { pageNo: this.pageNo, pageSize: this.pageSize },
+        then: (data) => {
+          this.dataList = data.result;
+          this.totalCount = data.totalCount;
+        }
+      });
+    },
+    /* Refresh */
+    doRefresh(e) {
+      this.getNoticeList();
+      setTimeout(() => {
+        e.target.complete();
+      }, 500);
+    },
+    ionInfinite(event) {
+      let self = this;
+
+      // 스크롤 로딩 셋타임아웃
+      setTimeout(function() {
+        self.pageNo = self.currentPageNo + 1;
+
+        getData({
+          url: "/getNoticeList",
+          param: { pageNo: this.pageNo, pageSize: this.pageSize },
+          then: (data) => {
+            for (let i in data.result) {
+              self.dataList.push(data.result[i]);
+            }
+            self.currentPageNo += 1;
+            self.$nextTick(() => {
+              if (self.dataList.length == self.totalCount)
+                self.isEndScroll = true;
+            });
+          }
+        });
+        event.target.complete();
+      }, 1000);
+    }
+  }
+};
+</script>
+
+<style scoped>
+ion-icon {
+  color: black;
+}
+</style>

@@ -1,0 +1,780 @@
+-- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:50:9-58:20
+	android:grantUriPermissions
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:54:13-47
+	android:authorities
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:52:13-64
+	android:exported
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:53:13-37
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:51:13-62
+manifest
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+MERGED from [:capacitor-community-fcm] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor-community/fcm/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-community-sqlite] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor-community/sqlite/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-app] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/app/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-browser] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/browser/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-13:12
+MERGED from [:capacitor-clipboard] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/clipboard/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-filesystem] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/filesystem/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-geolocation] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/geolocation/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-17:12
+MERGED from [:capacitor-toast] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/toast/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-data-storage-sqlite] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/capacitor-data-storage-sqlite/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-android] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/android/capacitor/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:2:1-13:12
+MERGED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:17:1-29:12
+MERGED from [com.google.android.material:material:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/0eb3b824a30323bd72d6455c8c0d76c8/transformed/material-1.8.0/AndroidManifest.xml:17:1-26:12
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/75033fa81eb192c02a89c23341438a84/transformed/constraintlayout-2.0.1/AndroidManifest.xml:2:1-11:12
+MERGED from [androidx.appcompat:appcompat-resources:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/a8398ac058a4339b1ba35a4b81b818c3/transformed/jetified-appcompat-resources-1.5.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.appcompat:appcompat:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/4582e8b49da9e452ee5814b4ea6bf4c9/transformed/appcompat-1.5.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/eaf7442af18b3176037a61efa287ca08/transformed/coordinatorlayout-1.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core-splashscreen:1.0.0-rc01] /Users/jineuihyun/.gradle/caches/transforms-3/53c0e440493ac80a0e4505e2a54906c9/transformed/jetified-core-splashscreen-1.0.0-rc01/AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:17:1-61:12
+MERGED from [com.google.firebase:firebase-core:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/2608f9045155d1c41c4017d52ab42f98/transformed/jetified-firebase-core-18.0.0/AndroidManifest.xml:2:1-9:12
+MERGED from [androidx.webkit:webkit:1.4.0] /Users/jineuihyun/.gradle/caches/transforms-3/ca2489268bdfb483e87516c4e334984f/transformed/webkit-1.4.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.browser:browser:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/2cc260fa31d9d0606d7234abf93cdafa/transformed/browser-1.5.0/AndroidManifest.xml:17:1-22:12
+MERGED from [com.google.android.gms:play-services-location:21.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/487dd550151847ddbf1f06df24ad2bfa/transformed/jetified-play-services-location-21.0.1/AndroidManifest.xml:2:1-9:12
+MERGED from [com.google.firebase:firebase-analytics:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/5f3a150991db27052ca44a5ec6aac283/transformed/jetified-firebase-analytics-21.3.0/AndroidManifest.xml:2:1-9:12
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:17:1-46:12
+MERGED from [com.google.android.gms:play-services-measurement-sdk:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4e8dcca84b38d612c4561cff60301da/transformed/jetified-play-services-measurement-sdk-21.3.0/AndroidManifest.xml:17:1-25:12
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:17:1-32:12
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/23d73374f96d0aee746bad6f496f5c62/transformed/jetified-play-services-stats-17.0.2/AndroidManifest.xml:2:1-9:12
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:17:1-37:12
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/08d385efc8182601f1a8d90b27422549/transformed/jetified-firebase-measurement-connector-19.0.0/AndroidManifest.xml:17:1-25:12
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9f3f88e771a3b8afdab660af14df08d1/transformed/jetified-firebase-iid-interop-17.1.0/AndroidManifest.xml:2:1-10:12
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:2:1-13:12
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:15:1-33:12
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:2:1-23:12
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:15:1-39:12
+MERGED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:16:1-24:12
+MERGED from [com.google.firebase:firebase-installations-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/010df6edc5529c7840e9ea07b9716842/transformed/jetified-firebase-installations-interop-17.1.0/AndroidManifest.xml:15:1-22:12
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/09c1c3f780904134abf69beae4b361d1/transformed/jetified-play-services-tasks-18.0.2/AndroidManifest.xml:2:1-6:12
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:17:1-27:12
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:17:1-28:12
+MERGED from [com.google.android.gms:play-services-measurement-base:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/3d6d810e5fc067609fc3e3e2a804c00f/transformed/jetified-play-services-measurement-base-21.3.0/AndroidManifest.xml:2:1-9:12
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:16:1-26:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/2d1e81ea1455925b95b3da035f38546b/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/6fceed2d855f31627f4cb26b85156baa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/eff476388f302ac80e0eb5946e80baf5/transformed/jetified-viewpager2-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.fragment:fragment:1.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/7ae398a1472ef1244fc1f6918ac389b0/transformed/fragment-1.4.1/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/c91ee6401782633c71f679cbb14c1a74/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.dynamicanimation:dynamicanimation:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/49739c7587ccd8f161e470f493ae663e/transformed/dynamicanimation-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/54735fddbacfebf450f779333c87e53a/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.loader:loader:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/eec9851bc7964b54abc10ee1cd705e33/transformed/loader-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/66f5b219df5971a92ed2d34bba552d77/transformed/drawerlayout-1.1.1/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.transition:transition:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/cc6bac2f4cfb48448054dc131463514a/transformed/transition-1.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.activity:activity:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/a69cfdd8c2932286b3cc0b5ce74337b4/transformed/jetified-activity-1.5.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/5bf53017a479a1334257aa09a07e4e3b/transformed/lifecycle-viewmodel-2.5.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/c56abc3ca6b367009f8f54ef7f2bc79a/transformed/jetified-lifecycle-viewmodel-savedstate-2.5.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core-ktx:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/8e816442b602de403fa03f7884dcfc9c/transformed/jetified-core-ktx-1.8.0/AndroidManifest.xml:2:1-9:12
+MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/296f73447415b1a2a8c6108945565a49/transformed/jetified-emoji2-views-helper-1.2.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/ac4ac490415b9ba99b7e374c21d4659e/transformed/recyclerview-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.customview:customview:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/68cfdbe9765383fc75f12a5e0ded9eba/transformed/customview-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/c03efd9a0015437520d15a440f54260f/transformed/core-1.8.0/AndroidManifest.xml:17:1-26:12
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:2:1-24:12
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:15:1-37:12
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:15:1-41:12
+MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/e75c163d2e8dbff5559ea8609f03692e/transformed/jetified-firebase-encoders-json-18.0.0/AndroidManifest.xml:15:1-23:12
+MERGED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:17:1-31:12
+MERGED from [net.zetetic:android-database-sqlcipher:4.5.3] /Users/jineuihyun/.gradle/caches/transforms-3/f2ec826af888eb4be2e9b827a2c06bee/transformed/jetified-android-database-sqlcipher-4.5.3/AndroidManifest.xml:2:1-9:12
+MERGED from [androidx.sqlite:sqlite-framework:2.3.1] /Users/jineuihyun/.gradle/caches/transforms-3/24500ccbb83a49ada22647d535b93bfd/transformed/sqlite-framework-2.3.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.sqlite:sqlite:2.3.1] /Users/jineuihyun/.gradle/caches/transforms-3/e735e3d6f51e9a5150032b8bc71c357f/transformed/sqlite-2.3.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/jineuihyun/.gradle/caches/transforms-3/0b970fbf8544af86f3ac72a8c7abe014/transformed/jetified-security-crypto-1.1.0-alpha06/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/jineuihyun/.gradle/caches/transforms-3/3217c528a905549ec48b062e65961b5b/transformed/exifinterface-1.3.6/AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.firebase:firebase-components:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4d7e40115b2e8fe506db5a29ad9c8fe/transformed/jetified-firebase-components-17.1.0/AndroidManifest.xml:15:1-22:12
+MERGED from [com.google.android.datatransport:transport-api:3.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/e5c361c8cf54f37fdc90426d78eed19f/transformed/jetified-transport-api-3.0.0/AndroidManifest.xml:15:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/541da0eeaa5e01c0ae849600965a452f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/202065b3eb61e7e320fcf2004bdbf872/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.cardview:cardview:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/06f885e9545526bb0e8b0d7f6010332a/transformed/cardview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/5efd22b3e20735800027fc0910330b17/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:17:1-37:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/d3d10ec588ccf81b98caff342c3515d0/transformed/lifecycle-runtime-2.5.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/57266aa6a3d9544128bda9becabba2dd/transformed/lifecycle-livedata-core-2.5.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/484ae88b6a2c8fe7f489bed3844d2c0e/transformed/core-runtime-2.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.savedstate:savedstate:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/6d33d7cf0bbff40360698120d7a76361/transformed/jetified-savedstate-1.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/21b70401fb286d08e8b2140709150b1a/transformed/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8b89a67279c6a3618439fd76de08442f/transformed/documentfile-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/689feed258f0ad1a99e4edf19751f067/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.print:print:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/398baf266ef250ead0da237bd4414c09/transformed/print-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.tracing:tracing:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/c98f7599e0eefa6c2d1badacd00ff808/transformed/jetified-tracing-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [org.apache.cordova:framework:10.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/cca50991fd2a97ebfe8daab4258a490c/transformed/jetified-framework-10.1.1/AndroidManifest.xml:20:1-27:12
+MERGED from [androidx.annotation:annotation-experimental:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/b3ac95868ecc505ad921c83cd2c5151c/transformed/jetified-annotation-experimental-1.1.0/AndroidManifest.xml:17:1-24:12
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+	package
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:3:5-31
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:1-75:12
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:6:5-59:19
+MERGED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:7:5-15:19
+MERGED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:7:5-15:19
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:10:5-11:19
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:10:5-11:19
+MERGED from [com.google.android.material:material:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/0eb3b824a30323bd72d6455c8c0d76c8/transformed/material-1.8.0/AndroidManifest.xml:24:5-20
+MERGED from [com.google.android.material:material:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/0eb3b824a30323bd72d6455c8c0d76c8/transformed/material-1.8.0/AndroidManifest.xml:24:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/75033fa81eb192c02a89c23341438a84/transformed/constraintlayout-2.0.1/AndroidManifest.xml:9:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/75033fa81eb192c02a89c23341438a84/transformed/constraintlayout-2.0.1/AndroidManifest.xml:9:5-20
+MERGED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:30:5-59:19
+MERGED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:30:5-59:19
+MERGED from [com.google.firebase:firebase-core:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/2608f9045155d1c41c4017d52ab42f98/transformed/jetified-firebase-core-18.0.0/AndroidManifest.xml:7:5-20
+MERGED from [com.google.firebase:firebase-core:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/2608f9045155d1c41c4017d52ab42f98/transformed/jetified-firebase-core-18.0.0/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-location:21.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/487dd550151847ddbf1f06df24ad2bfa/transformed/jetified-play-services-location-21.0.1/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-location:21.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/487dd550151847ddbf1f06df24ad2bfa/transformed/jetified-play-services-location-21.0.1/AndroidManifest.xml:7:5-20
+MERGED from [com.google.firebase:firebase-analytics:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/5f3a150991db27052ca44a5ec6aac283/transformed/jetified-firebase-analytics-21.3.0/AndroidManifest.xml:7:5-20
+MERGED from [com.google.firebase:firebase-analytics:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/5f3a150991db27052ca44a5ec6aac283/transformed/jetified-firebase-analytics-21.3.0/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:28:5-44:19
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:28:5-44:19
+MERGED from [com.google.android.gms:play-services-measurement-sdk:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4e8dcca84b38d612c4561cff60301da/transformed/jetified-play-services-measurement-sdk-21.3.0/AndroidManifest.xml:22:5-23:19
+MERGED from [com.google.android.gms:play-services-measurement-sdk:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4e8dcca84b38d612c4561cff60301da/transformed/jetified-play-services-measurement-sdk-21.3.0/AndroidManifest.xml:22:5-23:19
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:29:5-30:19
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:29:5-30:19
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/23d73374f96d0aee746bad6f496f5c62/transformed/jetified-play-services-stats-17.0.2/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/23d73374f96d0aee746bad6f496f5c62/transformed/jetified-play-services-stats-17.0.2/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:27:5-35:19
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:27:5-35:19
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/08d385efc8182601f1a8d90b27422549/transformed/jetified-firebase-measurement-connector-19.0.0/AndroidManifest.xml:22:5-23:19
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/08d385efc8182601f1a8d90b27422549/transformed/jetified-firebase-measurement-connector-19.0.0/AndroidManifest.xml:22:5-23:19
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9f3f88e771a3b8afdab660af14df08d1/transformed/jetified-firebase-iid-interop-17.1.0/AndroidManifest.xml:7:5-8:19
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9f3f88e771a3b8afdab660af14df08d1/transformed/jetified-firebase-iid-interop-17.1.0/AndroidManifest.xml:7:5-8:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:23:5-31:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:23:5-31:19
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:13:5-21:19
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:13:5-21:19
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:24:5-37:19
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:24:5-37:19
+MERGED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:19:5-23:19
+MERGED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:19:5-23:19
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/09c1c3f780904134abf69beae4b361d1/transformed/jetified-play-services-tasks-18.0.2/AndroidManifest.xml:5:5-20
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/09c1c3f780904134abf69beae4b361d1/transformed/jetified-play-services-tasks-18.0.2/AndroidManifest.xml:5:5-20
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:25:5-20
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:25:5-20
+MERGED from [com.google.android.gms:play-services-measurement-base:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/3d6d810e5fc067609fc3e3e2a804c00f/transformed/jetified-play-services-measurement-base-21.3.0/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-measurement-base:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/3d6d810e5fc067609fc3e3e2a804c00f/transformed/jetified-play-services-measurement-base-21.3.0/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:20:5-24:19
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:20:5-24:19
+MERGED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.core:core:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/c03efd9a0015437520d15a440f54260f/transformed/core-1.8.0/AndroidManifest.xml:24:5-89
+MERGED from [androidx.core:core:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/c03efd9a0015437520d15a440f54260f/transformed/core-1.8.0/AndroidManifest.xml:24:5-89
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:12:5-22:19
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:12:5-22:19
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:27:5-35:19
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:27:5-35:19
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:25:5-39:19
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:25:5-39:19
+MERGED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:23:5-29:19
+MERGED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:23:5-29:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/541da0eeaa5e01c0ae849600965a452f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/541da0eeaa5e01c0ae849600965a452f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:25:5-35:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:25:5-35:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/c03efd9a0015437520d15a440f54260f/transformed/core-1.8.0/AndroidManifest.xml:24:18-86
+	android:supportsRtl
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:11:9-35
+	android:label
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:9:9-41
+	android:roundIcon
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:10:9-54
+	android:icon
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:8:9-43
+	android:allowBackup
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:7:9-35
+	android:theme
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:12:9-40
+	android:usesCleartextTraffic
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:13:9-44
+activity#cmdg.navy.client.MainActivity
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:34:9-48:20
+	android:label
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:37:13-56
+	android:launchMode
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:39:13-44
+	android:exported
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:40:13-36
+	android:configChanges
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:35:13-129
+	android:theme
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:38:13-62
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:36:13-57
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:42:13-45:29
+action#android.intent.action.MAIN
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:43:17-69
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:43:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:44:17-77
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:44:27-74
+uses-permission#android.permission.INTERNET
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:63:5-67
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:23:5-67
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:23:5-67
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:23:5-67
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:23:5-67
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:22:5-67
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:22:5-67
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:8:5-67
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:8:5-67
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:10:5-67
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:10:5-67
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:23:5-67
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:23:5-67
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:25:5-67
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:25:5-67
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:63:22-64
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:64:5-81
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:64:22-78
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:65:5-79
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:65:22-76
+uses-permission#com.android.vending.BILLING
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:66:5-67
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:8:5-67
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:8:5-67
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:10:5-67
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:10:5-67
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:66:22-64
+uses-permission#android.permission.READ_MEDIA_IMAGES
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:67:5-75
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:67:22-73
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:68:5-79
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:68:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:69:5-81
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:69:22-78
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:70:5-77
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:70:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:71:5-94
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:71:22-91
+uses-permission#com.google.android.gms.permission.AD_ID
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:73:5-78
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:27:5-79
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:27:5-79
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:25:5-79
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:25:5-79
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:23:5-79
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:23:5-79
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:26:5-79
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:26:5-79
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:73:22-76
+uses-feature#android.hardware.location.gps
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:74:5-66
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:74:19-63
+uses-sdk
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+MERGED from [:capacitor-community-fcm] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor-community/fcm/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-community-fcm] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor-community/fcm/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-community-sqlite] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor-community/sqlite/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-community-sqlite] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor-community/sqlite/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-app] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/app/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-app] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/app/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-browser] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/browser/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-browser] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/browser/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-clipboard] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/clipboard/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-clipboard] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/clipboard/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-filesystem] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/filesystem/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-filesystem] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/filesystem/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-geolocation] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/geolocation/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-geolocation] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/geolocation/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-toast] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/toast/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-toast] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/toast/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-data-storage-sqlite] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/capacitor-data-storage-sqlite/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-data-storage-sqlite] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/capacitor-data-storage-sqlite/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-android] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/android/capacitor/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-android] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/android/capacitor/build/intermediates/merged_manifest/release/AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:6:5-44
+MERGED from [:capacitor-cordova-android-plugins] /Users/jineuihyun/Desktop/workspace/meetingClient/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/release/AndroidManifest.xml:6:5-44
+MERGED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.android.material:material:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/0eb3b824a30323bd72d6455c8c0d76c8/transformed/material-1.8.0/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.android.material:material:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/0eb3b824a30323bd72d6455c8c0d76c8/transformed/material-1.8.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/75033fa81eb192c02a89c23341438a84/transformed/constraintlayout-2.0.1/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/75033fa81eb192c02a89c23341438a84/transformed/constraintlayout-2.0.1/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.appcompat:appcompat-resources:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/a8398ac058a4339b1ba35a4b81b818c3/transformed/jetified-appcompat-resources-1.5.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/a8398ac058a4339b1ba35a4b81b818c3/transformed/jetified-appcompat-resources-1.5.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/4582e8b49da9e452ee5814b4ea6bf4c9/transformed/appcompat-1.5.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/4582e8b49da9e452ee5814b4ea6bf4c9/transformed/appcompat-1.5.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/eaf7442af18b3176037a61efa287ca08/transformed/coordinatorlayout-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/eaf7442af18b3176037a61efa287ca08/transformed/coordinatorlayout-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-splashscreen:1.0.0-rc01] /Users/jineuihyun/.gradle/caches/transforms-3/53c0e440493ac80a0e4505e2a54906c9/transformed/jetified-core-splashscreen-1.0.0-rc01/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-splashscreen:1.0.0-rc01] /Users/jineuihyun/.gradle/caches/transforms-3/53c0e440493ac80a0e4505e2a54906c9/transformed/jetified-core-splashscreen-1.0.0-rc01/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.firebase:firebase-core:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/2608f9045155d1c41c4017d52ab42f98/transformed/jetified-firebase-core-18.0.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-core:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/2608f9045155d1c41c4017d52ab42f98/transformed/jetified-firebase-core-18.0.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.webkit:webkit:1.4.0] /Users/jineuihyun/.gradle/caches/transforms-3/ca2489268bdfb483e87516c4e334984f/transformed/webkit-1.4.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.webkit:webkit:1.4.0] /Users/jineuihyun/.gradle/caches/transforms-3/ca2489268bdfb483e87516c4e334984f/transformed/webkit-1.4.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.browser:browser:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/2cc260fa31d9d0606d7234abf93cdafa/transformed/browser-1.5.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.browser:browser:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/2cc260fa31d9d0606d7234abf93cdafa/transformed/browser-1.5.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-location:21.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/487dd550151847ddbf1f06df24ad2bfa/transformed/jetified-play-services-location-21.0.1/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-location:21.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/487dd550151847ddbf1f06df24ad2bfa/transformed/jetified-play-services-location-21.0.1/AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-analytics:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/5f3a150991db27052ca44a5ec6aac283/transformed/jetified-firebase-analytics-21.3.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-analytics:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/5f3a150991db27052ca44a5ec6aac283/transformed/jetified-firebase-analytics-21.3.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-sdk:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4e8dcca84b38d612c4561cff60301da/transformed/jetified-play-services-measurement-sdk-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-sdk:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4e8dcca84b38d612c4561cff60301da/transformed/jetified-play-services-measurement-sdk-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/23d73374f96d0aee746bad6f496f5c62/transformed/jetified-play-services-stats-17.0.2/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/23d73374f96d0aee746bad6f496f5c62/transformed/jetified-play-services-stats-17.0.2/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/08d385efc8182601f1a8d90b27422549/transformed/jetified-firebase-measurement-connector-19.0.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/08d385efc8182601f1a8d90b27422549/transformed/jetified-firebase-measurement-connector-19.0.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9f3f88e771a3b8afdab660af14df08d1/transformed/jetified-firebase-iid-interop-17.1.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9f3f88e771a3b8afdab660af14df08d1/transformed/jetified-firebase-iid-interop-17.1.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:5:5-7:41
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:5:5-7:41
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:18:5-43
+MERGED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:18:5-43
+MERGED from [com.google.firebase:firebase-installations-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/010df6edc5529c7840e9ea07b9716842/transformed/jetified-firebase-installations-interop-17.1.0/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-installations-interop:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/010df6edc5529c7840e9ea07b9716842/transformed/jetified-firebase-installations-interop-17.1.0/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/09c1c3f780904134abf69beae4b361d1/transformed/jetified-play-services-tasks-18.0.2/AndroidManifest.xml:4:5-43
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] /Users/jineuihyun/.gradle/caches/transforms-3/09c1c3f780904134abf69beae4b361d1/transformed/jetified-play-services-tasks-18.0.2/AndroidManifest.xml:4:5-43
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/ed945f7c82eab1185a3f51280100036d/transformed/jetified-play-services-ads-identifier-18.0.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-measurement-base:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/3d6d810e5fc067609fc3e3e2a804c00f/transformed/jetified-play-services-measurement-base-21.3.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-measurement-base:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/3d6d810e5fc067609fc3e3e2a804c00f/transformed/jetified-play-services-measurement-base-21.3.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:18:5-43
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:18:5-43
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/2d1e81ea1455925b95b3da035f38546b/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/2d1e81ea1455925b95b3da035f38546b/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/6fceed2d855f31627f4cb26b85156baa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/6fceed2d855f31627f4cb26b85156baa/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/eff476388f302ac80e0eb5946e80baf5/transformed/jetified-viewpager2-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/eff476388f302ac80e0eb5946e80baf5/transformed/jetified-viewpager2-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/7ae398a1472ef1244fc1f6918ac389b0/transformed/fragment-1.4.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/7ae398a1472ef1244fc1f6918ac389b0/transformed/fragment-1.4.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/c91ee6401782633c71f679cbb14c1a74/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/c91ee6401782633c71f679cbb14c1a74/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.dynamicanimation:dynamicanimation:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/49739c7587ccd8f161e470f493ae663e/transformed/dynamicanimation-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.dynamicanimation:dynamicanimation:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/49739c7587ccd8f161e470f493ae663e/transformed/dynamicanimation-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/54735fddbacfebf450f779333c87e53a/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/54735fddbacfebf450f779333c87e53a/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/eec9851bc7964b54abc10ee1cd705e33/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/eec9851bc7964b54abc10ee1cd705e33/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/66f5b219df5971a92ed2d34bba552d77/transformed/drawerlayout-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/66f5b219df5971a92ed2d34bba552d77/transformed/drawerlayout-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/cc6bac2f4cfb48448054dc131463514a/transformed/transition-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/cc6bac2f4cfb48448054dc131463514a/transformed/transition-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.activity:activity:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/a69cfdd8c2932286b3cc0b5ce74337b4/transformed/jetified-activity-1.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.activity:activity:1.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/a69cfdd8c2932286b3cc0b5ce74337b4/transformed/jetified-activity-1.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/5bf53017a479a1334257aa09a07e4e3b/transformed/lifecycle-viewmodel-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/5bf53017a479a1334257aa09a07e4e3b/transformed/lifecycle-viewmodel-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/c56abc3ca6b367009f8f54ef7f2bc79a/transformed/jetified-lifecycle-viewmodel-savedstate-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/c56abc3ca6b367009f8f54ef7f2bc79a/transformed/jetified-lifecycle-viewmodel-savedstate-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-ktx:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/8e816442b602de403fa03f7884dcfc9c/transformed/jetified-core-ktx-1.8.0/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.core:core-ktx:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/8e816442b602de403fa03f7884dcfc9c/transformed/jetified-core-ktx-1.8.0/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/296f73447415b1a2a8c6108945565a49/transformed/jetified-emoji2-views-helper-1.2.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/296f73447415b1a2a8c6108945565a49/transformed/jetified-emoji2-views-helper-1.2.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/ac4ac490415b9ba99b7e374c21d4659e/transformed/recyclerview-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/ac4ac490415b9ba99b7e374c21d4659e/transformed/recyclerview-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/68cfdbe9765383fc75f12a5e0ded9eba/transformed/customview-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/68cfdbe9765383fc75f12a5e0ded9eba/transformed/customview-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/c03efd9a0015437520d15a440f54260f/transformed/core-1.8.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.8.0] /Users/jineuihyun/.gradle/caches/transforms-3/c03efd9a0015437520d15a440f54260f/transformed/core-1.8.0/AndroidManifest.xml:20:5-22:41
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:6:5-8:41
+MERGED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:6:5-8:41
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/e75c163d2e8dbff5559ea8609f03692e/transformed/jetified-firebase-encoders-json-18.0.0/AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/e75c163d2e8dbff5559ea8609f03692e/transformed/jetified-firebase-encoders-json-18.0.0/AndroidManifest.xml:19:5-21:41
+MERGED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:21:5-44
+MERGED from [net.zetetic:android-database-sqlcipher:4.5.3] /Users/jineuihyun/.gradle/caches/transforms-3/f2ec826af888eb4be2e9b827a2c06bee/transformed/jetified-android-database-sqlcipher-4.5.3/AndroidManifest.xml:5:5-7:41
+MERGED from [net.zetetic:android-database-sqlcipher:4.5.3] /Users/jineuihyun/.gradle/caches/transforms-3/f2ec826af888eb4be2e9b827a2c06bee/transformed/jetified-android-database-sqlcipher-4.5.3/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.sqlite:sqlite-framework:2.3.1] /Users/jineuihyun/.gradle/caches/transforms-3/24500ccbb83a49ada22647d535b93bfd/transformed/sqlite-framework-2.3.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework:2.3.1] /Users/jineuihyun/.gradle/caches/transforms-3/24500ccbb83a49ada22647d535b93bfd/transformed/sqlite-framework-2.3.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite:2.3.1] /Users/jineuihyun/.gradle/caches/transforms-3/e735e3d6f51e9a5150032b8bc71c357f/transformed/sqlite-2.3.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite:2.3.1] /Users/jineuihyun/.gradle/caches/transforms-3/e735e3d6f51e9a5150032b8bc71c357f/transformed/sqlite-2.3.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/jineuihyun/.gradle/caches/transforms-3/0b970fbf8544af86f3ac72a8c7abe014/transformed/jetified-security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/jineuihyun/.gradle/caches/transforms-3/0b970fbf8544af86f3ac72a8c7abe014/transformed/jetified-security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/jineuihyun/.gradle/caches/transforms-3/3217c528a905549ec48b062e65961b5b/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/jineuihyun/.gradle/caches/transforms-3/3217c528a905549ec48b062e65961b5b/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.firebase:firebase-components:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4d7e40115b2e8fe506db5a29ad9c8fe/transformed/jetified-firebase-components-17.1.0/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-components:17.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/a4d7e40115b2e8fe506db5a29ad9c8fe/transformed/jetified-firebase-components-17.1.0/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-api:3.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/e5c361c8cf54f37fdc90426d78eed19f/transformed/jetified-transport-api-3.0.0/AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-api:3.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/e5c361c8cf54f37fdc90426d78eed19f/transformed/jetified-transport-api-3.0.0/AndroidManifest.xml:18:5-20:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/541da0eeaa5e01c0ae849600965a452f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/541da0eeaa5e01c0ae849600965a452f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/202065b3eb61e7e320fcf2004bdbf872/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/202065b3eb61e7e320fcf2004bdbf872/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/06f885e9545526bb0e8b0d7f6010332a/transformed/cardview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/06f885e9545526bb0e8b0d7f6010332a/transformed/cardview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/5efd22b3e20735800027fc0910330b17/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/5efd22b3e20735800027fc0910330b17/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/d3d10ec588ccf81b98caff342c3515d0/transformed/lifecycle-runtime-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/d3d10ec588ccf81b98caff342c3515d0/transformed/lifecycle-runtime-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/57266aa6a3d9544128bda9becabba2dd/transformed/lifecycle-livedata-core-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.0] /Users/jineuihyun/.gradle/caches/transforms-3/57266aa6a3d9544128bda9becabba2dd/transformed/lifecycle-livedata-core-2.5.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/484ae88b6a2c8fe7f489bed3844d2c0e/transformed/core-runtime-2.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/484ae88b6a2c8fe7f489bed3844d2c0e/transformed/core-runtime-2.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.savedstate:savedstate:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/6d33d7cf0bbff40360698120d7a76361/transformed/jetified-savedstate-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.savedstate:savedstate:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/6d33d7cf0bbff40360698120d7a76361/transformed/jetified-savedstate-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/21b70401fb286d08e8b2140709150b1a/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/21b70401fb286d08e8b2140709150b1a/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8b89a67279c6a3618439fd76de08442f/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8b89a67279c6a3618439fd76de08442f/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/689feed258f0ad1a99e4edf19751f067/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/689feed258f0ad1a99e4edf19751f067/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/398baf266ef250ead0da237bd4414c09/transformed/print-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/398baf266ef250ead0da237bd4414c09/transformed/print-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.tracing:tracing:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/c98f7599e0eefa6c2d1badacd00ff808/transformed/jetified-tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.tracing:tracing:1.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/c98f7599e0eefa6c2d1badacd00ff808/transformed/jetified-tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [org.apache.cordova:framework:10.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/cca50991fd2a97ebfe8daab4258a490c/transformed/jetified-framework-10.1.1/AndroidManifest.xml:25:5-44
+MERGED from [org.apache.cordova:framework:10.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/cca50991fd2a97ebfe8daab4258a490c/transformed/jetified-framework-10.1.1/AndroidManifest.xml:25:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/b3ac95868ecc505ad921c83cd2c5151c/transformed/jetified-annotation-experimental-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.annotation:annotation-experimental:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/b3ac95868ecc505ad921c83cd2c5151c/transformed/jetified-annotation-experimental-1.1.0/AndroidManifest.xml:20:5-22:41
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:55:13-57:64
+	android:resource
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:57:17-51
+	android:name
+		ADDED from /Users/jineuihyun/Desktop/workspace/meetingClient/android/app/src/main/AndroidManifest.xml:56:17-67
+queries
+ADDED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:7:5-11:15
+intent#action:name:android.media.action.IMAGE_CAPTURE
+ADDED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:8:9-10:18
+action#android.media.action.IMAGE_CAPTURE
+ADDED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:9:13-73
+	android:name
+		ADDED from [:capacitor-camera] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/camera/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:9:21-70
+service#com.capacitorjs.plugins.pushnotifications.MessagingService
+ADDED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:8:9-14:19
+	android:exported
+		ADDED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:10:13-37
+	android:name
+		ADDED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:9:13-86
+intent-filter#action:name:com.google.firebase.MESSAGING_EVENT
+ADDED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:11:13-13:29
+action#com.google.firebase.MESSAGING_EVENT
+ADDED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:12:17-78
+	android:name
+		ADDED from [:capacitor-push-notifications] /Users/jineuihyun/Desktop/workspace/meetingClient/node_modules/@capacitor/push-notifications/android/build/intermediates/merged_manifest/release/AndroidManifest.xml:12:25-75
+uses-permission#android.permission.USE_BIOMETRIC
+ADDED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:24:5-72
+	android:name
+		ADDED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:24:22-69
+uses-permission#android.permission.USE_FINGERPRINT
+ADDED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:27:5-74
+	android:name
+		ADDED from [androidx.biometric:biometric:1.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/af4c7122ca47b2d15009938785cca429/transformed/biometric-1.1.0/AndroidManifest.xml:27:22-71
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:23:5-79
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:23:5-79
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:7:5-79
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:7:5-79
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:9:5-79
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:9:5-79
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:22:5-79
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:22:5-79
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:24:22-76
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:25:5-77
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:25:22-74
+uses-permission#android.permission.WAKE_LOCK
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:26:5-68
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:25:5-68
+MERGED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:25:5-68
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:25:5-68
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:25:5-68
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:24:5-68
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:24:5-68
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:9:5-68
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:9:5-68
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:25:5-68
+MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/e9cbafc34f51b54a832fec9da2d629f5/transformed/jetified-play-services-measurement-sdk-api-21.3.0/AndroidManifest.xml:25:5-68
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:26:22-65
+uses-permission#com.google.android.c2dm.permission.RECEIVE
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:28:5-82
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:11:5-82
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] /Users/jineuihyun/.gradle/caches/transforms-3/fa342f4c7517201a75ffcb955c034538/transformed/jetified-play-services-cloud-messaging-17.0.1/AndroidManifest.xml:11:5-82
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:28:22-79
+receiver#com.google.firebase.iid.FirebaseInstanceIdReceiver
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:31:9-38:20
+	android:exported
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:33:13-36
+	android:permission
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:34:13-73
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:32:13-78
+intent-filter#action:name:com.google.android.c2dm.intent.RECEIVE
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:35:13-37:29
+action#com.google.android.c2dm.intent.RECEIVE
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:36:17-81
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:36:25-78
+service#com.google.firebase.messaging.FirebaseMessagingService
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:44:9-51:19
+	android:exported
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:47:13-37
+	android:directBootAware
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:46:13-43
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:45:13-82
+service#com.google.firebase.components.ComponentDiscoveryService
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:52:9-58:19
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:28:9-34:19
+MERGED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:28:9-34:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:24:9-30:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:24:9-30:19
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:14:9-20:19
+MERGED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:14:9-20:19
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:32:9-36:35
+MERGED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:32:9-36:35
+	android:exported
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:54:13-37
+	tools:targetApi
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:36:13-32
+	android:directBootAware
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:34:13-43
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:53:13-84
+meta-data#com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar
+ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:55:13-57:85
+	android:value
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:57:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.1.2] /Users/jineuihyun/.gradle/caches/transforms-3/d64e5f2db916c6ba4489129c707d6c08/transformed/jetified-firebase-messaging-23.1.2/AndroidManifest.xml:56:17-119
+uses-permission#com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE
+ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:26:5-110
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:26:5-110
+MERGED from [com.google.android.gms:play-services-measurement-impl:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/9cc658e628f78310ede642945e33fe1e/transformed/jetified-play-services-measurement-impl-21.3.0/AndroidManifest.xml:26:5-110
+	android:name
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:26:22-107
+receiver#com.google.android.gms.measurement.AppMeasurementReceiver
+ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:29:9-33:20
+	android:enabled
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:31:13-35
+	android:exported
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:32:13-37
+	android:name
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:30:13-85
+service#com.google.android.gms.measurement.AppMeasurementService
+ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:35:9-38:40
+	android:enabled
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:37:13-35
+	android:exported
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:38:13-37
+	android:name
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:36:13-84
+service#com.google.android.gms.measurement.AppMeasurementJobService
+ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:39:9-43:72
+	android:enabled
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:41:13-35
+	android:exported
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:42:13-37
+	android:permission
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:43:13-69
+	android:name
+		ADDED from [com.google.android.gms:play-services-measurement:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/f4ffa30c4912d3956de1a98dd5305f72/transformed/jetified-play-services-measurement-21.3.0/AndroidManifest.xml:40:13-87
+meta-data#com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar
+ADDED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:31:13-33:85
+	android:value
+		ADDED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:33:17-82
+	android:name
+		ADDED from [com.google.android.gms:play-services-measurement-api:21.3.0] /Users/jineuihyun/.gradle/caches/transforms-3/13aa7ffbbea6e1603aa78986d84b33f2/transformed/jetified-play-services-measurement-api-21.3.0/AndroidManifest.xml:32:17-139
+meta-data#com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar
+ADDED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:27:13-29:85
+	android:value
+		ADDED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:29:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-datatransport:18.1.7] /Users/jineuihyun/.gradle/caches/transforms-3/559a3bd034eafcc31549121b8dd282ca/transformed/jetified-firebase-datatransport-18.1.7/AndroidManifest.xml:28:17-115
+meta-data#com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar
+ADDED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:17:13-19:85
+	android:value
+		ADDED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:19:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-installations:17.1.3] /Users/jineuihyun/.gradle/caches/transforms-3/e7dc75e125dc8bfea3143f93f83d699d/transformed/jetified-firebase-installations-17.1.3/AndroidManifest.xml:18:17-127
+provider#com.google.firebase.provider.FirebaseInitProvider
+ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:25:9-30:39
+	android:authorities
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:27:13-72
+	android:exported
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:29:13-37
+	android:directBootAware
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:28:13-43
+	android:initOrder
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:30:13-36
+	android:name
+		ADDED from [com.google.firebase:firebase-common:20.3.3] /Users/jineuihyun/.gradle/caches/transforms-3/32a200339da318dd295617050f9fd43a/transformed/jetified-firebase-common-20.3.3/AndroidManifest.xml:26:13-77
+activity#com.google.android.gms.common.api.GoogleApiActivity
+ADDED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:20:9-22:45
+	android:exported
+		ADDED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:22:19-43
+	android:theme
+		ADDED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:21:19-78
+	android:name
+		ADDED from [com.google.android.gms:play-services-base:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/9e2ca522cb7142e2be1108625f460a0e/transformed/jetified-play-services-base-18.1.0/AndroidManifest.xml:20:19-85
+meta-data#com.google.android.gms.version
+ADDED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:21:9-23:69
+	android:value
+		ADDED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:23:13-66
+	android:name
+		ADDED from [com.google.android.gms:play-services-basement:18.1.0] /Users/jineuihyun/.gradle/caches/transforms-3/fa35206fb81c27eed04171c3fccd9889/transformed/jetified-play-services-basement-18.1.0/AndroidManifest.xml:22:13-58
+provider#androidx.startup.InitializationProvider
+ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:26:9-34:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:26:9-34:20
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/jineuihyun/.gradle/caches/transforms-3/3f35b10da864d100c81c747d01d6a29d/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+	tools:node
+		ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:28:13-31
+	android:authorities
+		ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
+	android:exported
+		ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
+meta-data#androidx.emoji2.text.EmojiCompatInitializer
+ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.2.0] /Users/jineuihyun/.gradle/caches/transforms-3/64e17547f565747baf047477a3b4744f/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
+meta-data#com.google.android.play.billingclient.version
+ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:13:9-15:37
+	android:value
+		ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:15:13-34
+	android:name
+		ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:14:13-73
+activity#com.android.billingclient.api.ProxyBillingActivity
+ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:17:9-21:75
+	android:exported
+		ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:20:13-37
+	android:configChanges
+		ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:19:13-96
+	android:theme
+		ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:21:13-72
+	android:name
+		ADDED from [com.android.billingclient:billing:5.0.0] /Users/jineuihyun/.gradle/caches/transforms-3/8a0b012f3a971f2b44bf460912c0891a/transformed/jetified-billing-5.0.0/AndroidManifest.xml:18:13-78
+service#com.google.android.datatransport.runtime.backends.TransportBackendDiscovery
+ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:28:9-34:19
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:36:9-38:40
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:36:9-38:40
+	android:exported
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:30:13-37
+	android:name
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:29:13-103
+meta-data#backend:com.google.android.datatransport.cct.CctBackendFactory
+ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:31:13-33:39
+	android:value
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:33:17-36
+	android:name
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/c51a12a36f0e26fb92c278ac9d76d168/transformed/jetified-transport-backend-cct-3.1.8/AndroidManifest.xml:32:17-94
+service#com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
+ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:26:9-30:19
+	android:exported
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:28:13-37
+	android:permission
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:29:13-69
+	android:name
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:27:13-117
+receiver#com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver
+ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:32:9-34:40
+	android:exported
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:34:13-37
+	android:name
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /Users/jineuihyun/.gradle/caches/transforms-3/7be6f06426d4138cfe3a1faa2c667196/transformed/jetified-transport-runtime-3.1.8/AndroidManifest.xml:33:13-132
+service#androidx.room.MultiInstanceInvalidationService
+ADDED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:24:9-28:63
+	android:exported
+		ADDED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:27:13-37
+	tools:ignore
+		ADDED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:28:13-60
+	android:directBootAware
+		ADDED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:26:13-43
+	android:name
+		ADDED from [androidx.room:room-runtime:2.5.1] /Users/jineuihyun/.gradle/caches/transforms-3/4b09f836cae5b97d67b9909c58799d9a/transformed/room-runtime-2.5.1/AndroidManifest.xml:25:13-74
+meta-data#androidx.lifecycle.ProcessLifecycleInitializer
+ADDED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:31:13-33:52
+	android:value
+		ADDED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:33:17-49
+	android:name
+		ADDED from [androidx.lifecycle:lifecycle-process:2.4.1] /Users/jineuihyun/.gradle/caches/transforms-3/f8478d60e12ee92359f6080fcf86b9db/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:32:17-78

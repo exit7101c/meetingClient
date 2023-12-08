@@ -1,0 +1,675 @@
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button @click="presentAlertConfirm()">
+              <ion-icon slot="icon-only" :icon="chevronBack" />
+            </ion-button>
+          </ion-buttons>
+          <ion-title>기본설정</ion-title>
+        </ion-toolbar>
+        <ProgressBar :currIdx="isValidateForm ? 6 : 5"></ProgressBar>
+      </ion-header>
+    </ion-header>
+    <ion-content>
+      <div class="layout-container">
+        <JoinTitle>
+          <template v-slot:title>
+            기본 정보를 <br />
+            작성해 주세요
+          </template>
+          <template v-slot:desc
+          >프로필에 기본으로 등록되는 정보입니다.
+          </template
+          >
+        </JoinTitle>
+        <div class="form-wrapper">
+          <ion-grid>
+            <ion-row>
+              <ion-col
+              >
+                <ion-text color="light" class="text-sm"
+                >당신의 성격유형(MBTI)를 알려주세요!
+                </ion-text
+                >
+              </ion-col
+              >
+            </ion-row>
+            <ion-row>
+              <ion-col size="3" v-for="(data, index) in mbtiList" :key="index">
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  expand="block"
+                  :class="[
+                    'round-lg',
+                    {
+                      'is-selected': isSelectedMbtis(data)
+                    }
+                  ]"
+                  :style="{
+                    'background-color': data.backgroundColor || 'white'
+                  }"
+                  @click="toggleItem('mbti', data)"
+                >
+                  <ion-text color="dark">
+                    {{ data.mbtiNm }}
+                  </ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm"
+                >외모 이상형이 어떻게 되세요? (최대2개)
+                </ion-text
+                >
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="3" v-for="(data, index) in faceList" :key="index">
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  expand="block"
+                  shape="round"
+                  color="medium"
+                  :class="[
+                    {
+                      'is-selected': isSelectedFace(data)
+                    }
+                  ]"
+                  @click="toggleItem('face', data)"
+                >
+                  <ion-text class="sub-text01">
+                    {{ data.lookNm }}
+                  </ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm">
+                  체형 이상형이 어떻게 되세요? (최대2개)
+                </ion-text
+                >
+              </ion-col
+              >
+            </ion-row>
+            <ion-row>
+              <ion-col size="3" v-for="(data, index) in bodyList" :key="index">
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  expand="block"
+                  shape="round"
+                  color="medium"
+                  :class="[
+                    {
+                      'is-selected': isSelectedBody(data)
+                    }
+                  ]"
+                  @click="toggleItem('body', data)"
+                >
+                  <ion-text class="sub-text01">
+                    {{ data.formNm }}
+                  </ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm">
+                  성격 이상형이 어떻게 되세요? (최대2개)
+                </ion-text
+                >
+              </ion-col
+              >
+            </ion-row>
+            <ion-row>
+              <ion-col
+                size="3"
+                v-for="(data, index) in personalityList"
+                :key="index"
+              >
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  expand="block"
+                  shape="round"
+                  color="medium"
+                  :class="[
+                    {
+                      'is-selected': isSelectedPer(data)
+                    }
+                  ]"
+                  @click="toggleItem('personality', data)"
+                >
+                  <ion-text class="sub-text01">
+                    {{ data.characterNm }}
+                  </ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text color="light" class="text-sm">
+                  요즘 어떤것에 관심이 있으신가요? (최대3개)
+                </ion-text
+                >
+              </ion-col
+              >
+            </ion-row>
+            <ion-row>
+              <ion-col size="3" v-for="(data, index) in hobbyList" :key="index">
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  expand="block"
+                  shape="round"
+                  color="medium"
+                  :class="[
+                    {
+                      'is-selected': isSelectedInterest(data)
+                    }
+                  ]"
+                  @click="toggleItem('hobby', data)"
+                >
+                  <ion-text class="sub-text01">
+                    {{ data.hobbyNm }}
+                  </ion-text>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-grid>
+            <ion-row>
+              <ion-col
+              >
+                <ion-text color="light" class="text-sm"
+                >가장 좋아하는 음악은 무엇인가요? (선택)
+                </ion-text
+                >
+              </ion-col
+              >
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-list>
+                  <ion-item
+                    class="input-field"
+                    counter="true"
+                    :counterFormatter="customFormatter"
+                  >
+                    <ion-input
+                      type="text"
+                      maxlength="20"
+                      placeholder="가수,작곡가"
+                      v-model="likeSinger"
+                      @ionFocus="emptyBox=true"
+                      @ionBlur="emptyBox=false"
+                    ></ion-input>
+                  </ion-item>
+                  <ion-item
+                    class="input-field"
+                    counter="true"
+                    :counterFormatter="customFormatter"
+                  >
+                    <ion-input
+                      type="text"
+                      maxlength="20"
+                      placeholder="제목"
+                      v-model="likeMusic"
+                      @ionFocus="emptyBox=true"
+                      @ionBlur="emptyBox=false"
+                    ></ion-input>
+                  </ion-item>
+                </ion-list>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </div>
+      <EmptyBox :is-open="emptyBox" />
+    </ion-content>
+    <ion-footer class="join-footer">
+      <div class="layout-container">
+        <div class="btn-group">
+          <custom-button
+            fill="outline"
+            color="primary"
+            size="large"
+            expand="block"
+            shape="round"
+            :disabled="!isValidateForm"
+            @click="goRouter"
+          >
+            다음으로
+          </custom-button>
+          <custom-button
+            fill="clear"
+            color="secondary"
+            size="large"
+            expand="block"
+            shape="round"
+            @click="this.$router.push('/joinIcon')"
+          >
+            건너뛰기
+          </custom-button>
+        </div>
+      </div>
+    </ion-footer>
+  </ion-page>
+</template>
+
+<script>
+import { chevronBack } from "ionicons/icons";
+import { getData } from "@/assets/js/common";
+import JoinTitle from "@/components/JoinTitle.vue";
+import ProgressBar from "@/components/ProgressBar.vue";
+import EmptyBox from "@/components/EmptyBox.vue";
+
+export default {
+  name: "JoinInterview",
+  inject: ["alertController"],
+  components: {
+    JoinTitle,
+    ProgressBar,
+    EmptyBox
+  },
+  computed: {
+    // PUB
+    isValidateForm() {
+      return (
+        this.selectMbtis.length > 0 &&
+        this.selectFaces.length > 0 &&
+        this.selectBodys.length > 0 &&
+        this.selectPers.length > 0 &&
+        this.selectInterests.length > 0
+      );
+    }
+  },
+  data() {
+    return {
+      chevronBack,
+
+      title: "",
+      content: "",
+      nick: "",
+      profile: "",
+
+      selectMbtis: [],
+      selectFaces: [],
+      selectBodys: [],
+      selectPers: [],
+      selectInterests: [],
+
+      mbtiList: "",
+      faceList: "",
+      bodyList: "",
+      personalityList: "",
+      hobbyList: "",
+
+      likeSinger: "",
+      likeMusic: "",
+      emptyBox: false
+    };
+  },
+  ionViewWillEnter() {
+    // 진입할 때 호출
+    this.getKeywordList();
+    this.likeSinger = "";
+    this.likeMusic = "";
+    // if (tempMap.state !== "ing") {
+    this.selectMbtis = [];
+    this.selectFaces = [];
+    this.selectBodys = [];
+    this.selectPers = [];
+    this.selectInterests = [];
+    // }
+
+  },
+
+  ionViewDidLeave() {
+    // 떠날 때 호출
+  },
+  mounted() {
+    // PUB
+    this.getKeywordList();
+  },
+  methods: {
+
+    goRouter() {
+      // tempMap.item.mbti = this.selectMbtis[0].mbtiCd;
+      // tempMap.item.idealLook = this.selectFaces[0].lookCd;
+      // tempMap.item.idealForm = this.selectBodys[0].formCd;
+      // tempMap.item.idealCharacter = this.selectPers[0].characterCd;
+      // tempMap.item.hobby = this.selectInterests[0].hobbyCd;
+      // tempMap.item.likeSinger = this.likeSinger;
+      // tempMap.item.likeMusic = this.likeMusic;
+
+      this.$store.state.joinMap["mbti"] = this.selectMbtis[0].mbtiCd;
+      this.$store.state.joinMap["idealLook"] = this.selectFaces[0].lookCd;
+      this.$store.state.joinMap["idealForm"] = this.selectBodys[0].formCd;
+      this.$store.state.joinMap["idealCharacter"] = this.selectPers[0].characterCd;
+      this.$store.state.joinMap["hobby"] = this.selectInterests[0].hobbyCd;
+      this.$store.state.joinMap["likeSinger"] = this.likeSinger;
+      this.$store.state.joinMap["likeMusic"] = this.likeMusic;
+
+      this.$router.push("/joinIcon");
+    },
+
+    /** 키워드 리스트 **/
+    getKeywordList() {
+      /** mbti **/
+      getData({
+        url: "/join/getKeywordList",
+        param: {},
+        target: this,
+        then: (data) => {
+          this.mbtiList = data.mbtiList;
+          this.faceList = data.faceList;
+          this.bodyList = data.bodyList;
+          this.personalityList = data.perList;
+          this.hobbyList = data.hobbyList;
+        }
+      });
+    },
+
+    async warningAlert(message) {
+      const alert = await this.alertController.create({
+        header: "",
+        subHeader: "",
+        message: message,
+        buttons: ["OK"]
+      });
+      return alert.present();
+    },
+
+    async presentAlertConfirm() {
+      const alert = await this.alertController.create({
+        //cssClass: 'my-custom-class',
+        header: "",
+        message: "이 화면에서 나가면 입력한 내용은 저장되지 않습니다.",
+        buttons: [
+          {
+            text: "취소",
+            role: "cancel",
+            cssClass: "secondary",
+            handler: () => {
+            }
+          },
+          {
+            text: "나가기",
+            handler: () => {
+              this.$router.go(-1);
+            }
+          }
+        ]
+      });
+      return alert.present();
+    },
+
+    /** 선택아이템 **/
+    isSelectedMbtis(item) {
+      return this.selectMbtis.includes(item);
+    },
+    isSelectedFace(item) {
+      return this.selectFaces.includes(item);
+    },
+    isSelectedBody(item) {
+      return this.selectBodys.includes(item);
+    },
+    isSelectedPer(item) {
+      return this.selectPers.includes(item);
+    },
+    isSelectedInterest(item) {
+      return this.selectInterests.includes(item);
+    },
+
+    /** mbti type 별 색상 **/
+    getMbtiTypeColor(e) {
+      switch (e) {
+        case "INTJ":
+        case "INTP":
+        case "ENTJ":
+        case "ENTP":
+          return "type-analyzer";
+        case "INFJ":
+        case "INFP":
+        case "ENFJ":
+        case "ENFP":
+          return "type-diplomat";
+        case "ISTJ":
+        case "ISFJ":
+        case "ESTJ":
+        case "ESFJ":
+          return "type-manager";
+        case "MOLU":
+          return "type-molu";
+        default:
+          return "type-explorer";
+      }
+    },
+    /** 선택 아이템들 **/
+    toggleItem(state, item) {
+      if (state === "mbti") {
+        /** mbti **/
+        if (this.isSelectedMbtis(item)) {
+          this.selectMbtis.splice(this.selectMbtis.indexOf(item), 1);
+        } else {
+          if (this.selectMbtis.length > 0) {
+            this.selectMbtis.splice(0, 1);
+          }
+          this.selectMbtis.push(item);
+        }
+      } else if (state === "face") {
+        /** 이상형 얼굴 **/
+        if (item.lookNm === "상관없음") {
+          if (!this.isSelectedFace(item)) {
+            if (
+              this.selectFaces.some(
+                (selectedItem) => selectedItem.lookNm === "상관없음"
+              )
+            ) {
+              this.selectFaces.splice(
+                this.selectFaces.findIndex(
+                  (selectedItem) => selectedItem.lookNm !== "상관없음"
+                ),
+                1,
+                item
+              );
+            } else {
+              this.selectFaces.push(item);
+            }
+            this.selectFaces = this.selectFaces.filter(
+              (selectedItem) => selectedItem.lookNm === "상관없음"
+            );
+          } else {
+            this.selectFaces = this.selectFaces.filter(
+              (selectedItem) => selectedItem.lookNm !== "상관없음"
+            );
+          }
+        } else {
+          if (this.isSelectedFace(item)) {
+            this.selectFaces.splice(this.selectFaces.indexOf(item), 1);
+          } else {
+            if (
+              !this.selectFaces.some(
+                (selectedItem) => selectedItem.lookNm === "상관없음"
+              )
+            ) {
+              if (this.selectFaces.length === 2) {
+                this.selectFaces.splice(0, 1);
+              }
+              this.selectFaces.push(item);
+            } else {
+              this.selectFaces.splice(
+                this.selectFaces.findIndex(
+                  (selectedItem) => selectedItem.lookNm !== "상관없음"
+                ),
+                1,
+                item
+              );
+            }
+          }
+        }
+      } else if (state === "body") {
+        /** 이상형 몸 **/
+        if (item.formNm === "상관없음") {
+          if (!this.isSelectedBody(item)) {
+            if (
+              this.selectBodys.some(
+                (selectedItem) => selectedItem.formNm === "상관없음"
+              )
+            ) {
+              this.selectBodys.splice(
+                this.selectBodys.findIndex(
+                  (selectedItem) => selectedItem.formNm !== "상관없음"
+                ),
+                1,
+                item
+              );
+            } else {
+              this.selectBodys.push(item);
+            }
+            this.selectBodys = this.selectBodys.filter(
+              (selectedItem) => selectedItem.formNm === "상관없음"
+            );
+          } else {
+            this.selectBodys = this.selectBodys.filter(
+              (selectedItem) => selectedItem.formNm !== "상관없음"
+            );
+          }
+        } else {
+          if (this.isSelectedBody(item)) {
+            this.selectBodys.splice(this.selectBodys.indexOf(item), 1);
+          } else {
+            if (
+              !this.selectBodys.some(
+                (selectedItem) => selectedItem.formNm === "상관없음"
+              )
+            ) {
+              if (this.selectBodys.length === 2) {
+                this.selectBodys.splice(0, 1);
+              }
+              this.selectBodys.push(item);
+            } else {
+              this.selectBodys.splice(
+                this.selectBodys.findIndex(
+                  (selectedItem) => selectedItem.formNm !== "상관없음"
+                ),
+                1,
+                item
+              );
+            }
+          }
+        }
+      } else if (state === "personality") {
+        /** 이상형 성격 **/
+        if (item.characterNm === "상관없음") {
+          if (!this.isSelectedPer(item)) {
+            if (
+              this.selectPers.some(
+                (selectedItem) => selectedItem.characterNm === "상관없음"
+              )
+            ) {
+              this.selectPers.splice(
+                this.selectPers.findIndex(
+                  (selectedItem) => selectedItem.characterNm !== "상관없음"
+                ),
+                1,
+                item
+              );
+            } else {
+              this.selectPers.push(item);
+            }
+            this.selectPers = this.selectPers.filter(
+              (selectedItem) => selectedItem.characterNm === "상관없음"
+            );
+          } else {
+            this.selectPers = this.selectPers.filter(
+              (selectedItem) => selectedItem.characterNm !== "상관없음"
+            );
+          }
+        } else {
+          if (this.isSelectedPer(item)) {
+            this.selectPers.splice(this.selectPers.indexOf(item), 1);
+          } else {
+            if (
+              !this.selectPers.some(
+                (selectedItem) => selectedItem.characterNm === "상관없음"
+              )
+            ) {
+              if (this.selectPers.length === 2) {
+                this.selectPers.splice(0, 1);
+              }
+              this.selectPers.push(item);
+            } else {
+              this.selectPers.splice(
+                this.selectPers.findIndex(
+                  (selectedItem) => selectedItem.characterNm !== "상관없음"
+                ),
+                1,
+                item
+              );
+            }
+          }
+        }
+      } else {
+        /** 취미 **/
+        if (this.isSelectedInterest(item)) {
+          // 선택된 아이템 선택 해제
+          this.selectInterests.splice(this.selectInterests.indexOf(item), 1);
+        } else {
+          if (this.selectInterests.length > 2) {
+            this.selectInterests.splice(0, 1);
+          }
+          this.selectInterests.push(item);
+        }
+      }
+    },
+
+    /** next btn **/
+    validateAndNavigate() {
+      if (this.isValidateForm) {
+        this.goRouter();
+      } else {
+        if (this.selectMbtis.length === 0) {
+          this.warningAlert("MBTI를 선택하지 않았습니다.");
+        } else if (this.selectFaces.length === 0) {
+          this.warningAlert("이상형(외모)을 선택하지 않았습니다.");
+        } else if (this.selectBodys === 139) {
+          this.warningAlert("이상형(체형)을 선택하지 않았습니다.");
+        } else if (this.selectPers.length === 0) {
+          this.warningAlert("이상형(성격)을 선택하지 않았습니다.");
+        } else {
+          this.warningAlert("관심사를 선택하지 않았습니다.");
+        }
+      }
+    },
+    /** 글자수 체크 **/
+    customFormatter(inputLength, maxLength) {
+      if (inputLength > maxLength) {
+        return "더이상 입력할수 없습니다.";
+      } else if (inputLength < 1) {
+        return `최소 ${1 - inputLength}자 / 최대 20자`;
+      } else {
+        return `최소 글자수 완료 / 최대 ${maxLength - inputLength}자`;
+      }
+    }
+  }
+};
+</script>
+
+<style scoped></style>
